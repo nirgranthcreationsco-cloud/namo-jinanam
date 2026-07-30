@@ -1,6 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* Hardware Acceleration & Smoothness */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a, button {
+  touch-action: manipulation;
+}
+
+/* Smooth momentum scrolling on iOS */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+
 /* =====================================================
  * सन्मति - सुनील - संस्कार अभियान
  * Premium Spiritual Mobile Theme — 2026

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown } from "lucide-react";
@@ -22,58 +22,88 @@ function BottomNav() {
 
   return (
     <nav className="bottom-nav">
-      <div className="container" style={{ padding: "0 8px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "6px 8px 4px" }}>
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "3px",
+                padding: "6px 10px 4px",
+                position: "relative",
+                color: isActive ? "var(--brand)" : "var(--text-muted)",
+                flex: 1,
+                textDecoration: "none",
+                transition: "color 0.2s ease"
+              }}
+            >
+              {/* Active pill background */}
+              {isActive && (
+                <motion.div
+                  layoutId="nav-pill"
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "40px",
+                    height: "32px",
+                    background: "var(--brand-dim)",
+                    borderRadius: "10px",
+                    zIndex: 0,
+                  }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                />
+              )}
+
+              {/* Active dot */}
+              {isActive && (
+                <motion.div
+                  layoutId="nav-dot"
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--brand)",
+                    zIndex: 0,
+                  }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                />
+              )}
+
+              <motion.div
+                style={{ position: "relative", zIndex: 1 }}
+                animate={{ scale: isActive ? 1.1 : 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                whileTap={{ scale: 0.85 }}
+              >
+                <Icon size={21} strokeWidth={isActive ? 2.5 : 1.75} />
+              </motion.div>
+              <span
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "8px 12px",
+                  fontSize: "0.625rem",
+                  fontWeight: isActive ? 700 : 500,
                   position: "relative",
-                  color: isActive ? "var(--brand)" : "var(--text-muted)",
-                  flex: 1,
-                  textDecoration: "none"
+                  zIndex: 1,
+                  letterSpacing: "0.02em",
+                  fontFamily: language === "hi" ? "var(--font-devanagari)" : "var(--font-sans)"
                 }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-active"
-                    style={{
-                      position: "absolute",
-                      inset: "0 8px",
-                      background: "var(--brand-dim)",
-                      borderRadius: "12px",
-                      zIndex: 0,
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.6875rem",
-                    fontWeight: isActive ? 700 : 500,
-                    position: "relative",
-                    zIndex: 1,
-                    fontFamily: language === "hi" ? "var(--font-devanagari)" : "var(--font-sans)"
-                  }}
-                >
-                  {language === "hi" ? item.labelHi : item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+                {language === "hi" ? item.labelHi : item.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
@@ -271,6 +301,7 @@ function TopBar() {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -282,11 +313,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div style={{ paddingBottom: "84px" }}>
+    <div style={{ paddingBottom: "84px", overflowX: "hidden" }}>
       <TopBar />
-      <main style={{ minHeight: "calc(100dvh - 144px)" }}>
-        {children}
-      </main>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.main
+          key={pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{
+            duration: 0.22,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          style={{ minHeight: "calc(100dvh - 144px)", willChange: "opacity, transform" }}
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
       <BottomNav />
     </div>
   );
