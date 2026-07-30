@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { Home, CheckSquare, Trophy, User, Flame, Star, Hexagon, Share2, BookOpen, Crown } from "lucide-react";
+import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
@@ -85,11 +85,11 @@ function TopBar() {
   const { language, setLanguage } = useLanguageStore();
 
   const pageTitleHi: Record<string, string> = {
-    "/dashboard": "डैशबोर्ड",
-    "/habits": "आज की आदतें",
-    "/bonus": "आजीवन नियम एवं बोनस",
-    "/leaderboard": "लीडरबोर्ड",
-    "/profile": "प्रोफाइल",
+    "/dashboard": "मुख्य पृष्ठ",
+    "/habits": "आदतें",
+    "/bonus": "बोनस",
+    "/leaderboard": "रैंकिंग",
+    "/profile": "प्रोफ़ाइल",
     "/calendar": "कैलेंडर",
     "/badges": "बैज",
     "/certificates": "प्रमाण पत्र",
@@ -97,8 +97,8 @@ function TopBar() {
 
   const pageTitleEn: Record<string, string> = {
     "/dashboard": "Dashboard",
-    "/habits": "Daily Habits",
-    "/bonus": "Lifetime & Bonus",
+    "/habits": "Habits",
+    "/bonus": "Bonus",
     "/leaderboard": "Leaderboard",
     "/profile": "Profile",
     "/calendar": "Calendar",
@@ -107,8 +107,8 @@ function TopBar() {
   };
 
   const pageTitle = language === "hi" ? pageTitleHi : pageTitleEn;
-  const fallbackTitle = language === "hi" ? "सन्मति - सुनील - संस्कार अभियान" : "Sanmati Sunilam Sanskar";
-  const title = Object.entries(pageTitle).find(([path]) => pathname.startsWith(path))?.[1] ?? fallbackTitle;
+  const isHome = pathname === "/dashboard";
+  const title = Object.entries(pageTitle).find(([path]) => pathname.startsWith(path))?.[1] ?? (language === "hi" ? "सन्मति" : "Sanmati");
 
   const handleShare = async () => {
     const shareData = {
@@ -137,73 +137,127 @@ function TopBar() {
 
   return (
     <header className="topbar">
-      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px", padding: "0 16px" }}>
-        
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 1, minWidth: 0 }}>
-          <img src="/logo.png" alt="Logo" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", boxShadow: "var(--shadow-sm)", border: "2px solid var(--brand-dim)" }} />
-          <div className="heading-sm font-devanagari text-truncate" style={{ color: "var(--text-primary)", fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {title}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px", padding: "0 16px" }}>
+
+        {/* Left: Logo + Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <img
+              src="/logo.png" alt="Logo"
+              style={{
+                width: "38px", height: "38px", borderRadius: "12px",
+                objectFit: "cover",
+                border: "2px solid rgba(92,26,16,0.15)",
+                boxShadow: "0 2px 8px rgba(92,26,16,0.15)"
+              }}
+            />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            {isHome ? (
+              <>
+                <div
+                  className="font-devanagari"
+                  style={{
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
+                    color: "var(--gold)",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    lineHeight: 1
+                  }}
+                >
+                  {language === "hi" ? "जय जिनेन्द्र 🙏" : "Jai Jinendra 🙏"}
+                </div>
+                <div
+                  className="font-devanagari"
+                  style={{
+                    fontSize: "0.8125rem",
+                    fontWeight: 700,
+                    color: "var(--brand)",
+                    lineHeight: 1.3,
+                    marginTop: "1px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  {language === "hi" ? "सन्मति · सुनील · संस्कार" : "Sanmati Sunil Sanskar"}
+                </div>
+              </>
+            ) : (
+              <div
+                className="font-devanagari"
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {title}
+              </div>
+            )}
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-          <button 
+        {/* Right: Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+          {/* Points */}
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: "4px",
+              padding: "5px 10px", borderRadius: "var(--r-pill)",
+              background: "var(--gold-dim)",
+              border: "1px solid rgba(160,98,42,0.2)"
+            }}
+          >
+            <Star size={13} fill="var(--gold)" color="var(--gold)" />
+            <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#7A4A15", fontFamily: "var(--font-sans)" }}>
+              {(stats?.total_points ?? 0)}
+            </span>
+          </div>
+
+          {/* Streak */}
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: "3px",
+              padding: "5px 9px", borderRadius: "var(--r-pill)",
+              background: "rgba(200,80,20,0.08)",
+              border: "1px solid rgba(200,80,20,0.2)"
+            }}
+          >
+            <Flame size={13} className="streak-flame" fill="#C85010" />
+            <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#9A3010", fontFamily: "var(--font-sans)" }}>
+              {stats?.current_streak ?? 0}
+            </span>
+          </div>
+
+          {/* Language Toggle */}
+          <button
             onClick={() => setLanguage(language === "hi" ? "en" : "hi")}
             style={{
-              padding: "0 10px", height: "36px", borderRadius: "18px",
-              background: "var(--surface-base)", border: "1px solid var(--surface-border)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "var(--brand)", fontWeight: 700, fontSize: "0.75rem", cursor: "pointer", gap: "4px"
-            }}
-            title={language === "hi" ? "Switch to English" : "हिंदी में बदलें"}
-          >
-            <span>🌐</span>
-            <span>{language === "hi" ? "EN" : "हिं"}</span>
-          </button>
-
-          <button 
-            onClick={handleShare}
-            style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              background: "var(--surface-base)",
+              width: "34px", height: "34px", borderRadius: "10px",
+              background: "var(--surface-overlay)",
               border: "1px solid var(--surface-border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              transition: "transform 0.2s"
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--brand)", fontWeight: 700, fontSize: "0.7rem",
+              cursor: "pointer"
             }}
-            className="share-btn"
-            title={language === "hi" ? "साझा करें" : "Share"}
           >
-            <Share2 size={18} />
+            {language === "hi" ? "EN" : "अ"}
           </button>
 
-          <div className="chip chip-gold">
-            <Star size={14} fill="currentColor" />
-            {(stats?.total_points ?? 0).toLocaleString(language === "hi" ? "hi-IN" : "en-US")}
-          </div>
-
-          <div className="chip chip-brand">
-            <Flame size={14} className="streak-flame" fill="currentColor" />
-            {stats?.current_streak ?? 0}
-          </div>
-
-          <Link href="/profile" style={{ marginLeft: "4px" }}>
+          {/* Avatar */}
+          <Link href="/profile" style={{ textDecoration: "none" }}>
             <div
               style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, var(--indigo), var(--lotus))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: 700,
-                fontSize: "14px"
+                width: "34px", height: "34px", borderRadius: "10px",
+                background: "linear-gradient(135deg, var(--brand-light), var(--lotus))",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "white", fontWeight: 700, fontSize: "14px",
+                boxShadow: "0 2px 8px var(--brand-glow)"
               }}
             >
               {profile?.full_name?.charAt(0) ?? "?"}
@@ -228,9 +282,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div style={{ paddingBottom: "80px" }}>
+    <div style={{ paddingBottom: "84px" }}>
       <TopBar />
-      <main>
+      <main style={{ minHeight: "calc(100dvh - 144px)" }}>
         {children}
       </main>
       <BottomNav />
