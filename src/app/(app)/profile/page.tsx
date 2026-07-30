@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
+import { useLanguageStore } from "@/store/languageStore";
 import { BADGES, LEVELS, getLevelByXP, getXPProgressPercentage } from "@/data/content";
 import type { Badge } from "@/types";
 import { 
@@ -14,6 +15,7 @@ import {
 
 export default function ProfilePage() {
   const { profile, stats, logout } = useAuthStore();
+  const { language } = useLanguageStore();
   const [activeTab, setActiveTab] = useState<"stats" | "badges" | "history">("stats");
 
   if (!profile || !stats) return null;
@@ -28,9 +30,9 @@ export default function ProfilePage() {
   const lockedBadges = BADGES.filter((b) => !earnedBadgeIds.has(b.id));
 
   const TABS = [
-    { id: "stats", label: "आँकड़े", icon: BarChart2 },
-    { id: "badges", label: "बैज", icon: Medal },
-    { id: "history", label: "इतिहास", icon: History },
+    { id: "stats", labelHi: "आँकड़े", labelEn: "Stats", icon: BarChart2 },
+    { id: "badges", labelHi: "बैज", labelEn: "Badges", icon: Medal },
+    { id: "history", labelHi: "इतिहास", labelEn: "History", icon: History },
   ] as const;
 
   const StatItem = ({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) => (
@@ -73,13 +75,15 @@ export default function ProfilePage() {
       >
         <Medal size={28} />
       </div>
-      <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: "4px" }}>{badge.name_hi}</div>
+      <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: "4px" }}>
+        {language === "hi" ? badge.name_hi : badge.name_en}
+      </div>
       <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-        {badge.description_hi}
+        {language === "hi" ? badge.description_hi : badge.description_en}
       </div>
       {!earned && (
         <div style={{ marginTop: "12px", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-          <Lock size={12} /> लॉक
+          <Lock size={12} /> {language === "hi" ? "लॉक" : "Locked"}
         </div>
       )}
       {earned && badge.is_rare && (
@@ -87,7 +91,7 @@ export default function ProfilePage() {
           className="chip chip-gold"
           style={{ marginTop: "12px" }}
         >
-          <Star size={10} fill="currentColor" /> दुर्लभ
+          <Star size={10} fill="currentColor" /> {language === "hi" ? "दुर्लभ" : "Rare"}
         </div>
       )}
     </motion.div>
@@ -139,7 +143,7 @@ export default function ProfilePage() {
               <MapPin size={14} /> {profile.city}, {profile.state}
             </div>
             <div className="chip chip-gold" style={{ marginTop: "12px" }}>
-              <Award size={14} /> {level.name_hi}
+              <Award size={14} /> {language === "hi" ? level.name_hi : level.name_en}
             </div>
           </div>
         </div>
@@ -148,11 +152,13 @@ export default function ProfilePage() {
         <div style={{ marginTop: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px" }} className="font-devanagari">
             <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--gold)", fontWeight: 600 }}>
-              <Star size={12} fill="currentColor" /> {stats.total_points.toLocaleString("hi-IN")} XP
+              <Star size={12} fill="currentColor" /> {stats.total_points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} XP
             </span>
             {nextLevel && (
               <span>
-                {nextLevel.name_hi} के लिए {xpForNext.toLocaleString("hi-IN")} XP चाहिए
+                {language === "hi" 
+                  ? `${nextLevel.name_hi} के लिए ${xpForNext.toLocaleString("hi-IN")} XP चाहिए` 
+                  : `Requires ${xpForNext.toLocaleString("en-US")} XP for ${nextLevel.name_en}`}
               </span>
             )}
           </div>
@@ -170,16 +176,18 @@ export default function ProfilePage() {
         {/* Quick Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginTop: "24px" }}>
           {[
-            { value: stats.current_streak, label: "स्ट्रीक", icon: Flame, color: "var(--brand)" },
-            { value: stats.total_days_participated, label: "दिन", icon: Calendar, color: "var(--emerald)" },
-            { value: earnedBadges.length, label: "बैज", icon: Medal, color: "var(--gold)" },
+            { value: stats.current_streak, labelHi: "स्ट्रीक", labelEn: "Streak", icon: Flame, color: "var(--brand)" },
+            { value: stats.total_days_participated, labelHi: "दिन", labelEn: "Days", icon: Calendar, color: "var(--emerald)" },
+            { value: earnedBadges.length, labelHi: "बैज", labelEn: "Badges", icon: Medal, color: "var(--gold)" },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", padding: "12px", background: "var(--surface-overlay)", borderRadius: "var(--r-lg)", border: "1px solid var(--surface-border)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: s.color, marginBottom: "4px" }}>
                 <s.icon size={16} />
               </div>
               <div className="stat-num" style={{ fontSize: "1.25rem", color: "var(--text-primary)" }}>{s.value}</div>
-              <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{s.label}</div>
+              <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                {language === "hi" ? s.labelHi : s.labelEn}
+              </div>
             </div>
           ))}
         </div>
@@ -205,7 +213,7 @@ export default function ProfilePage() {
                   cursor: "pointer", transition: "all var(--dur-fast)"
                 }}
               >
-                <Icon size={16} /> {tab.label}
+                <Icon size={16} /> {language === "hi" ? tab.labelHi : tab.labelEn}
               </button>
             )
           })}
@@ -225,30 +233,35 @@ export default function ProfilePage() {
             {/* Stats Tab */}
             {activeTab === "stats" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <StatItem label="कुल अंक" value={`${stats.total_points.toLocaleString("hi-IN")} XP`} icon={Star} />
-                <StatItem label="वर्तमान स्ट्रीक" value={`${stats.current_streak} दिन`} icon={Flame} />
-                <StatItem label="सबसे लंबी स्ट्रीक" value={`${stats.longest_streak} दिन`} icon={Award} />
-                <StatItem label="कुल दिन भाग लिया" value={`${stats.total_days_participated} दिन`} icon={Calendar} />
-                <StatItem label="पिता का नाम" value={profile.father_name} icon={UserIcon} />
-                <StatItem label="माता का नाम" value={profile.mother_name} icon={UserIcon} />
-                <StatItem label="मोबाइल" value={profile.phone} icon={Phone} />
+                <StatItem label={language === "hi" ? "कुल अंक" : "Total XP"} value={`${stats.total_points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} XP`} icon={Star} />
+                <StatItem label={language === "hi" ? "वर्तमान स्ट्रीक" : "Current Streak"} value={`${stats.current_streak} ${language === "hi" ? "दिन" : "Days"}`} icon={Flame} />
+                <StatItem label={language === "hi" ? "सबसे लंबी स्ट्रीक" : "Longest Streak"} value={`${stats.longest_streak} ${language === "hi" ? "दिन" : "Days"}`} icon={Award} />
+                <StatItem label={language === "hi" ? "कुल दिन भाग लिया" : "Total Days Active"} value={`${stats.total_days_participated} ${language === "hi" ? "दिन" : "Days"}`} icon={Calendar} />
+                <StatItem label={language === "hi" ? "पिता का नाम" : "Father's Name"} value={profile.father_name} icon={UserIcon} />
+                <StatItem label={language === "hi" ? "माता का नाम" : "Mother's Name"} value={profile.mother_name} icon={UserIcon} />
+                <StatItem label={language === "hi" ? "मोबाइल" : "Phone"} value={profile.phone} icon={Phone} />
 
                 {/* Certificates */}
                 <div style={{ marginTop: "24px" }}>
-                  <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--text-secondary)" }}>प्रमाण पत्र</h3>
+                  <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--text-secondary)" }}>
+                    {language === "hi" ? "प्रमाण पत्र" : "Certificates"}
+                  </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                    {["भागीदारी", "उपलब्धि"].map((cert) => (
+                    {[
+                      { id: "participation", hi: "भागीदारी", en: "Participation" },
+                      { id: "achievement", hi: "उपलब्धि", en: "Achievement" }
+                    ].map((cert) => (
                       <button
-                        key={cert}
+                        key={cert.id}
                         className="card card-interactive"
                         style={{ padding: "16px", textAlign: "center", background: "var(--surface-overlay)", display: "flex", flexDirection: "column", alignItems: "center" }}
                       >
                         <ShieldCheck size={28} color="var(--gold)" style={{ marginBottom: "8px" }} />
                         <div className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
-                          {cert}
+                          {language === "hi" ? cert.hi : cert.en}
                         </div>
                         <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
-                          <Download size={12} /> डाउनलोड
+                          <Download size={12} /> {language === "hi" ? "डाउनलोड" : "Download"}
                         </div>
                       </button>
                     ))}
@@ -266,7 +279,7 @@ export default function ProfilePage() {
                     cursor: "pointer", transition: "all var(--dur-fast)"
                   }}
                 >
-                  <LogOut size={18} /> लॉगआउट
+                  <LogOut size={18} /> {language === "hi" ? "लॉगआउट" : "Logout"}
                 </button>
               </div>
             )}
@@ -277,7 +290,7 @@ export default function ProfilePage() {
                 {earnedBadges.length > 0 && (
                   <div style={{ marginBottom: "24px" }}>
                     <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--gold)" }}>
-                      अर्जित बैज ({earnedBadges.length})
+                      {language === "hi" ? `अर्जित बैज (${earnedBadges.length})` : `Earned Badges (${earnedBadges.length})`}
                     </h3>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
                       {earnedBadges.map((badge) => (
@@ -289,7 +302,7 @@ export default function ProfilePage() {
 
                 <div>
                   <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--text-muted)" }}>
-                    लॉक बैज ({lockedBadges.length})
+                    {language === "hi" ? `लॉक बैज (${lockedBadges.length})` : `Locked Badges (${lockedBadges.length})`}
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
                     {lockedBadges.map((badge) => (
@@ -303,7 +316,9 @@ export default function ProfilePage() {
             {/* History Tab */}
             {activeTab === "history" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <h3 className="heading-sm font-devanagari" style={{ marginBottom: "4px", color: "var(--text-secondary)" }}>गतिविधि इतिहास</h3>
+                <h3 className="heading-sm font-devanagari" style={{ marginBottom: "4px", color: "var(--text-secondary)" }}>
+                  {language === "hi" ? "गतिविधि इतिहास" : "Activity History"}
+                </h3>
                 {Array.from({ length: 10 }, (_, i) => {
                   const d = new Date();
                   d.setDate(d.getDate() - i);
@@ -325,10 +340,10 @@ export default function ProfilePage() {
                       />
                       <div style={{ flex: 1 }}>
                         <div className="font-devanagari" style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text-primary)" }}>
-                          {d.toLocaleDateString("hi-IN", { day: "numeric", month: "short" })}
+                          {d.toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { day: "numeric", month: "short" })}
                         </div>
                         <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                          {Math.floor(Math.random() * 30) + 10} आदतें पूरी
+                          {Math.floor(Math.random() * 30) + 10} {language === "hi" ? "आदतें पूरी" : "habits completed"}
                         </div>
                       </div>
                       <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--gold)", display: "flex", alignItems: "center", gap: "4px" }}>

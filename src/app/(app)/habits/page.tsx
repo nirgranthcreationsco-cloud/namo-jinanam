@@ -6,10 +6,11 @@ import { useHabitStore } from "@/store/habitStore";
 import { useAuthStore } from "@/store/authStore";
 import { CATEGORIES, QUESTIONS, getQuestionsByCategory } from "@/data/content";
 import type { Category, Question } from "@/types";
+import { useLanguageStore } from "@/store/languageStore";
 import { 
   Sunrise, Utensils, Smartphone, Feather, Leaf, 
   Gem, BookOpen, Crown, CheckCircle2, Circle, 
-  Sparkles, Save, Star
+  Sparkles, Save, Star, ChevronDown, ChevronUp
 } from "lucide-react";
 
 function getTodayStr() {
@@ -28,7 +29,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 };
 
 // ---- XP Coin animation component ----
-function XPBurst({ points, onDone }: { points: number; onDone: () => void }) {
+export function XPBurst({ points, onDone }: { points: number; onDone: () => void }) {
   return (
     <motion.div
       style={{
@@ -58,7 +59,7 @@ function XPBurst({ points, onDone }: { points: number; onDone: () => void }) {
 }
 
 // ---- Habit Card ----
-function HabitCard({
+export function HabitCard({
   question,
   date,
   onToggle,
@@ -68,6 +69,7 @@ function HabitCard({
   onToggle: (q: Question) => void;
 }) {
   const { getEntryForDate } = useHabitStore();
+  const { language } = useLanguageStore();
   const entry = getEntryForDate(question.id, date);
   const isCompleted = entry?.completed ?? false;
   const [celebrating, setCelebrating] = useState(false);
@@ -78,7 +80,26 @@ function HabitCard({
     setTimeout(() => setCelebrating(false), 600);
   };
 
+  const isBonus = question.category_id === "bonus";
+  const isSankalp = question.category_id === "sankalp";
   const Icon = CATEGORY_ICONS[question.category_id] || CheckCircle2;
+
+  // Custom styling based on category
+  const cardBorder = isCompleted
+    ? "1px solid var(--emerald)"
+    : isSankalp
+    ? "2px solid #E85D04" // Deep Saffron/Golden border
+    : isBonus
+    ? "1px solid rgba(217, 119, 6, 0.4)" // Soft gold border accent
+    : "1px solid var(--surface-border)";
+
+  const cardBg = isCompleted
+    ? "var(--surface-base)"
+    : isSankalp
+    ? "linear-gradient(135deg, rgba(232, 93, 4, 0.05), var(--surface-base))"
+    : isBonus
+    ? "rgba(245, 158, 11, 0.05)" // Soft gold accent background
+    : "var(--surface-raised)";
 
   return (
     <motion.div
@@ -87,6 +108,15 @@ function HabitCard({
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       className={`habit-card ${isCompleted ? "is-done" : ""}`}
+      style={{
+        border: cardBorder,
+        background: cardBg,
+        padding: "20px 16px",
+        borderRadius: "var(--r-lg)",
+        boxShadow: isSankalp && !isCompleted ? "0 4px 14px rgba(232, 93, 4, 0.1)" : "var(--shadow-sm)",
+        position: "relative",
+        cursor: "pointer"
+      }}
       onClick={handleToggle}
     >
       {/* Celebration sparkle */}
@@ -113,14 +143,16 @@ function HabitCard({
         <div
           style={{
             width: "48px", height: "48px", borderRadius: "12px",
-            background: isCompleted ? "var(--emerald-dim)" : "var(--surface-base)",
-            border: `1px solid ${isCompleted ? "rgba(16,185,129,0.3)" : "var(--surface-border)"}`,
+            background: isCompleted ? "var(--emerald-dim)" : isSankalp ? "rgba(232, 93, 4, 0.15)" : isBonus ? "var(--gold-dim)" : "var(--surface-base)",
+            border: `1px solid ${isCompleted ? "rgba(16,185,129,0.3)" : isSankalp ? "rgba(232, 93, 4, 0.3)" : "var(--surface-border)"}`,
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0, transition: "all var(--dur-base)"
           }}
         >
           {isCompleted ? (
             <CheckCircle2 size={24} color="var(--emerald)" />
+          ) : isBonus || isSankalp ? (
+            <span style={{ fontSize: "22px" }}>{question.icon}</span>
           ) : (
             <Icon size={24} color="var(--text-muted)" />
           )}
@@ -130,25 +162,34 @@ function HabitCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
             <div>
-              <div className="font-devanagari" style={{ fontWeight: 600, fontSize: "1rem", lineHeight: 1.3, color: isCompleted ? "var(--text-primary)" : "var(--text-primary)" }}>
-                {question.title_hi}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "1rem", lineHeight: 1.3, color: "var(--text-primary)" }}>
+                  {language === "hi" ? question.title_hi : question.title_en}
+                </div>
+                {isSankalp && (
+                  <span className="font-devanagari" style={{ fontSize: "0.6875rem", background: "#E85D04", color: "white", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>
+                    {language === "hi" ? "आजीवन" : "Lifetime"}
+                  </span>
+                )}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                {question.title_en}
-              </div>
+              {language === "hi" && (
+                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                  {question.title_en}
+                </div>
+              )}
             </div>
 
             {/* Points badge */}
             <div
-              className={isCompleted ? "chip chip-emerald" : "chip chip-brand"}
-              style={{ flexShrink: 0 }}
+              className={isCompleted ? "chip chip-emerald" : isSankalp ? "chip chip-gold" : "chip chip-brand"}
+              style={{ flexShrink: 0, fontWeight: 700, background: !isCompleted && isSankalp ? "rgba(232, 93, 4, 0.15)" : undefined, color: !isCompleted && isSankalp ? "#E85D04" : undefined }}
             >
-              +{question.points} XP
+              +{question.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} XP
             </div>
           </div>
 
           <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "8px", lineHeight: 1.5 }}>
-            {question.description_hi}
+            {language === "hi" ? question.description_hi : question.description_en}
           </p>
 
           {/* Motivational quote on completion */}
@@ -172,7 +213,10 @@ function HabitCard({
       {/* Toggle */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--surface-border)" }}>
         <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-          {isCompleted ? "पूर्ण किया गया" : "पूरा करने के लिए टैप करें"}
+          {isCompleted 
+            ? (isSankalp ? (language === "hi" ? "आजीवन संकल्प स्वीकृत" : "Lifetime pledge accepted") : (language === "hi" ? "पूर्ण किया गया" : "Completed")) 
+            : (isSankalp ? (language === "hi" ? "संकल्प लेने के लिए टैप करें" : "Tap to take lifetime vow") : (language === "hi" ? "पूरा करने के लिए टैप करें" : "Tap to mark complete"))
+          }
         </div>
         <div className={`toggle ${isCompleted ? "on" : ""}`} onClick={(e) => { e.stopPropagation(); handleToggle(); }} />
       </div>
@@ -195,6 +239,7 @@ function CategoryTab({
   onClick: () => void;
 }) {
   const Icon = CATEGORY_ICONS[category.id] || CheckCircle2;
+  const { language } = useLanguageStore();
   
   return (
     <motion.button
@@ -210,7 +255,9 @@ function CategoryTab({
     >
       <Icon size={16} color={isActive ? category.color : "currentColor"} />
       <span className="font-devanagari">
-        {category.name_hi.split("(")[0].trim()}
+        {language === "hi" 
+          ? category.name_hi.split("(")[0].trim() 
+          : category.name_en.split("(")[0].trim()}
       </span>
       {totalCount > 0 && (
         <span
@@ -233,8 +280,10 @@ export default function HabitsPage() {
   const today = getTodayStr();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [xpBursts, setXpBursts] = useState<{ id: string; points: number }[]>([]);
+
   const { toggleHabit, getEntryForDate, getDayPoints, getDayCompletionPct } = useHabitStore();
   const { updatePoints } = useAuthStore();
+  const { language } = useLanguageStore();
 
   const questions = getQuestionsByCategory(activeCategory);
   const todayPoints = getDayPoints(today);
@@ -262,7 +311,7 @@ export default function HabitsPage() {
   const activeCategories = CATEGORIES.filter((c) => c.id !== "bonus" && c.id !== "sankalp");
 
   return (
-    <div className="page">
+    <div className="page" style={{ paddingBottom: "100px" }}>
       {/* XP Animations */}
       <AnimatePresence>
         {xpBursts.map((burst) => (
@@ -286,14 +335,14 @@ export default function HabitsPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div>
             <div className="font-devanagari heading-md">
-              {new Date().toLocaleDateString("hi-IN", { weekday: "long", day: "numeric", month: "long" })}
+              {new Date().toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { weekday: "long", day: "numeric", month: "long" })}
             </div>
             <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-              आज के अंक: <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
+              {language === "hi" ? "आज के अंक: " : "Today's points: "} <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
             </div>
           </div>
           <div className={`chip ${todayPct === 100 ? "chip-emerald" : "chip-brand"}`}>
-            {todayPct}% पूर्ण
+            {todayPct}% {language === "hi" ? "पूर्ण" : "Completed"}
           </div>
         </div>
 
@@ -333,8 +382,6 @@ export default function HabitsPage() {
             transition={{ duration: 0.25, ease: "easeOut" }}
             style={{ display: "flex", flexDirection: "column", gap: "12px" }}
           >
-
-
             {/* Habit cards */}
             {questions.map((question, i) => (
               <motion.div
@@ -353,8 +400,7 @@ export default function HabitsPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-
     </div>
   );
 }
+

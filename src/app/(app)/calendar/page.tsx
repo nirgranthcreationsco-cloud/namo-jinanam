@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useHabitStore } from "@/store/habitStore";
-import { ChevronLeft, ChevronRight, Info, Calendar as CalendarIcon, Flag, Circle, CheckCircle2, CircleDashed } from "lucide-react";
+import { useLanguageStore } from "@/store/languageStore";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { getDayCompletionPct } = useHabitStore();
+  const { language } = useLanguageStore();
 
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -31,7 +33,7 @@ export default function CalendarPage() {
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="page" style={{ padding: "20px 16px 40px" }}>
+    <div className="page" style={{ padding: "20px 16px 100px" }}>
       
       {/* ── Header ── */}
       <div className="card" style={{ padding: "20px", marginBottom: "24px" }}>
@@ -40,7 +42,7 @@ export default function CalendarPage() {
             <ChevronLeft size={20} />
           </button>
           <div className="font-devanagari heading-md" style={{ color: "var(--text-primary)" }}>
-            {currentMonth.toLocaleDateString("hi-IN", { month: "long", year: "numeric" })}
+            {currentMonth.toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { month: "long", year: "numeric" })}
           </div>
           <button onClick={nextMonth} className="btn-ghost" style={{ padding: "8px", borderRadius: "50%", background: "var(--surface-overlay)", color: "var(--text-primary)", border: "none" }}>
             <ChevronRight size={20} />
@@ -49,7 +51,10 @@ export default function CalendarPage() {
 
         {/* Calendar Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "8px", marginBottom: "12px" }}>
-          {["र", "सो", "मं", "बु", "गु", "शु", "श"].map((day, i) => (
+          {(language === "hi" 
+            ? ["र", "सो", "मं", "बु", "गु", "शु", "श"] 
+            : ["S", "M", "T", "W", "T", "F", "S"]
+          ).map((day, i) => (
             <div key={i} className="font-devanagari" style={{ textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", paddingBottom: "8px" }}>
               {day}
             </div>
@@ -98,18 +103,24 @@ export default function CalendarPage() {
 
       {/* ── Legend ── */}
       <div className="card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
-        <h3 className="heading-sm font-devanagari" style={{ color: "var(--text-secondary)", marginBottom: "4px" }}>संकेत</h3>
+        <h3 className="heading-sm font-devanagari" style={{ color: "var(--text-secondary)", marginBottom: "4px" }}>
+          {language === "hi" ? "संकेत" : "Legend"}
+        </h3>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "0.8125rem", color: "var(--text-primary)" }}>
-          <div className="cal-cell cal-done" style={{ width: "20px", height: "20px" }} /> <span className="font-devanagari">100% पूर्ण</span>
+          <div className="cal-cell cal-done" style={{ width: "20px", height: "20px" }} /> 
+          <span className="font-devanagari">{language === "hi" ? "100% पूर्ण" : "100% Completed"}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "0.8125rem", color: "var(--text-primary)" }}>
-          <div className="cal-cell cal-partial" style={{ width: "20px", height: "20px" }} /> <span className="font-devanagari">50%+ पूर्ण</span>
+          <div className="cal-cell cal-partial" style={{ width: "20px", height: "20px" }} /> 
+          <span className="font-devanagari">{language === "hi" ? "50%+ पूर्ण" : "50%+ Completed"}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "0.8125rem", color: "var(--text-primary)" }}>
-          <div className="cal-cell cal-missed" style={{ width: "20px", height: "20px" }} /> <span className="font-devanagari">आंशिक / छूटा</span>
+          <div className="cal-cell cal-missed" style={{ width: "20px", height: "20px" }} /> 
+          <span className="font-devanagari">{language === "hi" ? "आंशिक / छूटा" : "Partial / Missed"}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "0.8125rem", color: "var(--text-primary)" }}>
-          <div className="cal-cell cal-today" style={{ width: "20px", height: "20px" }} /> <span className="font-devanagari">आज</span>
+          <div className="cal-cell cal-today" style={{ width: "20px", height: "20px" }} /> 
+          <span className="font-devanagari">{language === "hi" ? "आज" : "Today"}</span>
         </div>
       </div>
 
