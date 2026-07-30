@@ -74,7 +74,7 @@ export default function LandingPage() {
           <div className="chip chip-gold" style={{ marginBottom: "24px" }}>
             <Sparkles size={14} fill="currentColor" />
             <span className="font-devanagari">
-              {language === "hi" ? "चातुर्मास संस्कार अभियान २०२५" : "Chaturmas Sanskar Campaign 2025"}
+              {language === "hi" ? "चातुर्मास संस्कार अभियान २०२६" : "Chaturmas Sanskar Campaign 2026"}
             </span>
           </div>
           

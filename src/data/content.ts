@@ -1437,10 +1437,10 @@ export const INDIAN_STATES = [
 // CAMPAIGN SETTINGS
 // =====================================================
 export const CAMPAIGN_SETTINGS = {
-  name: 'चातुर्मास संस्कार अभियान 2025',
-  name_en: 'Chaturmas Sanskar Campaign 2025',
-  start_date: '2025-07-15',
-  end_date: '2025-11-12',
+  name: 'चातुर्मास संस्कार अभियान 2026',
+  name_en: 'Chaturmas Sanskar Campaign 2026',
+  start_date: '2026-07-15',
+  end_date: '2026-11-12',
   total_days: 120,
 };
 
