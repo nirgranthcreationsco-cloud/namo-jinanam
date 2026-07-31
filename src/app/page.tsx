@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
-import { ArrowRight, Sparkles, BookOpen, Heart, Trophy, MapPin } from "lucide-react";
+import { ArrowRight, Sparkles, BookOpen, Heart, Trophy, MapPin, Globe, Rocket, Flame } from "lucide-react";
 
 export default function LandingPage() {
   const { language, setLanguage } = useLanguageStore();
@@ -36,7 +36,7 @@ export default function LandingPage() {
               gap: "4px"
             }}
           >
-            🌐 {language === "hi" ? "English" : "हिन्दी"}
+            <Globe size={14} style={{ display: "inline" }} /> {language === "hi" ? "English" : "हिन्दी"}
           </button>
           
           <Link href="/login" style={{ textDecoration: "none" }}>
@@ -94,25 +94,23 @@ export default function LandingPage() {
           
           <p className="body-lg font-devanagari text-muted" style={{ marginBottom: "40px", maxWidth: "480px", margin: "0 auto 40px" }}>
             {language === "hi"
-              ? "आधुनिक जीवनशैली में जैन धर्म के शाश्वत मूल्यों को अपनाएं। अपनी दैनिक साधना को ट्रैक करें, बैज जीतें और आध्यात्मिक उन्नति की ओर बढ़ें।"
-              : "Embrace the eternal values of Jainism in modern lifestyle. Track your daily sadhana, earn badges, and progress towards spiritual growth."
+              ? "आधुनिक जीवनशैली में जैन धर्म के शाश्वत मूल्यों को अपनाएं। अपनी दैनिक साधना को ट्रैक करें और आध्यात्मिक उन्नति की ओर बढ़ें।"
+              : "Embrace the eternal values of Jainism in modern lifestyle. Track your daily sadhana and progress towards spiritual growth."
             }
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
             <Link href="/signup" style={{ textDecoration: "none", width: "100%", maxWidth: "300px" }}>
               <button className="btn btn-primary" style={{ width: "100%", padding: "16px 32px", fontSize: "1.125rem", borderRadius: "var(--r-xl)", background: "linear-gradient(135deg, var(--brand), var(--brand-light))", boxShadow: "0 8px 24px var(--brand-glow)" }}>
-                <span className="font-devanagari" style={{ fontWeight: 700 }}>
-                  {language === "hi" ? "अभी रजिस्टर करें 🚀" : "Register Now 🚀"}
-                </span>
+                  {language === "hi" ? "अभी रजिस्टर करें " : "Register Now "} <Rocket size={18} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
                 <ArrowRight size={20} />
               </button>
             </Link>
             <div className="font-devanagari text-dimmed" style={{ fontSize: "0.875rem", fontWeight: 500 }}>
               {language === "hi"
-                ? "युवाओं की नई आध्यात्मिक क्रांति का हिस्सा बनें! 🔥"
-                : "Become part of the new spiritual revolution for youth! 🔥"
-              }
+                ? "युवाओं की नई आध्यात्मिक क्रांति का हिस्सा बनें!"
+                : "Become part of the new spiritual revolution for youth!"
+              } <Flame size={14} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
             </div>
           </div>
         </motion.div>
@@ -157,24 +155,6 @@ export default function LandingPage() {
                 {language === "hi"
                   ? "आजीवन व्यसन मुक्ति और सात्विक आहार के दृढ़ संकल्प लें।"
                   : "Make resolute vows for lifelong addiction-free living and pure diet."
-                }
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 3 */}
-          <motion.div whileHover={{ y: -4 }} className="card" style={{ padding: "24px", display: "flex", gap: "16px", background: "var(--surface-base)" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--gold-dim)", color: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Trophy size={24} />
-            </div>
-            <div>
-              <h3 className="heading-md font-devanagari" style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                {language === "hi" ? "उपलब्धि बैज" : "Achievement Badges"}
-              </h3>
-              <p className="body-sm font-devanagari text-muted">
-                {language === "hi"
-                  ? "अपनी निरंतर साधना के लिए विशेष आध्यात्मिक बैज और XP अर्जित करें।"
-                  : "Earn special spiritual badges and XP points for your consistent sadhana."
                 }
               </p>
             </div>

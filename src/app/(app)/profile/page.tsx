@@ -5,11 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { BADGES, LEVELS, getLevelByXP, getXPProgressPercentage } from "@/data/content";
-import type { Badge } from "@/types";
 import { 
-  BarChart2, Medal, History, LogOut, 
-  Award, Flame, Calendar, Star, 
-  Download, Lock, ShieldCheck, User as UserIcon,
+  BarChart2, History, LogOut, 
+  Award, Flame, Calendar, Star,
+  Download, ShieldCheck, User as UserIcon,
   MapPin, Phone
 } from "lucide-react";
 
@@ -25,13 +24,8 @@ export default function ProfilePage() {
   const nextLevel = LEVELS.find((l) => l.level === level.level + 1);
   const xpForNext = nextLevel ? nextLevel.min_xp - stats.total_points : 0;
 
-  const earnedBadgeIds = new Set(stats.badges ?? []);
-  const earnedBadges = BADGES.filter((b) => earnedBadgeIds.has(b.id));
-  const lockedBadges = BADGES.filter((b) => !earnedBadgeIds.has(b.id));
-
   const TABS = [
     { id: "stats", labelHi: "आँकड़े", labelEn: "Stats", icon: BarChart2 },
-    { id: "badges", labelHi: "बैज", labelEn: "Badges", icon: Medal },
     { id: "history", labelHi: "इतिहास", labelEn: "History", icon: History },
   ] as const;
 
@@ -50,51 +44,6 @@ export default function ProfilePage() {
         <div className="font-devanagari" style={{ fontWeight: 600, color: "var(--text-primary)" }}>{value}</div>
       </div>
     </div>
-  );
-
-  const BadgeCard = ({ badge, earned }: { badge: Badge; earned: boolean }) => (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="card"
-      style={{
-        padding: "20px 16px", textAlign: "center",
-        background: earned ? "var(--surface-raised)" : "var(--surface-base)",
-        borderColor: earned ? `rgba(212,175,55,0.4)` : "var(--surface-border)",
-        opacity: earned ? 1 : 0.5,
-        filter: earned ? "none" : "grayscale(100%)",
-        display: "flex", flexDirection: "column", alignItems: "center"
-      }}
-    >
-      <div
-        style={{
-          width: "56px", height: "56px", borderRadius: "16px",
-          background: earned ? `var(--gold-dim)` : "var(--surface-overlay)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: "12px", color: earned ? "var(--gold)" : "var(--text-muted)"
-        }}
-      >
-        <Medal size={28} />
-      </div>
-      <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: "4px" }}>
-        {language === "hi" ? badge.name_hi : badge.name_en}
-      </div>
-      <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-        {language === "hi" ? badge.description_hi : badge.description_en}
-      </div>
-      {!earned && (
-        <div style={{ marginTop: "12px", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-          <Lock size={12} /> {language === "hi" ? "लॉक" : "Locked"}
-        </div>
-      )}
-      {earned && badge.is_rare && (
-        <div
-          className="chip chip-gold"
-          style={{ marginTop: "12px" }}
-        >
-          <Star size={10} fill="currentColor" /> {language === "hi" ? "दुर्लभ" : "Rare"}
-        </div>
-      )}
-    </motion.div>
   );
 
   return (
@@ -123,17 +72,7 @@ export default function ProfilePage() {
             >
               {profile.full_name.charAt(0)}
             </div>
-            <div
-              style={{
-                position: "absolute", bottom: "-4px", right: "-4px",
-                width: "28px", height: "28px", borderRadius: "50%",
-                background: "var(--surface-bg)", border: "2px solid var(--surface-bg)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--gold)"
-              }}
-            >
-              <Award size={16} fill="currentColor" />
-            </div>
+ 
           </div>
 
           {/* Info */}
@@ -142,9 +81,7 @@ export default function ProfilePage() {
             <div className="font-devanagari" style={{ fontSize: "0.875rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px", marginTop: "4px" }}>
               <MapPin size={14} /> {profile.city}, {profile.state}
             </div>
-            <div className="chip chip-gold" style={{ marginTop: "12px" }}>
-              <Award size={14} /> {language === "hi" ? level.name_hi : level.name_en}
-            </div>
+ 
           </div>
         </div>
 
@@ -174,11 +111,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Quick Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginTop: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginTop: "24px" }}>
           {[
             { value: stats.current_streak, labelHi: "स्ट्रीक", labelEn: "Streak", icon: Flame, color: "var(--brand)" },
             { value: stats.total_days_participated, labelHi: "दिन", labelEn: "Days", icon: Calendar, color: "var(--emerald)" },
-            { value: earnedBadges.length, labelHi: "बैज", labelEn: "Badges", icon: Medal, color: "var(--gold)" },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", padding: "12px", background: "var(--surface-overlay)", borderRadius: "var(--r-lg)", border: "1px solid var(--surface-border)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: s.color, marginBottom: "4px" }}>
@@ -284,34 +220,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Badges Tab */}
-            {activeTab === "badges" && (
-              <div>
-                {earnedBadges.length > 0 && (
-                  <div style={{ marginBottom: "24px" }}>
-                    <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--gold)" }}>
-                      {language === "hi" ? `अर्जित बैज (${earnedBadges.length})` : `Earned Badges (${earnedBadges.length})`}
-                    </h3>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                      {earnedBadges.map((badge) => (
-                        <BadgeCard key={badge.id} badge={badge} earned />
-                      ))}
-                    </div>
-                  </div>
-                )}
 
-                <div>
-                  <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--text-muted)" }}>
-                    {language === "hi" ? `लॉक बैज (${lockedBadges.length})` : `Locked Badges (${lockedBadges.length})`}
-                  </h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                    {lockedBadges.map((badge) => (
-                      <BadgeCard key={badge.id} badge={badge} earned={false} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* History Tab */}
             {activeTab === "history" && (

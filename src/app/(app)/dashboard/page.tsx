@@ -9,8 +9,7 @@ import { useLanguageStore } from "@/store/languageStore";
 import { LEVELS, getLevelByXP } from "@/data/content";
 import { 
   Moon, Sunrise, Sun, Sunset, 
-  Flame, CalendarDays, Award, 
-  CheckCircle2, ChevronRight, Sparkles, Crown
+  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles
 } from "lucide-react";
 
 function getGreeting(language: "hi" | "en") {
@@ -117,7 +116,7 @@ export default function DashboardPage() {
           </div>
           <h1 className="font-devanagari" style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
             {profile?.full_name?.split(" ")[0] ?? (language === "hi" ? "साधक" : "Seeker")}
-            {language === "hi" ? " जी 🙏" : ""}
+            {language === "hi" ? " जी" : ""}
           </h1>
           <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "2px" }}>
             {greeting.sub}
@@ -177,8 +176,8 @@ export default function DashboardPage() {
               {todayPct === 0
                 ? (language === "hi" ? "साधना शुरू करें!" : "Start your sadhana!")
                 : todayPct === 100
-                ? (language === "hi" ? "शत-प्रतिशत! वाह! 🎉" : "Perfect day! 🎉")
-                : (language === "hi" ? "बढ़िया जा रहे हैं 👍" : "Keep going! 👍")
+                ? (language === "hi" ? <><span className="font-devanagari">शत-प्रतिशत! वाह!</span> <PartyPopper size={16} style={{display:'inline'}}/></> : <><span>Perfect day!</span> <PartyPopper size={16} style={{display:'inline'}}/></>)
+                : (language === "hi" ? <><span className="font-devanagari">बढ़िया जा रहे हैं</span> <ThumbsUp size={16} style={{display:'inline'}}/></> : <><span>Keep going!</span> <ThumbsUp size={16} style={{display:'inline'}}/></>)
               }
             </div>
 
@@ -201,9 +200,9 @@ export default function DashboardPage() {
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}
       >
         {[
-          { icon: Flame, iconBg: "rgba(200,80,20,0.1)", iconColor: "#C85010", value: stats?.current_streak ?? 0, labelHi: "स्ट्रीक", labelEn: "Streak", unit: language === "hi" ? "🔥" : "🔥" },
-          { icon: Award, iconBg: "var(--gold-dim)", iconColor: "var(--gold)", value: stats?.total_points ?? 0, labelHi: "कुल अंक", labelEn: "Total XP", unit: "⭐" },
-          { icon: CalendarDays, iconBg: "var(--emerald-dim)", iconColor: "var(--emerald)", value: stats?.total_days_participated ?? 0, labelHi: "कुल दिन", labelEn: "Days", unit: "📅" },
+          { icon: Flame, iconBg: "rgba(200,80,20,0.1)", iconColor: "#C85010", value: stats?.current_streak ?? 0, labelHi: "स्ट्रीक", labelEn: "Streak" },
+          { icon: Award, iconBg: "var(--gold-dim)", iconColor: "var(--gold)", value: stats?.total_points ?? 0, labelHi: "कुल अंक", labelEn: "Total XP" },
+          { icon: CalendarDays, iconBg: "var(--emerald-dim)", iconColor: "var(--emerald)", value: stats?.total_days_participated ?? 0, labelHi: "कुल दिन", labelEn: "Days" },
         ].map((stat, i) => (
           <div key={i} className="card" style={{ padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" }}>
             <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: stat.iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>

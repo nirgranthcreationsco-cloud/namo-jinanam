@@ -10,7 +10,7 @@ import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown } from "luc
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
-  { href: "/habits", icon: CheckSquare, label: "Habits", labelHi: "आदतें" },
+  { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
   { href: "/bonus", icon: Crown, label: "Bonus", labelHi: "बोनस" },
   { href: "/leaderboard", icon: Trophy, label: "Rank", labelHi: "रैंकिंग" },
   { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
@@ -50,8 +50,7 @@ function BottomNav() {
                   style={{
                     position: "absolute",
                     top: 2,
-                    left: "50%",
-                    transform: "translateX(-50%)",
+                    left: "calc(50% - 20px)",
                     width: "40px",
                     height: "32px",
                     background: "var(--brand-dim)",
@@ -69,8 +68,7 @@ function BottomNav() {
                   style={{
                     position: "absolute",
                     bottom: 0,
-                    left: "50%",
-                    transform: "translateX(-50%)",
+                    left: "calc(50% - 2px)",
                     width: "4px",
                     height: "4px",
                     borderRadius: "50%",
@@ -116,7 +114,7 @@ function TopBar() {
 
   const pageTitleHi: Record<string, string> = {
     "/dashboard": "मुख्य पृष्ठ",
-    "/habits": "आदतें",
+    "/habits": "नियम",
     "/bonus": "बोनस",
     "/leaderboard": "रैंकिंग",
     "/profile": "प्रोफ़ाइल",
@@ -127,7 +125,7 @@ function TopBar() {
 
   const pageTitleEn: Record<string, string> = {
     "/dashboard": "Dashboard",
-    "/habits": "Habits",
+    "/habits": "Niyam",
     "/bonus": "Bonus",
     "/leaderboard": "Leaderboard",
     "/profile": "Profile",
@@ -196,7 +194,7 @@ function TopBar() {
                     lineHeight: 1
                   }}
                 >
-                  {language === "hi" ? "जय जिनेन्द्र 🙏" : "Jai Jinendra 🙏"}
+                  {language === "hi" ? "जय जिनेन्द्र" : "Jai Jinendra"}
                 </div>
                 <div
                   className="font-devanagari"
@@ -279,20 +277,7 @@ function TopBar() {
             {language === "hi" ? "EN" : "अ"}
           </button>
 
-          {/* Avatar */}
-          <Link href="/profile" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                width: "34px", height: "34px", borderRadius: "10px",
-                background: "linear-gradient(135deg, var(--brand-light), var(--lotus))",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "white", fontWeight: 700, fontSize: "14px",
-                boxShadow: "0 2px 8px var(--brand-glow)"
-              }}
-            >
-              {profile?.full_name?.charAt(0) ?? "?"}
-            </div>
-          </Link>
+          
         </div>
       </div>
     </header>
@@ -325,7 +310,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             duration: 0.22,
             ease: [0.16, 1, 0.3, 1]
           }}
-          style={{ minHeight: "calc(100dvh - 144px)", willChange: "opacity, transform" }}
+          style={{ minHeight: "calc(100dvh - 144px)" }}
         >
           {children}
         </motion.main>

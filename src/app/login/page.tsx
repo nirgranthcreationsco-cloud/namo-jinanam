@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -75,7 +75,7 @@ export default function LoginPage() {
             gap: "4px"
           }}
         >
-          🌐 {language === "hi" ? "English" : "हिन्दी"}
+          <Globe size={14} style={{ display: "inline" }} /> {language === "hi" ? "English" : "हिन्दी"}
         </button>
       </div>
 

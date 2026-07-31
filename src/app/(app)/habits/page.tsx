@@ -6,6 +6,7 @@ import { useHabitStore } from "@/store/habitStore";
 import { useAuthStore } from "@/store/authStore";
 import { CATEGORIES, QUESTIONS, getQuestionsByCategory } from "@/data/content";
 import type { Category, Question } from "@/types";
+import { IconResolver } from "@/components/IconResolver";
 import { useLanguageStore } from "@/store/languageStore";
 import { 
   Sunrise, Utensils, Smartphone, Feather, Leaf, 
@@ -152,7 +153,7 @@ export function HabitCard({
           {isCompleted ? (
             <CheckCircle2 size={24} color="var(--emerald)" />
           ) : isBonus || isSankalp ? (
-            <span style={{ fontSize: "22px" }}>{question.icon}</span>
+            <IconResolver iconName={question.icon} size={24} color={isSankalp ? "#E85D04" : "var(--gold)"} />
           ) : (
             <Icon size={24} color="var(--text-muted)" />
           )}
@@ -249,7 +250,7 @@ function CategoryTab({
       style={{
         display: "flex", alignItems: "center", gap: "8px",
         borderColor: isActive ? category.color : "transparent",
-        color: isActive ? "var(--text-primary)" : "var(--text-muted)",
+        color: isActive ? "#fff" : "var(--text-muted)",
         position: "relative"
       }}
     >

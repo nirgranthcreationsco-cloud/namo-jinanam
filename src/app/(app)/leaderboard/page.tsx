@@ -243,61 +243,14 @@ export default function LeaderboardPage() {
 
   return (
     <div className="page" style={{ padding: "16px 16px 100px" }}>
-      {/* Filter tabs */}
-      <div className="no-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "12px", marginBottom: "8px" }}>
-        {FILTERS.map((f) => {
-          const Icon = f.icon;
-          const isActive = activeFilter === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className="font-devanagari"
-              style={{
-                flexShrink: 0, display: "flex", alignItems: "center", gap: "8px",
-                padding: "8px 16px", borderRadius: "var(--r-pill)",
-                fontSize: "0.875rem", fontWeight: 600, transition: "all var(--dur-fast)",
-                background: isActive ? "var(--brand)" : "var(--surface-raised)",
-                color: isActive ? "#fff" : "var(--text-secondary)",
-                border: `1px solid ${isActive ? "var(--brand)" : "var(--surface-border)"}`,
-                boxShadow: isActive ? "var(--shadow-glow)" : "none",
-                cursor: "pointer"
-              }}
-            >
-              <Icon size={16} /> {language === "hi" ? f.labelHi : f.labelEn}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Period tabs */}
-      <div
-        style={{
-          display: "flex", gap: "4px", padding: "4px", borderRadius: "16px",
-          background: "var(--surface-overlay)", marginBottom: "24px"
-        }}
-      >
-        {PERIODS.map((p) => {
-          const isActive = activePeriod === p.id;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setActivePeriod(p.id)}
-              className="font-devanagari"
-              style={{
-                flex: 1, padding: "8px", borderRadius: "12px",
-                fontSize: "0.8125rem", fontWeight: 600, transition: "all var(--dur-fast)",
-                background: isActive ? "var(--surface-raised)" : "transparent",
-                color: isActive ? "var(--text-primary)" : "var(--text-muted)",
-                border: "1px solid",
-                borderColor: isActive ? "var(--surface-border)" : "transparent",
-                cursor: "pointer"
-              }}
-            >
-              {language === "hi" ? p.labelHi : p.labelEn}
-            </button>
-          );
-        })}
+      {/* Title */}
+      <div style={{ textAlign: "center", marginBottom: "24px", padding: "12px", background: "var(--surface-overlay)", borderRadius: "var(--r-xl)", border: "1px solid var(--surface-border)" }}>
+        <h1 className="heading-lg font-devanagari" style={{ color: "var(--brand)", marginBottom: "4px" }}>
+          {language === "hi" ? "आयु वर्ग रैंकिंग" : "Age Group Ranking"}
+        </h1>
+        <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+          {language === "hi" ? "समान आयु वर्ग के प्रतिभागियों के साथ आपकी रैंकिंग" : "Your ranking among participants in your age group"}
+        </p>
       </div>
 
       {/* Podium (top 3) */}

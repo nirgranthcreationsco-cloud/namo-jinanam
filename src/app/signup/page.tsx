@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -271,7 +271,7 @@ export default function SignupPage() {
               cursor: "pointer"
             }}
           >
-            🌐 {language === "hi" ? "EN" : "हिं"}
+            <Globe size={14} style={{ display: "inline" }} /> {language === "hi" ? "EN" : "हिं"}
           </button>
         </div>
       </div>

@@ -45,8 +45,33 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased">
-        {children}
+      <body className="antialiased" style={{ 
+        backgroundColor: "#EFE8DD", 
+        height: "100dvh", 
+        overflow: "hidden", 
+        display: "flex", 
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "12px"
+      }}>
+        <div style={{
+          width: "100%",
+          maxWidth: "480px",
+          height: "100%",
+          maxHeight: "900px",
+          backgroundColor: "var(--surface-bg)",
+          borderRadius: "32px",
+          boxShadow: "0 24px 80px rgba(92, 26, 16, 0.15), 0 0 0 8px rgba(255, 255, 255, 0.6)",
+          overflow: "hidden",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          transform: "translateZ(0)"
+        }}>
+          <div style={{ flex: 1, overflowX: "hidden", overflowY: "auto" }}>
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );

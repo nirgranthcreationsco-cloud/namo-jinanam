@@ -8,7 +8,7 @@ import { useLanguageStore } from "@/store/languageStore";
 import { QUESTIONS } from "@/data/content";
 import type { Question } from "@/types";
 import { HabitCard, XPBurst } from "../habits/page";
-import { ChevronDown, ChevronUp, Star, Shield, Trophy, Lock } from "lucide-react";
+import { ChevronDown, ChevronUp, Star, Shield, Trophy, Lock, Landmark } from "lucide-react";
 
 export default function BonusPage() {
   const [xpBursts, setXpBursts] = useState<{ id: string; points: number }[]>([]);
@@ -87,7 +87,7 @@ export default function BonusPage() {
               style={{ maxWidth: "420px", background: "var(--surface-base)", padding: "28px 24px", border: "2px solid #E85D04", borderRadius: "var(--r-xl)", boxShadow: "var(--shadow-lg)" }}
             >
               <h3 className="font-devanagari heading-lg" style={{ color: "#E85D04", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>🛕</span> {language === "hi" ? "आजीवन संकल्प प्रतिज्ञा" : "Lifetime Vow Pledge"}
+                <Landmark size={24} /> {language === "hi" ? "आजीवन संकल्प प्रतिज्ञा" : "Lifetime Vow Pledge"}
               </h3>
               <div className="font-devanagari" style={{ background: "rgba(232, 93, 4, 0.06)", padding: "16px", borderRadius: "var(--r-md)", borderLeft: "4px solid #E85D04", marginBottom: "20px" }}>
                 <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)" }}>
@@ -141,7 +141,7 @@ export default function BonusPage() {
                 <Lock size={32} color="var(--gold)" />
               </div>
               <h3 className="font-devanagari heading-lg" style={{ color: "var(--gold)", marginBottom: "12px" }}>
-                {language === "hi" ? "🔒 यह विकल्प अभी बंद है" : "🔒 This Option is Locked"}
+                {language === "hi" ? "यह विकल्प अभी बंद है" : "This Option is Locked"}
               </h3>
               <p className="font-devanagari body-md" style={{ color: "var(--text-primary)", fontWeight: 600, marginBottom: "8px" }}>
                 {language === "hi" ? "चातुर्मास विशेष बोनस उपलब्धियाँ" : "Chaturmas Special Bonus Achievements"}
@@ -194,7 +194,7 @@ export default function BonusPage() {
           >
             <div>
               <h2 className="heading-md font-devanagari" style={{ color: "var(--gold)", display: "flex", alignItems: "center", gap: "8px", fontWeight: 700 }}>
-                {language === "hi" ? "🌟 चातुर्मास विशेष बोनस उपलब्धियाँ" : "🌟 Chaturmas Special Bonus"}
+                <Star size={20} fill="currentColor" /> {language === "hi" ? "चातुर्मास विशेष बोनस उपलब्धियाँ" : "Chaturmas Special Bonus"}
               </h2>
               <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
                 {language === "hi" 
@@ -235,7 +235,7 @@ export default function BonusPage() {
           >
             <div>
               <h2 className="heading-md font-devanagari" style={{ color: "#E85D04", display: "flex", alignItems: "center", gap: "8px", fontWeight: 700 }}>
-                {language === "hi" ? "🛕 आजीवन नियम (Lifetime Sankalp)" : "🛕 Lifetime Vows (Sankalp)"}
+                <Landmark size={20} /> {language === "hi" ? "आजीवन नियम (Lifetime Sankalp)" : "Lifetime Vows (Sankalp)"}
               </h2>
               <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
                 {language === "hi"
