@@ -8,10 +8,11 @@ import { CATEGORIES, QUESTIONS, getQuestionsByCategory } from "@/data/content";
 import type { Category, Question } from "@/types";
 import { IconResolver } from "@/components/IconResolver";
 import { useLanguageStore } from "@/store/languageStore";
+import { supabase } from "@/lib/supabase";
 import { 
   Sunrise, Utensils, Smartphone, Feather, Leaf, 
   Gem, BookOpen, Crown, CheckCircle2, Circle, 
-  Sparkles, Save, Star, ChevronDown, ChevronUp
+  Sparkles, Save, Star, ChevronDown, ChevronUp, Square, CheckSquare, ChevronRight
 } from "lucide-react";
 
 function getTodayStr() {
@@ -219,7 +220,16 @@ export function HabitCard({
             : (isSankalp ? (language === "hi" ? "संकल्प लेने के लिए टैप करें" : "Tap to take lifetime vow") : (language === "hi" ? "पूरा करने के लिए टैप करें" : "Tap to mark complete"))
           }
         </div>
-        <div className={`toggle ${isCompleted ? "on" : ""}`} onClick={(e) => { e.stopPropagation(); handleToggle(); }} />
+        <div 
+          onClick={(e) => { e.stopPropagation(); handleToggle(); }} 
+          style={{ cursor: "pointer", color: isCompleted ? "var(--emerald)" : "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          {question.input_type === 'radio' ? (
+            isCompleted ? <CheckCircle2 size={26} /> : <Circle size={26} />
+          ) : (
+            isCompleted ? <CheckSquare size={26} /> : <Square size={26} />
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -282,8 +292,8 @@ export default function HabitsPage() {
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [xpBursts, setXpBursts] = useState<{ id: string; points: number }[]>([]);
 
-  const { toggleHabit, getEntryForDate, getDayPoints, getDayCompletionPct } = useHabitStore();
-  const { updatePoints } = useAuthStore();
+  const { toggleHabit, getEntryForDate, getDayEntries, getDayPoints, getDayCompletionPct } = useHabitStore();
+  const { user, stats, updatePoints } = useAuthStore();
   const { language } = useLanguageStore();
 
   const questions = getQuestionsByCategory(activeCategory);
@@ -309,7 +319,13 @@ export default function HabitsPage() {
     return getQuestionsByCategory(catId).filter((q) => getEntryForDate(q.id, today)?.completed).length;
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const activeCategories = CATEGORIES.filter((c) => c.id !== "bonus" && c.id !== "sankalp");
+  const currentCategoryIndex = activeCategories.findIndex(c => c.id === activeCategory);
+  const nextCategory = currentCategoryIndex >= 0 && currentCategoryIndex < activeCategories.length - 1 
+    ? activeCategories[currentCategoryIndex + 1] 
+    : null;
 
   return (
     <div className="page" style={{ paddingBottom: "100px" }}>
@@ -328,7 +344,7 @@ export default function HabitsPage() {
       <div
         style={{
           position: "sticky", top: "64px", zIndex: 40,
-          background: "rgba(9,9,11,0.85)", backdropFilter: "blur(24px)",
+          background: "rgba(253, 251, 247, 0.9)", backdropFilter: "blur(24px)",
           padding: "16px 16px 12px", borderBottom: "1px solid var(--surface-border)"
         }}
       >
@@ -398,6 +414,100 @@ export default function HabitsPage() {
                 />
               </motion.div>
             ))}
+
+            {/* Next Category Button */}
+            {nextCategory ? (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => {
+                  setActiveCategory(nextCategory.id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="btn btn-primary font-devanagari"
+                style={{
+                  marginTop: "16px",
+                  width: "100%",
+                  padding: "16px",
+                  background: "var(--surface-raised)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--surface-border)",
+                  boxShadow: "var(--shadow-sm)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}
+              >
+                <span>
+                  {language === "hi" ? "अगली श्रेणी: " : "Next: "}
+                  {language === "hi" ? nextCategory.name_hi : nextCategory.name_en}
+                </span>
+                <ChevronRight size={20} />
+              </motion.button>
+            ) : (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={async () => {
+                  setIsSubmitting(true);
+                  try {
+                    const userId = user?.id;
+                    if (userId) {
+                      const dayEntries = getDayEntries(today);
+                      const currentDayPoints = getDayPoints(today);
+
+                      // 1. Sync entries to Supabase
+                      if (dayEntries.length > 0) {
+                        const rows = dayEntries.map((e) => ({
+                          user_id: userId,
+                          question_id: e.questionId,
+                          date: today,
+                          completed: true,
+                        }));
+                        await supabase.from("habit_entries").upsert(rows, { onConflict: "user_id,question_id,date" });
+                      }
+
+                      // 2. Sync user stats total points
+                      const totalPts = stats?.total_points ?? currentDayPoints;
+                      await supabase.from("user_stats").upsert({
+                        user_id: userId,
+                        total_points: totalPts,
+                        current_streak: stats?.current_streak ?? 1,
+                        best_streak: stats?.best_streak ?? 1,
+                        updated_at: new Date().toISOString(),
+                      });
+                    }
+                  } catch (e) {
+                    console.warn("Supabase habit sync notice", e);
+                  } finally {
+                    setIsSubmitting(false);
+                    alert(language === "hi" ? "नियम सफलतापूर्वक क्लाउड पर सेव हो गए!" : "Niyams successfully synced to cloud!");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+                disabled={isSubmitting}
+                className="btn btn-primary font-devanagari"
+                style={{
+                  marginTop: "16px",
+                  width: "100%",
+                  padding: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  boxShadow: "var(--shadow-glow)"
+                }}
+              >
+                {isSubmitting ? (
+                  <span className="spinner" style={{ width: "20px", height: "20px", border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <>
+                    <span>{language === "hi" ? "नियम सेव करें" : "Submit Niyams"}</span>
+                    <CheckCircle2 size={20} />
+                  </>
+                )}
+              </motion.button>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

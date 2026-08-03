@@ -6,10 +6,10 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useHabitStore } from "@/store/habitStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { LEVELS, getLevelByXP } from "@/data/content";
+
 import { 
   Moon, Sunrise, Sun, Sunset, 
-  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles
+  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine
 } from "lucide-react";
 
 function getGreeting(language: "hi" | "en") {
@@ -96,7 +96,7 @@ export default function DashboardPage() {
   const GreetingIcon = greeting.icon;
 
   const todayPct = getDayCompletionPct(today);
-  const level = stats ? getLevelByXP(stats.total_points) : LEVELS[0];
+
 
   return (
     <div className="page" style={{ padding: "20px 16px 100px", display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -131,14 +131,8 @@ export default function DashboardPage() {
             display: "flex", flexDirection: "column", alignItems: "center", gap: "1px",
             boxShadow: "0 2px 8px rgba(160,98,42,0.1)"
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <Crown size={12} color="var(--gold)" />
-              <span className="font-devanagari" style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                {language === "hi" ? "स्तर" : "Level"}
-              </span>
-            </div>
             <span className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 700, color: "#7A4A15" }}>
-              {language === "hi" ? level.name_hi : level.name_en}
+              {language === "hi" ? "प्रोफ़ाइल" : "Profile"}
             </span>
           </div>
         </Link>
@@ -246,12 +240,12 @@ export default function DashboardPage() {
             background: "linear-gradient(140deg, rgba(92,26,16,0.06) 0%, rgba(92,26,16,0.02) 100%)",
             borderColor: "rgba(92,26,16,0.15)"
           }}>
-            <Award size={22} color="var(--brand)" style={{ marginBottom: "8px" }} />
+            <TreePine size={22} color="var(--brand)" style={{ marginBottom: "8px" }} />
             <div className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>
-              {language === "hi" ? "रैंकिंग" : "Leaderboard"}
+              {language === "hi" ? "संयम वन" : "Forest"}
             </div>
             <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-              {language === "hi" ? "अपनी रैंक देखें" : "Check your rank"}
+              {language === "hi" ? "अपनी प्रगति देखें" : "Grow your tree"}
             </div>
           </div>
         </Link>

@@ -5,53 +5,93 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { ArrowRight, Globe } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const { setUser, setProfile, setStats } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || !password) return;
+    if (!identifier || !password) return;
 
-    setUser({ id: "mock-id", email: `${phone}@namo.com` });
+    const isEmail = identifier.includes("@");
+    const emailStr = isEmail ? identifier : `${identifier.replace(/\D/g, "")}@namojinanam.com`;
+    const phoneStr = isEmail ? "" : identifier;
+
+    let userId = "user-" + Date.now();
+    let fetchedProfile: any = null;
+    let fetchedStats: any = null;
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: emailStr,
+        password: password,
+      });
+
+      if (authData?.user) {
+        userId = authData.user.id;
+
+        // Fetch user profile from Supabase Cloud
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (prof) fetchedProfile = prof;
+
+        // Fetch user stats from Supabase Cloud
+        const { data: st } = await supabase
+          .from("user_stats")
+          .select("*")
+          .eq("user_id", userId)
+          .single();
+
+        if (st) fetchedStats = st;
+      }
+    } catch (e) {
+      console.warn("Supabase auth login fallback", e);
+    }
+
+    setUser({ id: userId, email: emailStr });
     setProfile({
-      id: "mock-id",
-      user_id: "mock-id",
-      full_name: language === "hi" ? "अमित जैन" : "Amit Jain",
-      phone: phone,
-      gender: "male",
-      age_group: "adult",
-      dob: "2000-01-01",
-      email: `${phone}@namo.com`,
-      address: "Mumbai",
-      state: "Maharashtra",
-      city: "Mumbai",
+      id: userId,
+      user_id: userId,
+      full_name: fetchedProfile?.full_name || (language === "hi" ? "अमित जैन" : "Amit Jain"),
+      phone: fetchedProfile?.phone || phoneStr,
+      gender: fetchedProfile?.gender || "male",
+      age_group: fetchedProfile?.age_group || "24-40",
+      dob: fetchedProfile?.dob || "2000-01-01",
+      email: emailStr,
+      address: fetchedProfile?.city || "Mumbai",
+      state: "",
+      city: fetchedProfile?.city || "Mumbai",
       temple_id: "temple_01",
-      father_name: language === "hi" ? "श्री रमेश जैन" : "Shri Ramesh Jain",
-      mother_name: language === "hi" ? "श्रीमती कमला जैन" : "Smt. Kamla Jain",
+      father_name: fetchedProfile?.father_name || (language === "hi" ? "श्री रमेश जैन" : "Shri Ramesh Jain"),
+      mother_name: fetchedProfile?.mother_name || (language === "hi" ? "श्रीमती कमला जैन" : "Smt. Kamla Jain"),
       role: "participant",
       created_at: new Date().toISOString()
     });
+
     setStats({
-      id: "mock-stats-id",
-      user_id: "mock-id",
-      total_points: 450,
+      id: "stats-" + userId,
+      user_id: userId,
+      total_points: fetchedStats?.total_points ?? 0,
       today_points: 0,
-      current_streak: 3,
-      longest_streak: 5,
-      total_days_participated: 12,
-      level: 2,
-      level_name_hi: "उपासक",
-      level_name_en: "Upasak",
-      completion_percentage: 45,
+      current_streak: fetchedStats?.current_streak ?? 0,
+      longest_streak: fetchedStats?.best_streak ?? 0,
+      best_streak: fetchedStats?.best_streak ?? 0,
+      total_days_participated: 0,
+      completion_percentage: 0,
       badges: []
     });
+
     router.replace("/dashboard");
   };
 
@@ -144,16 +184,13 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
               <label className="field-label font-devanagari">
-                {language === "hi" ? "मोबाइल नंबर (Mobile Number)" : "Mobile Number"}
+                {language === "hi" ? "ईमेल या मोबाइल नंबर (Email or Mobile Number)" : "Email or Mobile Number"}
               </label>
               <input
-                type="tel"
-                value={phone}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  if (val.length <= 10) setPhone(val);
-                }}
-                placeholder={language === "hi" ? "अपना 10 अंकों का मोबाइल नंबर दर्ज करें" : "Enter your 10-digit mobile number"}
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder={language === "hi" ? "अपना ईमेल या मोबाइल नंबर दर्ज करें" : "Enter your email or mobile number"}
                 className="field"
                 required
                 style={{ fontSize: "1rem" }}
@@ -194,7 +231,7 @@ export default function LoginPage() {
             </div>
             <button
               onClick={() => {
-                setPhone("9876543210");
+                setIdentifier("9876543210");
                 setPassword("password123");
                 setTimeout(() => handleLogin({ preventDefault: () => {} } as any), 100);
               }}

@@ -6,13 +6,13 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown } from "lucide-react";
+import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
   { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
   { href: "/bonus", icon: Crown, label: "Bonus", labelHi: "बोनस" },
-  { href: "/leaderboard", icon: Trophy, label: "Rank", labelHi: "रैंकिंग" },
+  { href: "/leaderboard", icon: TreePine, label: "Forest", labelHi: "वन" },
   { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
 ];
 
@@ -22,7 +22,7 @@ function BottomNav() {
 
   return (
     <nav className="bottom-nav">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "6px 8px 4px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "12px 8px 10px" }}>
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
@@ -35,7 +35,7 @@ function BottomNav() {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "3px",
-                padding: "6px 10px 4px",
+                padding: "8px 10px 6px",
                 position: "relative",
                 color: isActive ? "var(--brand)" : "var(--text-muted)",
                 flex: 1,
@@ -49,10 +49,10 @@ function BottomNav() {
                   layoutId="nav-pill"
                   style={{
                     position: "absolute",
-                    top: 2,
-                    left: "calc(50% - 20px)",
-                    width: "40px",
-                    height: "32px",
+                    top: 4,
+                    left: "calc(50% - 24px)",
+                    width: "48px",
+                    height: "36px",
                     background: "var(--brand-dim)",
                     borderRadius: "10px",
                     zIndex: 0,
@@ -116,7 +116,7 @@ function TopBar() {
     "/dashboard": "मुख्य पृष्ठ",
     "/habits": "नियम",
     "/bonus": "बोनस",
-    "/leaderboard": "रैंकिंग",
+    "/leaderboard": "संयम वन",
     "/profile": "प्रोफ़ाइल",
     "/calendar": "कैलेंडर",
     "/badges": "बैज",
@@ -127,7 +127,7 @@ function TopBar() {
     "/dashboard": "Dashboard",
     "/habits": "Niyam",
     "/bonus": "Bonus",
-    "/leaderboard": "Leaderboard",
+    "/leaderboard": "Forest of Discipline",
     "/profile": "Profile",
     "/calendar": "Calendar",
     "/badges": "Badges",
@@ -313,6 +313,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           style={{ minHeight: "calc(100dvh - 144px)" }}
         >
           {children}
+          <div style={{
+            textAlign: "center",
+            padding: "24px 16px 8px",
+            fontSize: "0.6875rem",
+            color: "var(--text-muted)",
+            letterSpacing: "0.03em",
+            borderTop: "1px dashed var(--surface-border)",
+            marginTop: "40px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px"
+          }}>
+            <div>Created by <strong>Nirgranth Creations</strong></div>
+          </div>
         </motion.main>
       </AnimatePresence>
       <BottomNav />

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { BADGES, LEVELS, getLevelByXP, getXPProgressPercentage } from "@/data/content";
+import { CertificateGenerator } from "@/components/CertificateGenerator";
+import { BADGES } from "@/data/content";
 import { 
   BarChart2, History, LogOut, 
   Award, Flame, Calendar, Star,
@@ -19,10 +20,7 @@ export default function ProfilePage() {
 
   if (!profile || !stats) return null;
 
-  const level = getLevelByXP(stats.total_points);
-  const xpPct = getXPProgressPercentage(stats.total_points);
-  const nextLevel = LEVELS.find((l) => l.level === level.level + 1);
-  const xpForNext = nextLevel ? nextLevel.min_xp - stats.total_points : 0;
+
 
   const TABS = [
     { id: "stats", labelHi: "आँकड़े", labelEn: "Stats", icon: BarChart2 },
@@ -85,30 +83,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* XP Bar */}
-        <div style={{ marginTop: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px" }} className="font-devanagari">
-            <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--gold)", fontWeight: 600 }}>
-              <Star size={12} fill="currentColor" /> {stats.total_points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} XP
-            </span>
-            {nextLevel && (
-              <span>
-                {language === "hi" 
-                  ? `${nextLevel.name_hi} के लिए ${xpForNext.toLocaleString("hi-IN")} XP चाहिए` 
-                  : `Requires ${xpForNext.toLocaleString("en-US")} XP for ${nextLevel.name_en}`}
-              </span>
-            )}
-          </div>
-          <div className="progress-track" style={{ height: "6px" }}>
-            <motion.div
-              className="progress-fill"
-              style={{ background: "var(--gold)" }}
-              initial={{ width: 0 }}
-              animate={{ width: `${xpPct}%` }}
-              transition={{ duration: 1, delay: 0.3 }}
-            />
-          </div>
-        </div>
+
 
         {/* Quick Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginTop: "24px" }}>
@@ -182,26 +157,58 @@ export default function ProfilePage() {
                   <h3 className="heading-sm font-devanagari" style={{ marginBottom: "12px", color: "var(--text-secondary)" }}>
                     {language === "hi" ? "प्रमाण पत्र" : "Certificates"}
                   </h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                    {[
-                      { id: "participation", hi: "भागीदारी", en: "Participation" },
-                      { id: "achievement", hi: "उपलब्धि", en: "Achievement" }
-                    ].map((cert) => (
-                      <button
-                        key={cert.id}
-                        className="card card-interactive"
-                        style={{ padding: "16px", textAlign: "center", background: "var(--surface-overlay)", display: "flex", flexDirection: "column", alignItems: "center" }}
-                      >
-                        <ShieldCheck size={28} color="var(--gold)" style={{ marginBottom: "8px" }} />
-                        <div className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
-                          {language === "hi" ? cert.hi : cert.en}
-                        </div>
-                        <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
-                          <Download size={12} /> {language === "hi" ? "डाउनलोड" : "Download"}
-                        </div>
-                      </button>
-                    ))}
+                  <button
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        (window as any).downloadSanmatiCertificate?.();
+                      }
+                    }}
+                    className="card card-interactive"
+                    style={{ width: "100%", padding: "16px", textAlign: "center", background: "var(--surface-overlay)", display: "flex", flexDirection: "column", alignItems: "center" }}
+                  >
+                    <ShieldCheck size={32} color="var(--gold)" style={{ marginBottom: "8px" }} />
+                    <div className="font-devanagari" style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                      {language === "hi" ? "भागीदारी प्रमाण पत्र" : "Certificate of Completion"}
+                    </div>
+                    <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--brand)", marginTop: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Download size={14} /> {language === "hi" ? "डाउनलोड करें" : "Download Now"}
+                    </div>
+                  </button>
+                  {profile && <CertificateGenerator userName={profile.full_name || "Sadhak"} />}
+                </div>
+
+                {/* About & Contact Developer */}
+                <div style={{
+                  marginTop: "24px", padding: "16px", borderRadius: "var(--r-xl)",
+                  background: "var(--surface-overlay)", border: "1px solid var(--surface-border)",
+                  display: "flex", flexDirection: "column", gap: "8px"
+                }}>
+                  <div className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                    {language === "hi" ? "डेवलपर के बारे में" : "About Developer"}
                   </div>
+                  <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {language === "hi" ? (
+                      <>
+                        यह ऐप <strong>Nirgranth Creations</strong> द्वारा विकसित किया गया है।<br/>
+                        किसी भी तकनीकी सहायता या प्रतिक्रिया के लिए हमसे संपर्क करें।
+                      </>
+                    ) : (
+                      <>
+                        This app is developed by <strong>Nirgranth Creations</strong>.<br/>
+                        For any technical support or feedback, feel free to contact us.
+                      </>
+                    )}
+                  </div>
+                  <a
+                    href="tel:8109224176"
+                    style={{
+                      display: "flex", alignItems: "center", gap: "8px",
+                      textDecoration: "none", color: "var(--brand)",
+                      fontSize: "0.8125rem", fontWeight: 600, marginTop: "4px"
+                    }}
+                  >
+                    <Phone size={14} /> +91 8109224176
+                  </a>
                 </div>
 
                 {/* Logout */}

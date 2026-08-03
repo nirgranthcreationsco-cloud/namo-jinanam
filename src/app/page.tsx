@@ -1,12 +1,30 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
+import { useAuthStore } from "@/store/authStore";
 import { ArrowRight, Sparkles, BookOpen, Heart, Trophy, MapPin, Globe, Rocket, Flame } from "lucide-react";
 
 export default function LandingPage() {
   const { language, setLanguage } = useLanguageStore();
+  const { hasSeenOnboarding } = useAuthStore();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (!hasSeenOnboarding) {
+      router.push("/onboarding");
+    }
+  }, [hasSeenOnboarding, router]);
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--surface-bg)", color: "var(--text-primary)" }}>
@@ -127,16 +145,16 @@ export default function LandingPage() {
           {/* Card 1 */}
           <motion.div whileHover={{ y: -4 }} className="card" style={{ padding: "24px", display: "flex", gap: "16px", background: "var(--surface-base)" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--brand-dim)", color: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <BookOpen size={24} />
+              <Heart size={24} />
             </div>
             <div>
               <h3 className="heading-md font-devanagari" style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                {language === "hi" ? "दैनिक नियम" : "Daily Rules"}
+                {language === "hi" ? "स्वस्थ जीवनशैली" : "Healthy Lifestyle"}
               </h3>
               <p className="body-sm font-devanagari text-muted">
                 {language === "hi"
-                  ? "आहार, स्वाध्याय, और देव दर्शन जैसे दैनिक नियमों का सरलता से पालन करें।"
-                  : "Easily track daily rituals like satvik diet, study, and temple visits."
+                  ? "सात्विक आहार और संयम के साथ अपने शारीरिक और मानसिक स्वास्थ्य को बेहतर बनाएं।"
+                  : "Improve your physical and mental health with a pure diet and mindful living."
                 }
               </p>
             </div>
@@ -145,34 +163,34 @@ export default function LandingPage() {
           {/* Card 2 */}
           <motion.div whileHover={{ y: -4 }} className="card" style={{ padding: "24px", display: "flex", gap: "16px", background: "var(--surface-base)" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--emerald-dim)", color: "var(--emerald)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Heart size={24} />
+              <Sparkles size={24} />
             </div>
             <div>
               <h3 className="heading-md font-devanagari" style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                {language === "hi" ? "आजीवन संकल्प" : "Lifelong Resolves"}
+                {language === "hi" ? "डिजिटल डिटॉक्स" : "Digital Detox"}
               </h3>
               <p className="body-sm font-devanagari text-muted">
                 {language === "hi"
-                  ? "आजीवन व्यसन मुक्ति और सात्विक आहार के दृढ़ संकल्प लें।"
-                  : "Make resolute vows for lifelong addiction-free living and pure diet."
+                  ? "स्क्रीन टाइम कम करें, ध्यान केंद्रित करें और अपनी एकाग्रता को बढ़ाएं।"
+                  : "Reduce screen time, improve focus, and enhance your concentration."
                 }
               </p>
             </div>
           </motion.div>
 
-          {/* Card 4 */}
+          {/* Card 3 */}
           <motion.div whileHover={{ y: -4 }} className="card" style={{ padding: "24px", display: "flex", gap: "16px", background: "var(--surface-base)" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--lotus-dim)", color: "var(--lotus)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <MapPin size={24} />
+              <Trophy size={24} />
             </div>
             <div>
               <h3 className="heading-md font-devanagari" style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                {language === "hi" ? "समाज से जुड़ाव" : "Community Bonding"}
+                {language === "hi" ? "व्यक्तिगत विकास" : "Personal Growth"}
               </h3>
               <p className="body-sm font-devanagari text-muted">
                 {language === "hi"
-                  ? "अपने स्थानीय मंदिर और जैन समाज के साथ मिलकर धर्म प्रभावना करें।"
-                  : "Collaborate with your local temple and Jain community to promote virtues."
+                  ? "नियमित स्वाध्याय से आत्म-विकास करें और एक बेहतर इंसान बनें।"
+                  : "Achieve self-improvement through regular study and become a better you."
                 }
               </p>
             </div>
@@ -184,7 +202,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer style={{ padding: "40px 20px", textAlign: "center", borderTop: "1px solid var(--surface-border)", background: "var(--surface-overlay)" }}>
         <div className="font-devanagari text-dimmed" style={{ marginBottom: "12px" }}>
-          {language === "hi" ? "आयोजक: श्री दिगम्बर जैन समाज" : "Organizer: Shri Digambar Jain Samaj"}
+          {language === "hi" ? "टीम नमो जिनाणम" : "Team NAMO JINANAM"}
         </div>
         <div className="font-devanagari label text-gold">
           {language === "hi" ? "जय जिनेन्द्र" : "Jai Jinendra"}

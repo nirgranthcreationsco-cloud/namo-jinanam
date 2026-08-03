@@ -2,7 +2,7 @@
 // नमो जिनाणं — Core TypeScript Types
 // =====================================================
 
-export type AgeGroup = 'children' | 'youth' | 'adult' | 'senior';
+export type AgeGroup = '6-12' | '13-23' | '24-40';
 export type Gender = 'male' | 'female' | 'other';
 export type UserRole = 'participant' | 'parent' | 'teacher' | 'coordinator' | 'admin' | 'super_admin';
 export type QuestionType = 'daily' | 'bonus' | 'sankalp';
@@ -73,6 +73,8 @@ export interface Question {
   is_active: boolean;
   type: QuestionType;
   motivational_quote?: string;
+  group_id?: string;
+  input_type?: 'checkbox' | 'radio';
 }
 
 export interface DailyEntry {
@@ -128,9 +130,7 @@ export interface UserStats {
   total_points: number;
   current_streak: number;
   longest_streak: number;
-  level: number;
-  level_name_hi: string;
-  level_name_en: string;
+  best_streak?: number;
   completion_percentage: number;
   today_points: number;
   total_days_participated: number;
@@ -145,19 +145,7 @@ export interface LeaderboardEntry {
   city: string;
   temple_name: string;
   total_points: number;
-  level: number;
-  level_name_hi: string;
   current_streak: number;
-}
-
-export interface Level {
-  level: number;
-  name_hi: string;
-  name_en: string;
-  min_xp: number;
-  max_xp: number;
-  color: string;
-  icon: string;
 }
 
 export interface DayCalendar {

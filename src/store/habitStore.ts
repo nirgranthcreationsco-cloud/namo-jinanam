@@ -43,30 +43,49 @@ export const useHabitStore = create<HabitState>()(
 
       toggleHabit: (questionId, date) => {
         const { entries } = get();
-        const existing = entries.find((e) => e.questionId === questionId && e.date === date);
         const question = getQuestion(questionId);
         const points = question?.points ?? 0;
 
+        let newEntries = [...entries];
+        let netPoints = 0;
+
+        // Handle radio logic: turn off other items in same group
+        if (question?.input_type === 'radio' && question.group_id) {
+          const otherRadios = QUESTIONS.filter(q => q.group_id === question.group_id && q.id !== questionId);
+          for (const other of otherRadios) {
+            const existingOtherIdx = newEntries.findIndex(e => e.questionId === other.id && e.date === date);
+            if (existingOtherIdx >= 0 && newEntries[existingOtherIdx].completed) {
+              newEntries[existingOtherIdx] = { ...newEntries[existingOtherIdx], completed: false, completedAt: undefined };
+              netPoints -= (other.points ?? 0);
+            }
+          }
+        }
+
+        const existingIdx = newEntries.findIndex((e) => e.questionId === questionId && e.date === date);
+        const existing = existingIdx >= 0 ? newEntries[existingIdx] : null;
+
         if (existing) {
-          // Toggle off
-          set({
-            entries: entries.map((e) =>
-              e.questionId === questionId && e.date === date
-                ? { ...e, completed: !e.completed, completedAt: !e.completed ? new Date().toISOString() : undefined }
-                : e
-            ),
-          });
-          return { completed: !existing.completed, points: existing.completed ? -points : points };
+          const isCompleting = !existing.completed;
+          newEntries[existingIdx] = { 
+            ...existing, 
+            completed: isCompleting, 
+            completedAt: isCompleting ? new Date().toISOString() : undefined 
+          };
+          netPoints += isCompleting ? points : -points;
+          
+          set({ entries: newEntries, lastUpdated: date });
+          return { completed: isCompleting, points: netPoints };
         } else {
-          // Create new entry
           const newEntry: HabitEntry = {
             questionId,
             date,
             completed: true,
             completedAt: new Date().toISOString(),
           };
-          set({ entries: [...entries, newEntry], lastUpdated: date });
-          return { completed: true, points };
+          newEntries.push(newEntry);
+          netPoints += points;
+          set({ entries: newEntries, lastUpdated: date });
+          return { completed: true, points: netPoints };
         }
       },
 

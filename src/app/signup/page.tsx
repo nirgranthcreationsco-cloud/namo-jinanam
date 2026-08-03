@@ -1,22 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
+import { supabase } from "@/lib/supabase";
 import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { hasSeenOnboarding } = useAuthStore();
+
+  useEffect(() => {
+    if (!hasSeenOnboarding) {
+      router.push("/onboarding");
+    }
+  }, [hasSeenOnboarding, router]);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: "",
+    email: "",
     password: "",
     phone: "",
     gender: "",
     ageGroup: "",
     city: "",
+    fatherName: "",
+    motherName: "",
   });
   const { setUser, setProfile, setStats } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
@@ -28,8 +40,26 @@ export default function SignupPage() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = () => {
-    setUser({ id: "new-user-1", email: `${formData.phone}@namo.com` });
+  const handleSubmit = async () => {
+    const userEmail = formData.email || `${formData.phone.replace(/\D/g, "")}@namojinanam.com`;
+    const userPassword = formData.password || "Password123!";
+
+    let userId = "user-" + Date.now();
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userEmail,
+        password: userPassword,
+      });
+
+      if (authData?.user) {
+        userId = authData.user.id;
+      }
+    } catch (e) {
+      console.warn("Supabase auth signup fallback to local ID", e);
+    }
+
+    setUser({ id: userId, email: userEmail });
+
     const genderMap: Record<string, "male" | "female" | "other"> = {
       "पुरुष (Male)": "male",
       "महिला (Female)": "female",
@@ -38,44 +68,72 @@ export default function SignupPage() {
     };
     const mappedGender = genderMap[formData.gender] || "other";
 
-    let mappedAgeGroup: "children" | "youth" | "adult" | "senior" = "adult";
-    if (formData.ageGroup === "under_10") mappedAgeGroup = "children";
-    else if (formData.ageGroup === "11-20") mappedAgeGroup = "youth";
-    else if (formData.ageGroup === "60_plus") mappedAgeGroup = "senior";
+    let mappedAgeGroup: "6-12" | "13-23" | "24-40" = "24-40";
+    if (formData.ageGroup === "6-12") mappedAgeGroup = "6-12";
+    else if (formData.ageGroup === "13-23") mappedAgeGroup = "13-23";
+    else if (formData.ageGroup === "24-40") mappedAgeGroup = "24-40";
 
-    setProfile({
-      id: "new-user-1",
-      user_id: "new-user-1",
+    const profileData = {
+      id: userId,
+      user_id: userId,
       full_name: formData.fullName,
       phone: formData.phone,
       gender: mappedGender,
       age_group: mappedAgeGroup,
       dob: "2000-01-01",
-      email: `${formData.phone}@namo.com`,
+      email: userEmail,
       address: formData.city,
       state: "",
       city: formData.city,
       temple_id: "temple_01",
-      father_name: "",
-      mother_name: "",
-      role: "participant",
+      father_name: formData.fatherName,
+      mother_name: formData.motherName,
+      role: "participant" as const,
       created_at: new Date().toISOString()
-    });
-    setStats({
-      id: "new-user-stats-1",
-      user_id: "new-user-1",
+    };
+
+    const statsData = {
+      id: "stats-" + userId,
+      user_id: userId,
       total_points: 0,
       today_points: 0,
       current_streak: 0,
       longest_streak: 0,
+      best_streak: 0,
       total_days_participated: 0,
-      level: 1,
-      level_name_hi: "श्रावक",
-      level_name_en: "Shravak",
       completion_percentage: 0,
-      badges: [],
-    });
-    router.replace("/dashboard");
+      badges: []
+    };
+
+    setProfile(profileData);
+    setStats(statsData);
+
+    // Save profile and stats to Supabase Cloud
+    try {
+      await supabase.from("profiles").upsert({
+        id: userId,
+        full_name: formData.fullName,
+        father_name: formData.fatherName,
+        mother_name: formData.motherName,
+        email: userEmail,
+        phone: formData.phone,
+        gender: mappedGender,
+        age_group: mappedAgeGroup,
+        dob: "2000-01-01",
+        city: formData.city,
+      });
+
+      await supabase.from("user_stats").upsert({
+        user_id: userId,
+        total_points: 0,
+        current_streak: 0,
+        best_streak: 0
+      });
+    } catch (dbError) {
+      console.warn("Supabase profile save notice", dbError);
+    }
+
+    router.push("/dashboard");
   };
 
   const getStepContent = () => {
@@ -97,6 +155,12 @@ export default function SignupPage() {
                 {language === "hi" ? "पूरा नाम (Full Name)" : "Full Name"}
               </label>
               <input type="text" className="field" placeholder={language === "hi" ? "आपका पूरा नाम" : "Your full name"} value={formData.fullName} onChange={(e) => updateForm("fullName", e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label font-devanagari">
+                {language === "hi" ? "ईमेल (Email) - वैकल्पिक" : "Email (Optional)"}
+              </label>
+              <input type="email" className="field" placeholder={language === "hi" ? "अपना ईमेल दर्ज करें" : "Enter your email address"} value={formData.email} onChange={(e) => updateForm("email", e.target.value)} />
             </div>
             <div>
               <label className="field-label font-devanagari">
@@ -153,13 +217,22 @@ export default function SignupPage() {
               </label>
               <select className="field" value={formData.ageGroup} onChange={(e) => updateForm("ageGroup", e.target.value)}>
                 <option value="">{language === "hi" ? "चुनें..." : "Select..."}</option>
-                <option value="under_10">{language === "hi" ? "10 से कम" : "Under 10"}</option>
-                <option value="11-20">11 - 20</option>
-                <option value="21-30">21 - 30</option>
-                <option value="31-45">31 - 45</option>
-                <option value="46-60">46 - 60</option>
-                <option value="60_plus">{language === "hi" ? "60 से अधिक" : "60+"}</option>
+                <option value="6-12">6 - 12</option>
+                <option value="13-23">13 - 23</option>
+                <option value="24-40">24 - 40</option>
               </select>
+            </div>
+            <div>
+              <label className="field-label font-devanagari">
+                {language === "hi" ? "पिता का नाम (Father's Name)" : "Father's Name"}
+              </label>
+              <input type="text" className="field" placeholder={language === "hi" ? "पिता का नाम" : "Father's name"} value={formData.fatherName} onChange={(e) => updateForm("fatherName", e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label font-devanagari">
+                {language === "hi" ? "माता का नाम (Mother's Name)" : "Mother's Name"}
+              </label>
+              <input type="text" className="field" placeholder={language === "hi" ? "माता का नाम" : "Mother's name"} value={formData.motherName} onChange={(e) => updateForm("motherName", e.target.value)} />
             </div>
           </div>
         );
@@ -189,7 +262,15 @@ export default function SignupPage() {
                 {language === "hi" ? "नियम एवं शर्तें" : "Terms & Conditions"}
               </h2>
             </div>
-            <div className="card" style={{ padding: "16px", background: "var(--surface-base)", height: "200px", overflowY: "auto", fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+            
+            <div style={{ width: "100%", borderRadius: "16px", overflow: "hidden", marginBottom: "2px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)", border: "1px solid var(--surface-border)" }}>
+               <img src="/punya-rising.png" alt="Spiritual Growth" style={{ width: "100%", height: "180px", objectFit: "cover", display: "block" }} />
+            </div>
+            <div style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--brand)", fontWeight: 600, fontStyle: "italic", marginBottom: "8px" }} className="font-devanagari">
+              {language === "hi" ? "✨ साधना से आत्म-कल्याण और पुण्य का संचय ✨" : "✨ Spiritual growth & Punya rising through self-discipline ✨"}
+            </div>
+
+            <div className="card" style={{ padding: "18px", background: "var(--surface-base)", border: "1px solid var(--surface-border)", borderRadius: "14px", height: "140px", overflowY: "auto", fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
               <p className="font-devanagari">
                 {language === "hi" ? (
                   <>

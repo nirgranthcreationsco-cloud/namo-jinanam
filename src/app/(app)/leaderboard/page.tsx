@@ -1,283 +1,372 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { Globe, Map, Building2, MapPin, Users, Crown, Flame, Star, Hexagon } from "lucide-react";
+import { TreePine, Info, Star, CalendarDays, Lock, X, Sparkles, Wind } from "lucide-react";
 
-type FilterType = "global" | "state" | "city" | "temple" | "age_group";
-type PeriodType = "today" | "week" | "month" | "overall";
-
-const LEVEL_TRANSLATIONS: Record<string, { hi: string; en: string }> = {
-  "जिनभक्त": { hi: "जिनभक्त", en: "Jinbhakt" },
-  "धर्मरत्न": { hi: "धर्मरत्न", en: "Dharmaratna" },
-  "संयमी": { hi: "संयमी", en: "Samyami" },
-  "उपासक": { hi: "उपासक", en: "Upasak" },
-  "साधक": { hi: "साधक", en: "Sadhak" },
-  "श्रावक": { hi: "श्रावक", en: "Shravak" },
-};
-
-const MOCK_LEADERS = [
-  { rank: 1, name: "प्रिया जैन", name_en: "Priya Jain", city: "मुंबई", city_en: "Mumbai", temple: "महावीर मंदिर", temple_en: "Mahavir Temple", points: 28450, streak: 42, level: "जिनभक्त", avatar: "P", levelColor: "var(--brand)" },
-  { rank: 2, name: "अमित शाह", name_en: "Amit Shah", city: "अहमदाबाद", city_en: "Ahmedabad", temple: "आदिनाथ मंदिर", temple_en: "Adinath Temple", points: 24200, streak: 35, level: "धर्मरत्न", avatar: "A", levelColor: "var(--gold)" },
-  { rank: 3, name: "सोनिया मेहता", name_en: "Sonia Mehta", city: "जयपुर", city_en: "Jaipur", temple: "पार्श्वनाथ मंदिर", temple_en: "Parshvanath Temple", points: 21800, streak: 28, level: "धर्मरत्न", avatar: "S", levelColor: "var(--gold)" },
-  { rank: 4, name: "राहुल देसाई", name_en: "Rahul Desai", city: "सूरत", city_en: "Surat", temple: "नेमिनाथ मंदिर", temple_en: "Neminath Temple", points: 18600, streak: 21, level: "संयमी", avatar: "R", levelColor: "#F59E0B" },
-  { rank: 5, name: "अंजलि गुप्ता", name_en: "Anjali Gupta", city: "नागपुर", city_en: "Nagpur", temple: "शांतिनाथ मंदिर", temple_en: "Shantinath Temple", points: 16400, streak: 18, level: "संयमी", avatar: "A", levelColor: "#F59E0B" },
-  { rank: 6, name: "विवेक पटेल", name_en: "Vivek Patel", city: "पुणे", city_en: "Pune", temple: "चंद्रप्रभु मंदिर", temple_en: "Chandraprabhu Temple", points: 14200, streak: 15, level: "उपासक", avatar: "V", levelColor: "#34D399" },
-  { rank: 7, name: "नेहा सिंह", name_en: "Neha Singh", city: "भोपाल", city_en: "Bhopal", temple: "महावीर मंदिर", temple_en: "Mahavir Temple", points: 12800, streak: 12, level: "उपासक", avatar: "N", levelColor: "#34D399" },
-  { rank: 8, name: "आयुष जैन", name_en: "Ayush Jain", city: "इंदौर", city_en: "Indore", temple: "आदिनाथ मंदिर", temple_en: "Adinath Temple", points: 11200, streak: 10, level: "साधक", avatar: "A", levelColor: "#6EE7B7" },
-  { rank: 9, name: "कविता शर्मा", name_en: "Kavita Sharma", city: "उदयपुर", city_en: "Udaipur", temple: "पार्श्वनाथ मंदिर", temple_en: "Parshvanath Temple", points: 9600, streak: 8, level: "साधक", avatar: "K", levelColor: "#6EE7B7" },
-  { rank: 10, name: "देव शाह", name_en: "Dev Shah", city: "राजकोट", city_en: "Rajkot", temple: "वासुपूज्य मंदिर", temple_en: "Vasupujya Temple", points: 8200, streak: 7, level: "श्रावक", avatar: "D", levelColor: "#94A3B8" },
+// Growth Stages mapping
+const GROWTH_STAGES = [
+  { id: 0, minStreak: 0, emoji: "🌱", labelHi: "बीज (Seed)", labelEn: "Seed", color: "#84CC16", size: 60 },
+  { id: 1, minStreak: 1, emoji: "🌿", labelHi: "अंकुर (Sprout)", labelEn: "Sprout", color: "#65A30D", size: 80 },
+  { id: 2, minStreak: 4, emoji: "🪴", labelHi: "पौधा (Young Tree)", labelEn: "Young Tree", color: "#4D7C0F", size: 100 },
+  { id: 3, minStreak: 11, emoji: "🌳", labelHi: "वृक्ष (Flourishing Tree)", labelEn: "Flourishing Tree", color: "#15803D", size: 130 },
+  { id: 4, minStreak: 21, emoji: "🌸", labelHi: "पुष्पित वृक्ष (Blossoming)", labelEn: "Blossoming Tree", color: "#BE185D", size: 160 },
+  { id: 5, minStreak: 31, emoji: "🪷", labelHi: "संयम वृक्ष (Tree of Discipline)", labelEn: "Tree of Discipline", color: "#9333EA", size: 190 },
 ];
 
-const MY_RANK = {
-  rank: 24,
-  name: "राहुल जैन",
-  name_en: "Rahul Jain",
-  city: "मुंबई",
-  city_en: "Mumbai",
-  temple: "महावीर मंदिर",
-  temple_en: "Mahavir Temple",
-  points: 4250,
-  streak: 7,
-  level: "साधक",
-  avatar: "R",
-  levelColor: "#6EE7B7",
-};
-
-const FILTERS: { id: FilterType; labelHi: string; labelEn: string; icon: any }[] = [
-  { id: "global", labelHi: "राष्ट्रीय", labelEn: "Global", icon: Globe },
-  { id: "state", labelHi: "राज्य", labelEn: "State", icon: Map },
-  { id: "city", labelHi: "शहर", labelEn: "City", icon: Building2 },
-  { id: "temple", labelHi: "मंदिर", labelEn: "Temple", icon: MapPin },
-  { id: "age_group", labelHi: "आयु वर्ग", labelEn: "Age Group", icon: Users },
+const QUOTES = [
+  { hi: "छोटे-छोटे नियम जीवन का महान चरित्र बनाते हैं।", en: "Small habits become lifelong character." },
+  { hi: "संयम का एक दिन भी कभी व्यर्थ नहीं जाता।", en: "One disciplined day is never wasted." },
+  { hi: "निरंतरता, प्रेरणा से अधिक शक्तिशाली है।", en: "Consistency is stronger than motivation." },
+  { hi: "हर बार जब आप संयम चुनते हैं, आपका वृक्ष बढ़ता है।", en: "Your tree grows every time you choose discipline." }
 ];
 
-const PERIODS: { id: PeriodType; labelHi: string; labelEn: string }[] = [
-  { id: "today", labelHi: "आज", labelEn: "Today" },
-  { id: "week", labelHi: "सप्ताह", labelEn: "Week" },
-  { id: "month", labelHi: "महीना", labelEn: "Month" },
-  { id: "overall", labelHi: "सम्पूर्ण", labelEn: "Overall" },
-];
-
-function Podium({ leaders, language }: { leaders: typeof MOCK_LEADERS; language: "hi" | "en" }) {
-  const top3 = leaders.slice(0, 3);
-  const order = [top3[1], top3[0], top3[2]]; // 2nd, 1st, 3rd
-  const heights = ["120px", "160px", "100px"];
-  const rankColors = ["#94A3B8", "var(--gold)", "#CD7C2A"];
-  const rankNumbers = [2, 1, 3];
-
+function Particles() {
   return (
-    <div
-      className="card"
-      style={{
-        padding: "24px",
-        marginBottom: "24px",
-        background: "var(--surface-overlay)",
-        borderColor: "var(--brand-glow)"
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "16px", paddingTop: "24px" }}>
-        {order.map((leader, i) => (
-          <motion.div
-            key={leader.name}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.2, type: "spring", stiffness: 200 }}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", flex: 1 }}
-          >
-            {/* Avatar */}
-            <div style={{ position: "relative" }}>
-              {rankNumbers[i] === 1 && (
-                <div style={{ position: "absolute", top: "-20px", left: "50%", transform: "translateX(-50%)", color: "var(--gold)" }}>
-                  <Crown size={24} fill="currentColor" />
-                </div>
-              )}
-              <div
-                style={{
-                  width: rankNumbers[i] === 1 ? "64px" : "48px",
-                  height: rankNumbers[i] === 1 ? "64px" : "48px",
-                  borderRadius: "50%",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: rankNumbers[i] === 1 ? "24px" : "18px",
-                  fontWeight: 700,
-                  border: `2px solid ${rankColors[i]}`,
-                  background: "var(--surface-base)",
-                  color: "var(--text-primary)"
-                }}
-              >
-                {leader.avatar}
-              </div>
-            </div>
-
-            <div style={{ textAlign: "center" }}>
-              <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "0.8125rem" }}>
-                {language === "hi" ? leader.name.split(" ")[0] : leader.name_en.split(" ")[0]}
-              </div>
-              <div style={{ fontSize: "0.6875rem", color: "var(--gold)", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "2px" }}>
-                <Star size={10} fill="currentColor" /> {(leader.points / 1000).toFixed(1)}k
-              </div>
-            </div>
-
-            {/* Bar */}
-            <div
-              style={{
-                width: "100%", maxWidth: "70px",
-                height: heights[i],
-                background: rankNumbers[i] === 1
-                  ? "linear-gradient(180deg, var(--gold-light), var(--gold))"
-                  : rankNumbers[i] === 2
-                  ? "linear-gradient(180deg, #94A3B8, #64748B)"
-                  : "linear-gradient(180deg, #CD7C2A, #92400E)",
-                borderRadius: "8px 8px 0 0",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--surface-bg)", fontWeight: 900, fontSize: "1.5rem"
-              }}
-            >
-              {rankNumbers[i]}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {Array.from({ length: 15 }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            opacity: 0,
+            x: Math.random() * 100 + "%",
+            y: Math.random() * 100 + "%",
+          }}
+          animate={{
+            opacity: [0, 0.6, 0],
+            y: ["-5%", "-20%"],
+            x: `${(Math.random() - 0.5) * 20}%`
+          }}
+          transition={{
+            duration: 4 + Math.random() * 4,
+            repeat: Infinity,
+            delay: Math.random() * 5,
+            ease: "easeInOut"
+          }}
+          style={{
+            position: "absolute",
+            width: "6px",
+            height: "6px",
+            borderRadius: "50%",
+            background: "var(--gold-light)",
+            filter: "blur(2px)"
+          }}
+        />
+      ))}
     </div>
   );
 }
 
-function LeaderRow({
-  entry,
-  isMe,
-  delay = 0,
-  language,
-}: {
-  entry: (typeof MOCK_LEADERS)[0] & { rank: number; name_en: string; temple_en: string };
-  isMe?: boolean;
-  delay?: number;
-  language: "hi" | "en";
-}) {
-  const levelText = LEVEL_TRANSLATIONS[entry.level]
-    ? (language === "hi" ? LEVEL_TRANSLATIONS[entry.level].hi : LEVEL_TRANSLATIONS[entry.level].en)
-    : entry.level;
-
+function CommunityTrees() {
+  // Random small trees in the background
+  const emojis = ["🌳", "🌲", "🪴", "🌿", "🌸"];
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, duration: 0.3 }}
-      className="card"
-      style={{
-        display: "flex", alignItems: "center", gap: "16px", padding: "16px",
-        background: isMe ? "var(--brand-dim)" : "var(--surface-raised)",
-        borderColor: isMe ? "var(--brand)" : "var(--surface-border)",
-        boxShadow: isMe ? "var(--shadow-glow)" : "none",
-        marginBottom: "8px"
-      }}
-    >
-      {/* Rank */}
-      <div
-        style={{
-          width: "32px", height: "32px", borderRadius: "8px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontWeight: 800, fontSize: "0.875rem", flexShrink: 0,
-          background: entry.rank <= 3
-            ? entry.rank === 1 ? "linear-gradient(135deg, var(--gold-light), var(--gold))"
-              : entry.rank === 2 ? "linear-gradient(135deg, #94A3B8, #64748B)"
-              : "linear-gradient(135deg, #CD7C2A, #92400E)"
-            : "var(--surface-overlay)",
-          color: entry.rank <= 3 ? "var(--surface-bg)" : "var(--text-secondary)",
-        }}
-      >
-        {entry.rank}
-      </div>
-
-      {/* Avatar */}
-      <div
-        style={{
-          width: "40px", height: "40px", borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--indigo), var(--lotus))",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "white", fontWeight: 700, fontSize: "1.125rem", flexShrink: 0
-        }}
-      >
-        {entry.avatar}
-      </div>
-
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span className="font-devanagari" style={{ fontWeight: 700, fontSize: "0.9375rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {language === "hi" ? entry.name : entry.name_en}
-          </span>
-          {isMe && (
-            <span className="chip chip-brand" style={{ fontSize: "0.6875rem", padding: "2px 8px" }}>
-              {language === "hi" ? "आप" : "You"}
-            </span>
-          )}
-        </div>
-        <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Hexagon size={10} /> {language === "hi" ? entry.temple : entry.temple_en}</span>
-          <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--brand)" }}><Flame size={12} fill="currentColor" /> {entry.streak}</span>
-        </div>
-      </div>
-
-      {/* Points */}
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontWeight: 800, fontSize: "0.9375rem", color: "var(--gold)", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
-          <Star size={12} fill="currentColor" /> {entry.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")}
-        </div>
-        <div
-          className="font-devanagari"
-          style={{ fontSize: "0.6875rem", fontWeight: 600, color: entry.levelColor }}
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 1, opacity: 0.5 }}>
+      {Array.from({ length: 25 }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: i * 0.1, duration: 1 }}
+          style={{
+            position: "absolute",
+            bottom: `${20 + Math.random() * 40}%`,
+            left: `${Math.random() * 100}%`,
+            fontSize: `${16 + Math.random() * 24}px`,
+            filter: `blur(${Math.random() * 2}px)`,
+            transform: `scaleX(${Math.random() > 0.5 ? 1 : -1})` // Random flip
+          }}
         >
-          {levelText}
-        </div>
-      </div>
-    </motion.div>
+          {emojis[Math.floor(Math.random() * emojis.length)]}
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
-export default function LeaderboardPage() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("global");
-  const [activePeriod, setActivePeriod] = useState<PeriodType>("overall");
+export default function ForestPage() {
   const { language } = useLanguageStore();
-
+  const { stats, profile } = useAuthStore();
+  
+  const [showIntro, setShowIntro] = useState(true);
+  const [treeZoomed, setTreeZoomed] = useState(false);
+  
+  const streak = stats?.current_streak || 0;
+  const quote = QUOTES[new Date().getDay() % QUOTES.length];
+  
+  // Determine current stage
+  const currentStageIndex = GROWTH_STAGES.reduce((acc, stage, idx) => {
+    if (streak >= stage.minStreak) return idx;
+    return acc;
+  }, 0);
+  
+  const currentStage = GROWTH_STAGES[currentStageIndex];
+  const nextStage = GROWTH_STAGES[currentStageIndex + 1];
+  
   return (
-    <div className="page" style={{ padding: "16px 16px 100px" }}>
-      {/* Title */}
-      <div style={{ textAlign: "center", marginBottom: "24px", padding: "12px", background: "var(--surface-overlay)", borderRadius: "var(--r-xl)", border: "1px solid var(--surface-border)" }}>
-        <h1 className="heading-lg font-devanagari" style={{ color: "var(--brand)", marginBottom: "4px" }}>
-          {language === "hi" ? "आयु वर्ग रैंकिंग" : "Age Group Ranking"}
-        </h1>
-        <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-          {language === "hi" ? "समान आयु वर्ग के प्रतिभागियों के साथ आपकी रैंकिंग" : "Your ranking among participants in your age group"}
-        </p>
-      </div>
+    <div className="page" style={{ paddingBottom: "100px", minHeight: "100dvh", background: "linear-gradient(180deg, #E0F2FE 0%, #F0FDF4 40%, var(--surface-bg) 100%)", position: "relative" }}>
+      
+      {/* Intro Modal Overlay */}
+      <AnimatePresence>
+        {showIntro && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 100,
+              background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "20px"
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="card"
+              style={{
+                background: "rgba(255,255,255,0.9)",
+                maxWidth: "400px", width: "100%", padding: "32px 24px",
+                textAlign: "center", position: "relative"
+              }}
+            >
+              <h2 className="heading-xl font-devanagari text-brand" style={{ marginBottom: "16px" }}>
+                {language === "hi" ? "संयम वन" : "Forest of Discipline"}
+              </h2>
+              <p className="body-md font-devanagari text-muted" style={{ marginBottom: "24px", fontStyle: "italic" }}>
+                {language === "hi" 
+                  ? "हमारी सामूहिक साधना का एक जीवंत प्रतीक।" 
+                  : "A living symbol of our collective discipline."}
+              </p>
+              <div className="body-sm font-devanagari text-primary" style={{ textAlign: "left", marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <p>{language === "hi" ? "इस अभियान का हर प्रतिभागी एक डिजिटल वृक्ष लगाता है।" : "Every participant in Namo Jinanam plants a digital tree."}</p>
+                <p>{language === "hi" ? "जैसे-जैसे आप अपने दैनिक नियम पूरे करते हैं, आपका वृक्ष मजबूत होता है।" : "As you complete your daily niyams, your tree grows stronger."}</p>
+                <p>{language === "hi" ? "हजारों व्यक्तिगत संकल्प मिलकर एक सुंदर वन बनाते हैं। यह वन याद दिलाता है कि छोटी-सी साधना भी एक महान उद्देश्य में योगदान देती है।" : "Together, thousands of individual journeys create one beautiful forest. This forest is a reminder that even the smallest daily discipline contributes to something much greater than ourselves."}</p>
+              </div>
+              
+              <div style={{ padding: "16px", background: "var(--brand-dim)", borderRadius: "12px", marginBottom: "24px" }}>
+                <p className="font-devanagari text-brand" style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                  "{language === "hi" ? "महान वन एक विशाल वृक्ष से नहीं, बल्कि प्रतिदिन बढ़ने वाले हजारों छोटे वृक्षों से बनता है।" : "Great forests are not built by one giant tree, but by thousands of small ones growing every day."}"
+                </p>
+              </div>
 
-      {/* Podium (top 3) */}
-      <Podium leaders={MOCK_LEADERS} language={language} />
+              <button 
+                className="btn btn-primary" 
+                style={{ width: "100%", padding: "14px" }}
+                onClick={() => setShowIntro(false)}
+              >
+                {language === "hi" ? "अपना वृक्ष देखें" : "Explore My Tree"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-        {MOCK_LEADERS.map((entry, i) => (
-          <LeaderRow key={entry.rank} entry={entry as any} delay={i * 0.04} language={language} />
-        ))}
-      </div>
+      {/* ── Main Scene ── */}
+      <section style={{ height: "450px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+        
+        {/* Environment */}
+        <Particles />
+        <CommunityTrees />
+        
+        {/* Sun */}
+        <motion.div 
+          animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.05, 1] }} 
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", top: "10%", right: "20%", width: "120px", height: "120px", borderRadius: "50%", background: "radial-gradient(circle, rgba(253,224,71,0.8) 0%, rgba(253,224,71,0) 70%)", filter: "blur(20px)", zIndex: 0 }} 
+        />
 
-      {/* My rank (sticky) */}
-      <div
-        style={{
-          position: "sticky", bottom: "80px", zIndex: 30,
-          background: "rgba(253, 251, 247, 0.95)", backdropFilter: "blur(20px)",
-          borderRadius: "var(--r-xl)", padding: "12px",
-          border: "1px solid var(--surface-border)",
-          boxShadow: "var(--shadow-lg)"
-        }}
-      >
-        <div className="font-devanagari" style={{ marginBottom: "8px", textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)" }}>
-          {language === "hi" ? "— आपकी रैंकिंग —" : "— Your Ranking —"}
+        {/* User Tree */}
+        <div style={{ position: "relative", zIndex: 10, cursor: "pointer", marginBottom: "40px" }} onClick={() => setTreeZoomed(true)}>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
+            style={{ 
+              fontSize: `${currentStage.size}px`, 
+              filter: `drop-shadow(0 20px 30px rgba(0,0,0,0.15)) drop-shadow(0 0 40px ${currentStage.color}40)`,
+              lineHeight: 1,
+              position: "relative"
+            }}
+          >
+            {currentStage.emoji}
+            
+            {/* Soft Glow behind tree */}
+            <div style={{ position: "absolute", bottom: "10%", left: "50%", transform: "translateX(-50%)", width: "50%", height: "20%", background: currentStage.color, filter: "blur(30px)", opacity: 0.4, zIndex: -1 }} />
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+            className="font-devanagari"
+            style={{ position: "absolute", bottom: "-30px", left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "20px", fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", backdropFilter: "blur(4px)" }}
+          >
+            {profile?.full_name?.split(" ")[0]}{language === "hi" ? " का वृक्ष" : "'s Tree"}
+          </motion.div>
         </div>
-        <LeaderRow entry={MY_RANK as any} isMe language={language} />
+        
+        {/* Ground */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "120px", background: "linear-gradient(180deg, rgba(22,163,74,0) 0%, rgba(22,163,74,0.1) 100%)", borderTop: "1px solid rgba(22,163,74,0.2)", zIndex: 1, transform: "perspective(500px) rotateX(60deg)", transformOrigin: "bottom" }} />
+      </section>
+
+      {/* ── Content Below Scene ── */}
+      <div style={{ padding: "0 16px", marginTop: "-20px", position: "relative", zIndex: 20 }}>
+        
+        {/* Daily Inspiration */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="card" style={{ padding: "20px", textAlign: "center", marginBottom: "16px", background: "linear-gradient(135deg, var(--surface-base) 0%, var(--surface-overlay) 100%)" }}
+        >
+          <Sparkles size={20} color="var(--gold)" style={{ margin: "0 auto 12px" }} />
+          <p className="font-devanagari text-primary" style={{ fontSize: "1rem", fontWeight: 600, fontStyle: "italic", lineHeight: 1.4 }}>
+            "{language === "hi" ? quote.hi : quote.en}"
+          </p>
+        </motion.div>
+
+        {/* Educational Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          className="card" style={{ padding: "24px", marginBottom: "16px" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+            <Info size={20} color="var(--brand)" />
+            <h3 className="heading-md font-devanagari text-brand">
+              {language === "hi" ? "संयम वन क्या है?" : "What is the Forest of Discipline?"}
+            </h3>
+          </div>
+          <div className="body-sm font-devanagari text-muted" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <p>{language === "hi" ? "संयम वन कोई प्रतियोगिता नहीं है। यह आपकी आध्यात्मिक और व्यक्तिगत प्रगति का दृश्य रूप है।" : "The Forest of Discipline is not a competition. It is a visual representation of your spiritual and personal growth."}</p>
+            <p>{language === "hi" ? "आपका लक्ष्य किसी और से बेहतर बनना नहीं, बल्कि खुद से बेहतर बनना है।" : "Your goal isn't to become better than someone else. Your goal is to become better than you were yesterday."}</p>
+          </div>
+          
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "24px", padding: "16px", background: "var(--surface-overlay)", borderRadius: "12px" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "24px", marginBottom: "4px" }}>📝</div>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700 }}>{language === "hi" ? "दैनिक नियम" : "Daily Niyam"}</div>
+            </div>
+            <Wind size={16} color="var(--text-muted)" />
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "24px", marginBottom: "4px" }}>🌱</div>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700 }}>{language === "hi" ? "वृक्ष बढ़ा" : "Tree Grows"}</div>
+            </div>
+            <Wind size={16} color="var(--text-muted)" />
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "24px", marginBottom: "4px" }}>🌳</div>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700 }}>{language === "hi" ? "वन मजबूत हुआ" : "Forest Stronger"}</div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Hall of Legends (Locked) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+          className="card" style={{ padding: "24px", textAlign: "center", border: "1px dashed var(--surface-border)", background: "rgba(255,255,255,0.4)" }}
+        >
+          <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "var(--surface-overlay)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+            <Lock size={20} color="var(--text-muted)" />
+          </div>
+          <h3 className="heading-md font-devanagari text-primary" style={{ marginBottom: "8px" }}>
+            {language === "hi" ? "महान विभूतियाँ" : "Hall of Legends"}
+          </h3>
+          <p className="body-sm font-devanagari text-muted" style={{ maxWidth: "280px", margin: "0 auto" }}>
+            {language === "hi" 
+              ? "जैसे-जैसे हमारा समाज आगे बढ़ेगा, सामूहिक उपलब्धियों का जश्न मनाने के नए तरीके सामने आएंगे।" 
+              : "As our community grows, new ways to celebrate collective achievements will bloom."}
+          </p>
+        </motion.div>
       </div>
+
+      {/* Tree Stats Overlay */}
+      <AnimatePresence>
+        {treeZoomed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setTreeZoomed(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 200,
+              background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              padding: "24px"
+            }}
+          >
+            <button 
+              onClick={() => setTreeZoomed(false)}
+              style={{ position: "absolute", top: "40px", right: "24px", width: "40px", height: "40px", borderRadius: "50%", background: "var(--surface-overlay)", display: "flex", alignItems: "center", justifyContent: "center", border: "none" }}
+            >
+              <X size={20} color="var(--text-primary)" />
+            </button>
+
+            <motion.div layoutId="tree-emoji" style={{ fontSize: "120px", marginBottom: "24px", filter: `drop-shadow(0 20px 40px ${currentStage.color}60)` }}>
+              {currentStage.emoji}
+            </motion.div>
+
+            <motion.h2 
+              initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
+              className="heading-xl font-devanagari" style={{ color: currentStage.color, marginBottom: "8px" }}
+            >
+              {language === "hi" ? currentStage.labelHi : currentStage.labelEn}
+            </motion.h2>
+
+            <motion.p 
+              initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+              className="font-devanagari text-muted" style={{ marginBottom: "32px" }}
+            >
+              {profile?.full_name}
+            </motion.p>
+
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
+              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", width: "100%", maxWidth: "320px" }}
+            >
+              <div className="card" style={{ padding: "16px", textAlign: "center", background: "var(--surface-base)" }}>
+                <div style={{ color: "#C85010", fontSize: "24px", fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                  <span style={{ fontSize: "16px" }}>🔥</span> {streak}
+                </div>
+                <div className="font-devanagari text-muted" style={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                  {language === "hi" ? "स्ट्रीक" : "Current Streak"}
+                </div>
+              </div>
+              <div className="card" style={{ padding: "16px", textAlign: "center", background: "var(--surface-base)" }}>
+                <div style={{ color: "var(--gold)", fontSize: "24px", fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                  <Star size={16} fill="currentColor" /> {stats?.total_points || 0}
+                </div>
+                <div className="font-devanagari text-muted" style={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                  {language === "hi" ? "पुण्य XP" : "Total Punya XP"}
+                </div>
+              </div>
+              <div className="card" style={{ padding: "16px", textAlign: "center", background: "var(--surface-base)", gridColumn: "span 2" }}>
+                <div style={{ color: "var(--brand)", fontSize: "24px", fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                  <CalendarDays size={18} /> {stats?.total_days_participated || 0}
+                </div>
+                <div className="font-devanagari text-muted" style={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                  {language === "hi" ? "कुल दिन" : "Days Completed"}
+                </div>
+              </div>
+            </motion.div>
+
+            {nextStage && (
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+                style={{ marginTop: "32px", textAlign: "center" }}
+              >
+                <div className="font-devanagari text-muted" style={{ fontSize: "0.75rem", marginBottom: "8px" }}>
+                  {language === "hi" ? "अगला पड़ाव" : "Next Milestone"}
+                </div>
+                <div className="chip" style={{ background: "var(--surface-base)", border: "1px solid var(--surface-border)", fontSize: "0.875rem", fontWeight: 600 }}>
+                  {nextStage.emoji} {language === "hi" ? nextStage.labelHi : nextStage.labelEn} ({nextStage.minStreak} {language === "hi" ? "दिन" : "days"})
+                </div>
+              </motion.div>
+            )}
+
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
