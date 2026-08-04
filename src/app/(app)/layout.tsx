@@ -191,7 +191,7 @@ function TopBar() {
                     lineHeight: 1
                   }}
                 >
-                  {language === "hi" ? "जय जिनेन्द्र" : "Jai Jinendra"}
+                  {language === "hi" ? "नमो जिनाणं" : "Namo Jinanam"}
                 </div>
                 <div
                   className="font-devanagari"

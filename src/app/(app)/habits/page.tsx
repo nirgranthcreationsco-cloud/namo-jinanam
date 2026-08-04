@@ -527,10 +527,43 @@ function HabitsContent() {
       <div
         style={{
           position: "sticky", top: "64px", zIndex: 40,
-          background: "rgba(253, 251, 247, 0.9)", backdropFilter: "blur(24px)",
+          background: "rgba(253, 251, 247, 0.95)", backdropFilter: "blur(24px)",
           padding: "16px 16px 12px", borderBottom: "1px solid var(--surface-border)"
         }}
       >
+        {/* Today's Submitted Score Prominent Banner */}
+        {isSubmittedToday && (
+          <div style={{
+            background: "linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(16, 185, 129, 0.12) 100%)",
+            border: "1.5px solid rgba(245, 158, 11, 0.35)",
+            borderRadius: "14px",
+            padding: "12px 14px",
+            marginBottom: "14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxShadow: "0 4px 14px rgba(245, 158, 11, 0.1)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Crown size={20} color="var(--gold)" />
+              </div>
+              <div>
+                <div className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "#9A6A15", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  {language === "hi" ? "आज का अर्जित पुण्य अंक" : "Today's Submitted Score"}
+                </div>
+                <div className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.2 }}>
+                  +{stats?.last_submission_date === today ? (stats?.last_submission_xp || todayPoints) : todayPoints} {language === "hi" ? "पुण्य अंक" : "Punya Points"}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", fontWeight: 700, color: "var(--emerald)", background: "rgba(16,185,129,0.15)", padding: "6px 10px", borderRadius: "20px" }}>
+              <Lock size={13} />
+              <span>{language === "hi" ? "सबमिट लॉक" : "Locked"}</span>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
@@ -538,7 +571,7 @@ function HabitsContent() {
                 {new Date().toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { weekday: "long", day: "numeric", month: "long" })}
               </div>
               <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-                {language === "hi" ? "आज के अंक: " : "Today's points: "} <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
+                {language === "hi" ? "वर्तमान अंक: " : "Current points: "} <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
               </div>
             </div>
 
@@ -559,7 +592,7 @@ function HabitsContent() {
                 }}
               >
                 <Lock size={14} />
-                <span>{language === "hi" ? "आज का सबमिशन पूर्ण" : "Submitted Today"}</span>
+                <span>{language === "hi" ? "सबमिटेड" : "Submitted"}</span>
               </div>
             ) : (
               <button
@@ -594,7 +627,7 @@ function HabitsContent() {
 
           {isSubmittedToday ? (
             <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--emerald)", fontWeight: 600, borderLeft: "2px solid var(--emerald)", paddingLeft: "8px", marginTop: "2px" }}>
-              {language === "hi" ? "🔒 आज के टास्क सबमिट हो चुकी है। अब यह केवल देखने के लिए है।" : "🔒 Today's sadhana has been submitted. It is now read-only."}
+              {language === "hi" ? "🔒 आज का सबमिशन पूरा हो चुका है और आपका स्कोर लॉक हो गया है।" : "🔒 Today's score is locked & submitted."}
             </div>
           ) : (
             <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", fontWeight: 600, borderLeft: "2px solid var(--brand)", paddingLeft: "8px", marginTop: "2px" }}>
