@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHabitStore } from "@/store/habitStore";
 import { useAuthStore } from "@/store/authStore";
@@ -387,10 +388,17 @@ function CategoryTab({
   );
 }
 
-// ---- Main Habits Page ----
-export default function HabitsPage() {
+function HabitsContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
   const today = getTodayStr();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
+
+  useEffect(() => {
+    if (categoryParam && CATEGORIES.some(c => c.id === categoryParam)) {
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
   const { toggleHabit, getEntryForDate, getDayPoints, isSubmittedForDate, setSubmittedDate } = useHabitStore();
   const { user, stats, updatePoints, setStats } = useAuthStore();
@@ -718,5 +726,13 @@ export default function HabitsPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function HabitsPage() {
+  return (
+    <Suspense fallback={<div className="page" style={{ padding: "20px" }}>Loading...</div>}>
+      <HabitsContent />
+    </Suspense>
   );
 }

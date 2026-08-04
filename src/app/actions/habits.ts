@@ -19,16 +19,38 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
 
     const { date, completedQuestionIds } = payload;
 
-    // 1. Fetch current stats
-    const { data: stats, error: statsFetchError } = await supabase
+    // 1. Fetch current stats (or initialize if missing)
+    let { data: stats, error: statsFetchError } = await supabase
       .from('user_stats')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (statsFetchError || !stats) {
-      console.error('Error fetching user stats:', statsFetchError);
-      return { success: false, error: 'Failed to fetch user stats.' };
+    if (!stats) {
+      // Create initial stats if none exist
+      const defaultStats = {
+        user_id: userId,
+        total_xp: 0,
+        current_streak: 0,
+        best_streak: 0,
+        days_completed: 0,
+        tree_stage: 0,
+        last_submission_date: null,
+        updated_at: new Date().toISOString()
+      };
+      const { data: createdStats, error: createErr } = await supabase
+        .from('user_stats')
+        .insert(defaultStats)
+        .select()
+        .single();
+
+      if (createErr || !createdStats) {
+        console.error('Error creating default user stats:', createErr);
+        // Use fallback memory stats
+        stats = defaultStats;
+      } else {
+        stats = createdStats;
+      }
     }
 
     if (stats.last_submission_date === date) {
@@ -92,7 +114,7 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
     yesterdayDate.setDate(yesterdayDate.getDate() - 1);
     const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
     
-    let newCurrentStreak = stats.current_streak;
+    let newCurrentStreak = stats.current_streak || 0;
     
     if (stats.last_submission_date === yesterdayStr) {
       newCurrentStreak += 1;
@@ -100,12 +122,12 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
       newCurrentStreak = 1;
     }
 
-    const newBestStreak = Math.max(stats.best_streak, newCurrentStreak);
-    const newTotalXp = stats.total_xp + finalXP; // Apply Final XP!
-    const newDaysCompleted = stats.days_completed + 1;
+    const newBestStreak = Math.max(stats.best_streak || 0, newCurrentStreak);
+    const newTotalXp = (stats.total_xp || 0) + finalXP; // Apply Final XP!
+    const newDaysCompleted = (stats.days_completed || 0) + 1;
     const newTreeStage = Math.floor(newDaysCompleted / 3);
 
-    // 4. Perform atomic transaction
+    // 4. Try RPC submission
     const { error: transactionError } = await supabase.rpc('submit_daily_niyam', {
       p_user_id: userId,
       p_submission_date: date,
@@ -122,8 +144,35 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
       if (transactionError.code === '23505') {
         return { success: false, error: 'You have already submitted your Niyam for this date.' };
       }
-      console.error('Error in daily submission transaction:', transactionError);
-      return { success: false, error: `Failed to record daily submission: ${transactionError.message || 'Unknown error'}` };
+      console.warn('RPC submit_daily_niyam failed, using direct queries fallback:', transactionError.message);
+
+      // Direct Table Fallback
+      const { error: histErr } = await supabase
+        .from('daily_history')
+        .insert({
+          user_id: userId,
+          submission_date: date,
+          xp_earned: finalXP,
+          submitted_at: new Date().toISOString()
+        });
+
+      if (histErr && histErr.code === '23505') {
+        return { success: false, error: 'You have already submitted your Niyam for this date.' };
+      }
+
+      await supabase
+        .from('user_stats')
+        .upsert({
+          user_id: userId,
+          total_xp: newTotalXp,
+          current_streak: newCurrentStreak,
+          best_streak: newBestStreak,
+          days_completed: newDaysCompleted,
+          tree_stage: newTreeStage,
+          last_submission_date: date,
+          last_submission_xp: finalXP,
+          updated_at: new Date().toISOString()
+        });
     }
 
     // Return full breakdown to the frontend for the beautiful reveal animation!

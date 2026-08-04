@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, BookOpen, Trophy, Award, CheckCircle2, TreePine } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, BookOpen, Trophy, Award, CheckCircle2 } from "lucide-react";
 
 const SLIDES = [
   {
@@ -22,12 +22,12 @@ const SLIDES = [
   },
   {
     id: 2,
-    image: "/onboarding_leaderboard.png", // Keep same image or ideally update it later
-    titleHi: "२. आज की प्रेरणा",
-    titleEn: "2. Today's Inspiration",
-    descHi: "प्रतिदिन एक विशेष श्रेणी (Category) पर ध्यान दें। यदि आप उस श्रेणी के सभी नियम पूरे करते हैं, तो आपको विशेष बोनस अंक (Multiplier) प्राप्त होंगे।",
-    descEn: "Focus on a special category each day. If you complete ALL niyams in that category, your points for that category will be multiplied as a Blessing!",
-    badgeHi: "स्टेप २: आज की चुनौती",
+    image: "/punya-rising.png",
+    titleHi: "२. आज की प्रेरणा एवं विशेष आशीर्वाद",
+    titleEn: "2. Today's Inspiration & Blessing",
+    descHi: "प्रतिदिन होम स्क्रीन पर एक विशेष अनुभाग (जैसे आहार संयम) की चुनौती मिलेगी। उस अनुभाग के सभी नियम पूरे करने पर आपको 2× बोनस पुण्य का विशेष आशीर्वाद मिलेगा!",
+    descEn: "Every day features a special section challenge (e.g. Food Discipline). Complete all niyams in that section to unlock Double Punya points as a Blessing!",
+    badgeHi: "स्टेप २: आज का आशीर्वाद",
     badgeEn: "Step 2: Today's Blessing",
     icon: Sparkles,
     color: "#059669",

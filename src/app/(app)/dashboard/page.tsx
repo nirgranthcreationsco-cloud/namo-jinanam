@@ -131,11 +131,14 @@ export default function DashboardPage() {
   const inspiration = getTodayInspiration(today);
   const category = CATEGORIES.find(c => c.id === inspiration.categoryId) || CATEGORIES[0];
   
-  const todayEntry = (entries as any)[today] || { selectedIds: [], isSubmitted: false };
+  // Correctly read completed entries for today from habit store array
+  const completedQuestionIds = (entries || [])
+    .filter((e: any) => e.date === today && e.completed)
+    .map((e: any) => e.questionId);
   
   const categoryQuestions = QUESTIONS.filter(q => q.category_id === inspiration.categoryId && q.type === 'daily' && q.is_active !== false);
   const totalCategoryQuestions = categoryQuestions.length;
-  const completedCategoryQuestions = categoryQuestions.filter(q => todayEntry.selectedIds.includes(q.id)).length;
+  const completedCategoryQuestions = categoryQuestions.filter(q => completedQuestionIds.includes(q.id)).length;
   const categoryProgressPct = totalCategoryQuestions === 0 ? 0 : Math.round((completedCategoryQuestions / totalCategoryQuestions) * 100);
   const isCategoryComplete = completedCategoryQuestions === totalCategoryQuestions && totalCategoryQuestions > 0;
 
@@ -186,106 +189,62 @@ export default function DashboardPage() {
         </Link>
       </motion.div>
 
-      {/* ── Today's Inspiration Hero ── */}
+      {/* ── Today's Inspiration Hero (Clean & Simple) ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
         transition={{ delay: 0.08 }}
         className="card"
         style={{
-          padding: "20px",
-          background: `linear-gradient(145deg, #ffffff 0%, ${category.color}12 100%)`,
-          border: `1.5px solid ${category.color}40`,
-          boxShadow: `0 8px 28px ${category.color}15`,
+          padding: "22px",
+          background: `linear-gradient(145deg, #ffffff 0%, ${category.color}15 100%)`,
+          border: `1.5px solid ${category.color}35`,
+          boxShadow: `0 10px 30px ${category.color}15`,
           position: "relative",
           overflow: "hidden"
         }}
       >
         {/* Header Bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <Sparkles size={16} color="var(--gold)" />
             <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--brand)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {language === "hi" ? "आज का विशेष लक्ष्य" : "Today's Challenge Focus"}
+              {language === "hi" ? "आज की प्रेरणा" : "Today's Inspiration"}
             </span>
           </div>
           <CountdownTimer />
         </div>
 
-        {/* Clear Simple Instruction Headline */}
-        <div style={{
-          background: `${category.color}15`,
-          border: `1px solid ${category.color}30`,
-          borderRadius: "14px",
-          padding: "14px 16px",
-          marginBottom: "16px"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: category.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
-              <CategoryIcon size={20} />
-            </div>
-            <div>
-              <div className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                {language === "hi" ? category.name_hi : category.name_en}
-              </div>
-              <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--gold)", fontWeight: 700 }}>
-                🎁 {language === "hi" ? `इनाम: ${inspiration.blessingHi}` : `Reward: ${inspiration.blessingEn}`}
-              </div>
+        {/* Category Title & Blessing */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: category.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, boxShadow: `0 4px 12px ${category.color}40` }}>
+            <CategoryIcon size={24} />
+          </div>
+          <div>
+            <h2 className="font-devanagari" style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)", margin: 0, lineHeight: 1.2 }}>
+              {language === "hi" ? category.name_hi : category.name_en}
+            </h2>
+            <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--gold)", fontWeight: 700, marginTop: "2px" }}>
+              🎁 {language === "hi" ? `आशीर्वाद: ${inspiration.blessingHi}` : `Blessing: ${inspiration.blessingEn}`}
             </div>
           </div>
-
-          <p className="font-devanagari" style={{ fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
-            {language === "hi" 
-              ? `आज "${category.name_hi}" सेक्शन के सभी ${totalCategoryQuestions} नियम पूरे करें और पाएँ ${inspiration.blessingHi}!`
-              : `Complete ALL ${totalCategoryQuestions} Niyams in "${category.name_en}" today to get ${inspiration.blessingEn}!`}
-          </p>
         </div>
 
-        {/* Niyams Status List in this Category */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-          <div className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
-            {language === "hi" ? `इस सेक्शन के नियम (${completedCategoryQuestions}/${totalCategoryQuestions} पूरे)` : `Niyams in this section (${completedCategoryQuestions}/${totalCategoryQuestions} done)`}
-          </div>
-          {categoryQuestions.map((q) => {
-            const isDone = todayEntry.selectedIds.includes(q.id);
-            return (
-              <div 
-                key={q.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  background: isDone ? "var(--emerald-dim)" : "var(--surface-overlay)",
-                  border: `1px solid ${isDone ? "rgba(16, 185, 129, 0.25)" : "var(--surface-border)"}`,
-                  fontSize: "0.875rem"
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{ color: isDone ? "var(--emerald)" : "var(--text-muted)" }}>
-                    {isDone ? <CheckCircle2 size={16} /> : <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid var(--text-muted)" }} />}
-                  </div>
-                  <span className="font-devanagari" style={{ fontWeight: isDone ? 700 : 500, color: isDone ? "var(--emerald)" : "var(--text-primary)" }}>
-                    {language === "hi" ? q.title_hi : q.title_en}
-                  </span>
-                </div>
-                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: isDone ? "var(--emerald)" : "var(--brand)" }}>
-                  +{q.points} XP
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        {/* Simple Goal Description */}
+        <p className="font-devanagari" style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "18px" }}>
+          {language === "hi" 
+            ? `आज "${category.name_hi}" सेक्शन के सभी नियम पूरे करके पाएँ ${inspiration.blessingHi}!`
+            : `Complete the entire "${category.name_en}" section today to get ${inspiration.blessingEn}!`}
+        </p>
 
         {/* Progress Bar */}
-        <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ marginBottom: "18px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-            <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)" }}>
-              {language === "hi" ? "सेक्शन प्रगति" : "Section Progress"}
+            <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
+              {language === "hi" ? "प्रगति" : "Progress"}
             </span>
             <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 800, color: isCategoryComplete ? "var(--emerald)" : "var(--brand)" }}>
-              {categoryProgressPct}%
+              {completedCategoryQuestions} / {totalCategoryQuestions} {language === "hi" ? "पूर्ण" : "Completed"}
             </span>
           </div>
           <div style={{ height: "10px", background: "var(--surface-border)", borderRadius: "5px", overflow: "hidden" }}>
@@ -300,28 +259,26 @@ export default function DashboardPage() {
               }}
             />
           </div>
-          
-          {/* Action Button */}
-          <Link href="/habits" style={{ textDecoration: "none", display: "block", marginTop: "14px" }}>
-            <button className="btn btn-primary" style={{ width: "100%", background: isCategoryComplete ? "var(--emerald)" : "var(--brand)", color: "#fff", padding: "12px" }}>
-              {isCategoryComplete ? (
-                <>
-                  <CheckCircle2 size={18} />
-                  <span className="font-devanagari">{language === "hi" ? "आशीर्वाद अनलॉक हो गया! (100% पूरा)" : "Blessing Unlocked! (100% Complete)"}</span>
-                </>
-              ) : (
-                <>
-                  <span className="font-devanagari">
-                    {language === "hi" 
-                      ? `नियम ट्रैक करें (${completedCategoryQuestions}/${totalCategoryQuestions} पूरे)`
-                      : `Track Niyams (${completedCategoryQuestions}/${totalCategoryQuestions} complete)`}
-                  </span>
-                  <ChevronRight size={18} />
-                </>
-              )}
-            </button>
-          </Link>
         </div>
+
+        {/* Complete Challenge Button -> Links to /habits?category=xxx */}
+        <Link href={`/habits?category=${category.id}`} style={{ textDecoration: "none", display: "block" }}>
+          <button className="btn btn-primary" style={{ width: "100%", background: isCategoryComplete ? "var(--emerald)" : category.color, color: "#fff", padding: "12px", borderColor: isCategoryComplete ? "var(--emerald)" : category.color }}>
+            {isCategoryComplete ? (
+              <>
+                <CheckCircle2 size={18} />
+                <span className="font-devanagari">{language === "hi" ? "आशीर्वाद अनलॉक हो गया!" : "Blessing Unlocked!"}</span>
+              </>
+            ) : (
+              <>
+                <span className="font-devanagari">
+                  {language === "hi" ? "चुनौती पूरी करें" : "Complete Challenge"}
+                </span>
+                <ChevronRight size={18} />
+              </>
+            )}
+          </button>
+        </Link>
       </motion.div>
 
       {/* ── Stats Row ── */}
