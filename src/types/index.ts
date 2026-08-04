@@ -27,26 +27,19 @@ export interface Teacher {
   email?: string;
 }
 
-export interface Profile {
+export interface User {
   id: string;
-  user_id: string;
   full_name: string;
-  father_name: string;
-  mother_name: string;
-  gender: Gender;
-  dob: string;
-  age_group: AgeGroup;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  state: string;
-  temple_id: string;
-  teacher_id?: string;
+  phone?: string;
+  email?: string;
   guardian_name?: string;
-  photo_url?: string;
-  role: UserRole;
-  created_at: string;
+  guardian_phone?: string;
+  gender?: Gender;
+  age_group?: AgeGroup;
+  city?: string;
+  is_active: boolean;
+  joined_at: string;
+  last_login?: string;
 }
 
 export interface Category {
@@ -125,27 +118,27 @@ export interface UserBadge {
 }
 
 export interface UserStats {
-  id: string;
   user_id: string;
-  total_points: number;
+  total_xp: number;
+  bonus_xp: number;
   current_streak: number;
-  longest_streak: number;
-  best_streak?: number;
-  completion_percentage: number;
-  today_points: number;
-  total_days_participated: number;
-  badges: string[];
+  best_streak: number;
+  days_completed: number;
+  tree_stage: number;
+  last_submission_date?: string;
+  last_submission_xp: number;
+  updated_at: string;
 }
 
 export interface LeaderboardEntry {
-  rank: number;
   user_id: string;
-  full_name: string;
-  photo_url?: string;
-  city: string;
-  temple_name: string;
+  rank: number;
   total_points: number;
-  current_streak: number;
+  updated_at: string;
+  user?: {
+    full_name: string;
+    city: string;
+  };
 }
 
 export interface DayCalendar {
@@ -159,21 +152,14 @@ export interface DayCalendar {
 
 export interface SignupFormData {
   full_name: string;
-  father_name: string;
-  mother_name: string;
+  guardian_name: string;
+  guardian_phone?: string;
   gender: Gender;
-  dob: string;
   age_group: AgeGroup;
-  phone: string;
-  email: string;
-  password: string;
-  address: string;
+  phone?: string;
+  email?: string;
+  password?: string;
   city: string;
-  state: string;
-  temple_id: string;
-  teacher_id?: string;
-  guardian_name?: string;
-  photo_url?: string;
 }
 
 export interface CampaignSettings {

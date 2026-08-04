@@ -6,13 +6,12 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine } from "lucide-react";
+import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine, Target, Sparkles } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
   { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
-  { href: "/bonus", icon: Crown, label: "Bonus", labelHi: "बोनस" },
-  { href: "/leaderboard", icon: TreePine, label: "Forest", labelHi: "वन" },
+  { href: "/sankalp", icon: Sparkles, label: "Sankalp", labelHi: "संकल्प" },
   { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
 ];
 
@@ -115,8 +114,7 @@ function TopBar() {
   const pageTitleHi: Record<string, string> = {
     "/dashboard": "मुख्य पृष्ठ",
     "/habits": "नियम",
-    "/bonus": "बोनस",
-    "/leaderboard": "संयम वन",
+    "/sankalp": "आजीवन संकल्प",
     "/profile": "प्रोफ़ाइल",
     "/calendar": "कैलेंडर",
     "/badges": "बैज",
@@ -126,8 +124,7 @@ function TopBar() {
   const pageTitleEn: Record<string, string> = {
     "/dashboard": "Dashboard",
     "/habits": "Niyam",
-    "/bonus": "Bonus",
-    "/leaderboard": "Forest of Discipline",
+    "/sankalp": "My Lifetime Sankalp",
     "/profile": "Profile",
     "/calendar": "Calendar",
     "/badges": "Badges",
@@ -243,7 +240,7 @@ function TopBar() {
           >
             <Star size={13} fill="var(--gold)" color="var(--gold)" />
             <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#7A4A15", fontFamily: "var(--font-sans)" }}>
-              {(stats?.total_points ?? 0)}
+              {(stats?.total_xp ?? 0)}
             </span>
           </div>
 
@@ -287,15 +284,16 @@ function TopBar() {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect if store has finished loading from localStorage
+    if (_hasHydrated && !user) {
       router.replace("/login");
     }
-  }, [user, router]);
+  }, [user, _hasHydrated, router]);
 
-  if (!user) return null;
+  if (!_hasHydrated || !user) return null;
 
   return (
     <div style={{ paddingBottom: "84px", overflowX: "hidden" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHabitStore } from "@/store/habitStore";
 import { useAuthStore } from "@/store/authStore";
@@ -8,15 +8,16 @@ import { CATEGORIES, QUESTIONS, getQuestionsByCategory } from "@/data/content";
 import type { Category, Question } from "@/types";
 import { IconResolver } from "@/components/IconResolver";
 import { useLanguageStore } from "@/store/languageStore";
-import { supabase } from "@/lib/supabase";
 import { 
   Sunrise, Utensils, Smartphone, Feather, Leaf, 
   Gem, BookOpen, Crown, CheckCircle2, Circle, 
-  Sparkles, Save, Star, ChevronDown, ChevronUp, Square, CheckSquare, ChevronRight
+  Sparkles, Star, Square, CheckSquare, ChevronRight, X, Lock
 } from "lucide-react";
 
+import { getISTDateString } from "@/lib/date";
+
 function getTodayStr() {
-  return new Date().toISOString().split("T")[0];
+  return getISTDateString();
 }
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -60,15 +61,128 @@ export function XPBurst({ points, onDone }: { points: number; onDone: () => void
   );
 }
 
+// ---- Submission Receipt Component ----
+function SubmissionReceipt({ breakdown, onComplete }: { breakdown: any, onComplete: () => void }) {
+  const { language } = useLanguageStore();
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setStep(1), 800); 
+    const t2 = setTimeout(() => setStep(2), 1600); 
+    const t3 = setTimeout(() => setStep(3), 2400); 
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(10, 10, 10, 0.95)",
+        backdropFilter: "blur(20px)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "24px", color: "white"
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "340px", display: "flex", flexDirection: "column", gap: "24px", textAlign: "center" }}>
+        
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12 }}>
+          <div style={{ fontSize: "3rem", marginBottom: "8px" }}>🌸</div>
+          <div className="font-devanagari" style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--gold)" }}>
+            {language === "hi" ? "आज का टास्क पूरा हुआ" : "Today's Tasks Completed"}
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.15)" }} 
+        />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "0 16px" }}>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: step >= 0 ? 1 : 0, x: step >= 0 ? 0 : -20 }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span className="font-devanagari" style={{ color: "rgba(255,255,255,0.7)" }}>
+              {language === "hi" ? "मूल अंक" : "Base Points"}
+            </span>
+            <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "1.1rem" }}>{breakdown.baseXP}</span>
+          </motion.div>
+
+          {step >= 1 && (
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span className="font-devanagari" style={{ color: "var(--gold)", display: "flex", alignItems: "center", gap: "6px" }}>
+                <IconResolver iconName={breakdown.focusIcon || "Sparkles"} size={14} color="var(--gold)" />
+                {language === "hi" ? "आज का चैलेंज" : "Today's Challenge"}
+              </span>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "1.1rem", color: "var(--gold)" }}>
+                +{breakdown.bonusXP}
+              </span>
+            </motion.div>
+          )}
+
+          {/* Optional Perfect Discipline (if any other bonus exists, but we combined it in bonusXP for now) */}
+          {/* If there was a separate perfect day bonus, we could show it here. For now, it's all in bonusXP. */}
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: step >= 2 ? 1 : 0 }} 
+          style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.15)" }} 
+        />
+
+        {step >= 2 && (
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 16px" }}>
+            <span className="font-devanagari" style={{ fontWeight: 800, fontSize: "1.2rem" }}>
+              {language === "hi" ? "कुल" : "Total"}
+            </span>
+            <span style={{ fontFamily: "var(--font-sans)", fontWeight: 900, fontSize: "1.5rem", color: "white" }}>
+              {breakdown.finalXP}
+            </span>
+          </motion.div>
+        )}
+
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: step >= 2 ? 1 : 0 }} 
+          style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.15)" }} 
+        />
+
+        {step >= 3 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: "16px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <div style={{ color: "var(--emerald)", display: "flex", alignItems: "center", gap: "8px", fontWeight: 700 }}>
+              <CheckCircle2 size={20} />
+              {language === "hi" ? "सफलतापूर्वक सेव किया गया" : "Saved Successfully"}
+            </div>
+            <div className="font-devanagari" style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>
+              {language === "hi" ? "कल मिलते हैं।" : "See you tomorrow."}
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onComplete}
+              className="btn font-devanagari"
+              style={{ marginTop: "24px", background: "white", color: "black", padding: "12px 32px", borderRadius: "30px", fontWeight: 700, fontSize: "1rem", border: "none" }}
+            >
+              {language === "hi" ? "बंद करें" : "Close"}
+            </motion.button>
+          </motion.div>
+        )}
+
+      </div>
+    </motion.div>
+  );
+}
+
+
 // ---- Habit Card ----
 export function HabitCard({
   question,
   date,
   onToggle,
+  isSubmitted = false,
 }: {
   question: Question;
   date: string;
   onToggle: (q: Question) => void;
+  isSubmitted?: boolean;
 }) {
   const { getEntryForDate } = useHabitStore();
   const { language } = useLanguageStore();
@@ -77,6 +191,7 @@ export function HabitCard({
   const [celebrating, setCelebrating] = useState(false);
 
   const handleToggle = () => {
+    if (isSubmitted) return;
     if (!isCompleted) setCelebrating(true);
     onToggle(question);
     setTimeout(() => setCelebrating(false), 600);
@@ -117,7 +232,8 @@ export function HabitCard({
         borderRadius: "var(--r-lg)",
         boxShadow: isSankalp && !isCompleted ? "0 4px 14px rgba(232, 93, 4, 0.1)" : "var(--shadow-sm)",
         position: "relative",
-        cursor: "pointer"
+        cursor: isSubmitted ? "default" : "pointer",
+        opacity: isSubmitted && !isCompleted ? 0.7 : 1
       }}
       onClick={handleToggle}
     >
@@ -168,17 +284,7 @@ export function HabitCard({
                 <div className="font-devanagari" style={{ fontWeight: 700, fontSize: "1rem", lineHeight: 1.3, color: "var(--text-primary)" }}>
                   {language === "hi" ? question.title_hi : question.title_en}
                 </div>
-                {isSankalp && (
-                  <span className="font-devanagari" style={{ fontSize: "0.6875rem", background: "#E85D04", color: "white", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>
-                    {language === "hi" ? "आजीवन" : "Lifetime"}
-                  </span>
-                )}
               </div>
-              {language === "hi" && (
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                  {question.title_en}
-                </div>
-              )}
             </div>
 
             {/* Points badge */}
@@ -193,36 +299,31 @@ export function HabitCard({
           <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "8px", lineHeight: 1.5 }}>
             {language === "hi" ? question.description_hi : question.description_en}
           </p>
-
-          {/* Motivational quote on completion */}
-          <AnimatePresence>
-            {isCompleted && question.motivational_quote && (
-              <motion.div
-                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: "auto", marginTop: 12 }}
-                exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                style={{ overflow: "hidden" }}
-              >
-                <div className="font-devanagari" style={{ fontSize: "0.75rem", fontStyle: "italic", color: "var(--emerald)", paddingLeft: "10px", borderLeft: "2px solid var(--emerald)" }}>
-                  "{question.motivational_quote}"
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
       {/* Toggle */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--surface-border)" }}>
-        <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-          {isCompleted 
-            ? (isSankalp ? (language === "hi" ? "आजीवन संकल्प स्वीकृत" : "Lifetime pledge accepted") : (language === "hi" ? "पूर्ण किया गया" : "Completed")) 
-            : (isSankalp ? (language === "hi" ? "संकल्प लेने के लिए टैप करें" : "Tap to take lifetime vow") : (language === "hi" ? "पूरा करने के लिए टैप करें" : "Tap to mark complete"))
-          }
+        <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
+          {isSubmitted ? (
+            <>
+              <Lock size={12} />
+              <span>{isCompleted ? (language === "hi" ? "सबमिट और लॉक" : "Submitted & Locked") : (language === "hi" ? "अपूर्ण (लॉक)" : "Locked")}</span>
+            </>
+          ) : (
+            isCompleted 
+              ? (language === "hi" ? "पूर्ण किया गया" : "Completed") 
+              : (language === "hi" ? "पूरा करने के लिए टैप करें" : "Tap to mark complete")
+          )}
         </div>
         <div 
           onClick={(e) => { e.stopPropagation(); handleToggle(); }} 
-          style={{ cursor: "pointer", color: isCompleted ? "var(--emerald)" : "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ 
+            cursor: isSubmitted ? "not-allowed" : "pointer", 
+            color: isCompleted ? "var(--emerald)" : "var(--text-muted)", 
+            display: "flex", alignItems: "center", justifyContent: "center",
+            opacity: isSubmitted ? 0.8 : 1
+          }}
         >
           {question.input_type === 'radio' ? (
             isCompleted ? <CheckCircle2 size={26} /> : <Circle size={26} />
@@ -290,29 +391,52 @@ function CategoryTab({
 export default function HabitsPage() {
   const today = getTodayStr();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
-  const [xpBursts, setXpBursts] = useState<{ id: string; points: number }[]>([]);
 
-  const { toggleHabit, getEntryForDate, getDayEntries, getDayPoints, getDayCompletionPct } = useHabitStore();
-  const { user, stats, updatePoints } = useAuthStore();
+  const { toggleHabit, getEntryForDate, getDayPoints, isSubmittedForDate, setSubmittedDate } = useHabitStore();
+  const { user, stats, updatePoints, setStats } = useAuthStore();
   const { language } = useLanguageStore();
 
   const questions = getQuestionsByCategory(activeCategory);
   const todayPoints = getDayPoints(today);
-  const todayPct = getDayCompletionPct(today);
+
+  const [isSubmittedToday, setIsSubmittedToday] = useState(false);
+
+  // Check submission status on load (restores draft from localStorage, then checks backend)
+  useEffect(() => {
+    const checkStatus = async () => {
+      const localSubmitted = isSubmittedForDate(today);
+      const authSubmitted = stats?.last_submission_date === today;
+
+      if (localSubmitted || authSubmitted) {
+        setIsSubmittedToday(true);
+      }
+
+      // Check backend to enforce read-only state even if localStorage was cleared
+      try {
+        const { checkTodaySubmissionStatus } = await import("@/app/actions/habits");
+        const res = await checkTodaySubmissionStatus(today);
+        if (res.submitted) {
+          setSubmittedDate(today, true);
+          setIsSubmittedToday(true);
+        }
+      } catch (e) {
+        console.error("Error verifying submission status:", e);
+      }
+    };
+    checkStatus();
+  }, [today, stats?.last_submission_date, isSubmittedForDate, setSubmittedDate]);
 
   const handleToggle = useCallback(
     (question: Question) => {
+      if (isSubmittedToday) return;
       const result = toggleHabit(question.id, today);
       if (result.completed) {
-        // Add XP burst animation
-        const burstId = Date.now().toString();
-        setXpBursts((prev) => [...prev, { id: burstId, points: question.points }]);
         updatePoints(question.points);
       } else {
         updatePoints(-question.points);
       }
     },
-    [toggleHabit, today, updatePoints]
+    [toggleHabit, today, updatePoints, isSubmittedToday]
   );
 
   const getCompletedCount = (catId: string) => {
@@ -320,6 +444,60 @@ export default function HabitsPage() {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rewardBreakdown, setRewardBreakdown] = useState<any>(null);
+
+  const handleSubmitNiyams = async () => {
+    setIsSubmitting(true);
+    try {
+      const completedQuestionIds = useHabitStore.getState().entries
+        .filter(e => e.date === today && e.completed)
+        .map(e => e.questionId);
+
+      const payload = {
+        date: today,
+        completedQuestionIds
+      };
+
+      const { submitDailyNiyam } = await import("@/app/actions/habits");
+      const result = await submitDailyNiyam(payload);
+
+      if (result.success && result.stats && result.breakdown) {
+        // Mark as submitted locally and lock controls immediately
+        setSubmittedDate(today, true);
+        setIsSubmittedToday(true);
+
+        // Show reward reveal animation
+        setRewardBreakdown(result.breakdown);
+        
+        // Update auth store with final stats
+        setStats({
+          user_id: user?.id || "",
+          bonus_xp: stats?.bonus_xp || 0,
+          ...result.stats,
+          last_submission_date: today,
+          last_submission_xp: result.breakdown.finalXP,
+          updated_at: new Date().toISOString()
+        });
+      } else {
+        // Safe Mode
+        if (result.error === 'You have already submitted your Niyam for this date.') {
+          alert(result.error);
+        } else {
+          alert(language === "hi" ? "सिंक करने में असमर्थ। आपकी प्रगति सुरक्षित रूप से सेव कर ली गई है। कृपया बाद में पुनः प्रयास करें।" : "Unable to sync. Your progress is safely saved locally. Retrying later.");
+        }
+      }
+    } catch (e: any) {
+      console.error("Submission error", e);
+      alert(language === "hi" ? "सिंक करने में असमर्थ। आपकी प्रगति सुरक्षित रूप से सेव कर ली गई है।" : "Unable to sync. Your progress is safely saved locally.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRevealComplete = () => {
+    setRewardBreakdown(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const activeCategories = CATEGORIES.filter((c) => c.id !== "bonus" && c.id !== "sankalp");
   const currentCategoryIndex = activeCategories.findIndex(c => c.id === activeCategory);
@@ -329,15 +507,12 @@ export default function HabitsPage() {
 
   return (
     <div className="page" style={{ paddingBottom: "100px" }}>
-      {/* XP Animations */}
+      
+      {/* 🚀 Reward Reveal Overlay 🚀 */}
       <AnimatePresence>
-        {xpBursts.map((burst) => (
-          <XPBurst
-            key={burst.id}
-            points={burst.points}
-            onDone={() => setXpBursts((prev) => prev.filter((b) => b.id !== burst.id))}
-          />
-        ))}
+        {rewardBreakdown && (
+          <SubmissionReceipt breakdown={rewardBreakdown} onComplete={handleRevealComplete} />
+        )}
       </AnimatePresence>
 
       {/* Header */}
@@ -348,32 +523,78 @@ export default function HabitsPage() {
           padding: "16px 16px 12px", borderBottom: "1px solid var(--surface-border)"
         }}
       >
-        {/* Day progress */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <div>
-            <div className="font-devanagari heading-md">
-              {new Date().toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { weekday: "long", day: "numeric", month: "long" })}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div className="font-devanagari heading-md">
+                {new Date().toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", { weekday: "long", day: "numeric", month: "long" })}
+              </div>
+              <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
+                {language === "hi" ? "आज के अंक: " : "Today's points: "} <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
+              </div>
             </div>
-            <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-              {language === "hi" ? "आज के अंक: " : "Today's points: "} <span style={{ fontWeight: 700, color: "var(--gold)", display: "flex", alignItems: "center", gap: "2px" }}><Star size={12} fill="currentColor" /> {todayPoints}</span>
+
+            {isSubmittedToday ? (
+              <div
+                className="font-devanagari"
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "0.8125rem",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(16,185,129,0.1)",
+                  color: "var(--emerald)",
+                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontWeight: 700
+                }}
+              >
+                <Lock size={14} />
+                <span>{language === "hi" ? "आज का सबमिशन पूर्ण" : "Submitted Today"}</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleSubmitNiyams}
+                disabled={isSubmitting}
+                className="btn btn-primary font-devanagari"
+                style={{
+                  padding: "8px 16px",
+                  fontSize: "0.875rem",
+                  borderRadius: "var(--r-md)",
+                  background: "var(--brand)",
+                  color: "#fff",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(162, 98, 42, 0.2)"
+                }}
+              >
+                {isSubmitting ? (
+                  <span className="spinner" style={{ width: "14px", height: "14px", border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <>
+                    <span>{language === "hi" ? "सबमिट करें" : "Submit"}</span>
+                    <CheckCircle2 size={14} />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {isSubmittedToday ? (
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--emerald)", fontWeight: 600, borderLeft: "2px solid var(--emerald)", paddingLeft: "8px", marginTop: "2px" }}>
+              {language === "hi" ? "🔒 आज के टास्क सबमिट हो चुकी है। अब यह केवल देखने के लिए है।" : "🔒 Today's sadhana has been submitted. It is now read-only."}
             </div>
-          </div>
-          <div className={`chip ${todayPct === 100 ? "chip-emerald" : "chip-brand"}`}>
-            {todayPct}% {language === "hi" ? "पूर्ण" : "Completed"}
-          </div>
+          ) : (
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", fontWeight: 600, borderLeft: "2px solid var(--brand)", paddingLeft: "8px", marginTop: "2px" }}>
+              {language === "hi" ? "⚠️ आज के नियम चेक करने के बाद सबमिट करना न भूलें" : "⚠️ Don't forget to submit after checking today's niyams"}
+            </div>
+          )}
         </div>
 
-        {/* Overall progress bar */}
-        <div className="progress-track" style={{ marginBottom: "20px" }}>
-          <motion.div
-            className="progress-fill"
-            style={{ background: "linear-gradient(90deg, var(--brand), var(--gold))" }}
-            animate={{ width: `${todayPct}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-
-        {/* Category tabs */}
         <div className="no-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
           {activeCategories.map((cat) => (
             <CategoryTab
@@ -388,7 +609,6 @@ export default function HabitsPage() {
         </div>
       </div>
 
-      {/* Questions */}
       <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -399,7 +619,6 @@ export default function HabitsPage() {
             transition={{ duration: 0.25, ease: "easeOut" }}
             style={{ display: "flex", flexDirection: "column", gap: "12px" }}
           >
-            {/* Habit cards */}
             {questions.map((question, i) => (
               <motion.div
                 key={question.id}
@@ -411,11 +630,11 @@ export default function HabitsPage() {
                   question={question}
                   date={today}
                   onToggle={handleToggle}
+                  isSubmitted={isSubmittedToday}
                 />
               </motion.div>
             ))}
 
-            {/* Next Category Button */}
             {nextCategory ? (
               <motion.button
                 initial={{ opacity: 0 }}
@@ -444,47 +663,34 @@ export default function HabitsPage() {
                 </span>
                 <ChevronRight size={20} />
               </motion.button>
+            ) : isSubmittedToday ? (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                disabled
+                className="btn font-devanagari"
+                style={{
+                  marginTop: "16px",
+                  width: "100%",
+                  padding: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  background: "var(--surface-raised)",
+                  color: "var(--text-muted)",
+                  border: "1px solid var(--surface-border)",
+                  cursor: "not-allowed"
+                }}
+              >
+                <Lock size={18} />
+                <span>{language === "hi" ? "आज के टास्क सबमिट हो चुकी है" : "Today's Submission Completed"}</span>
+              </motion.button>
             ) : (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                onClick={async () => {
-                  setIsSubmitting(true);
-                  try {
-                    const userId = user?.id;
-                    if (userId) {
-                      const dayEntries = getDayEntries(today);
-                      const currentDayPoints = getDayPoints(today);
-
-                      // 1. Sync entries to Supabase
-                      if (dayEntries.length > 0) {
-                        const rows = dayEntries.map((e) => ({
-                          user_id: userId,
-                          question_id: e.questionId,
-                          date: today,
-                          completed: true,
-                        }));
-                        await supabase.from("habit_entries").upsert(rows, { onConflict: "user_id,question_id,date" });
-                      }
-
-                      // 2. Sync user stats total points
-                      const totalPts = stats?.total_points ?? currentDayPoints;
-                      await supabase.from("user_stats").upsert({
-                        user_id: userId,
-                        total_points: totalPts,
-                        current_streak: stats?.current_streak ?? 1,
-                        best_streak: stats?.best_streak ?? 1,
-                        updated_at: new Date().toISOString(),
-                      });
-                    }
-                  } catch (e) {
-                    console.warn("Supabase habit sync notice", e);
-                  } finally {
-                    setIsSubmitting(false);
-                    alert(language === "hi" ? "नियम सफलतापूर्वक क्लाउड पर सेव हो गए!" : "Niyams successfully synced to cloud!");
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                }}
+                onClick={handleSubmitNiyams}
                 disabled={isSubmitting}
                 className="btn btn-primary font-devanagari"
                 style={{
@@ -514,4 +720,3 @@ export default function HabitsPage() {
     </div>
   );
 }
-

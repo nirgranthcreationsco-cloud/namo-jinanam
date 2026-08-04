@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -8,89 +8,65 @@ import { useLanguageStore } from "@/store/languageStore";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { ArrowRight, Globe } from "lucide-react";
+import { loginAction } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const { setUser, setProfile, setStats } = useAuthStore();
+  const { user, setUser, setProfile, setStats, _hasHydrated } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
+
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (_hasHydrated && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, _hasHydrated, router]);
+
+  if (!mounted || !_hasHydrated) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier || !password) return;
 
-    const isEmail = identifier.includes("@");
-    const emailStr = isEmail ? identifier : `${identifier.replace(/\D/g, "")}@namojinanam.com`;
-    const phoneStr = isEmail ? "" : identifier;
+    setIsSubmitting(true);
+    setErrorMsg("");
 
-    let userId = "user-" + Date.now();
-    let fetchedProfile: any = null;
-    let fetchedStats: any = null;
+    const result = await loginAction(identifier, password);
 
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: emailStr,
-        password: password,
-      });
-
-      if (authData?.user) {
-        userId = authData.user.id;
-
-        // Fetch user profile from Supabase Cloud
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (prof) fetchedProfile = prof;
-
-        // Fetch user stats from Supabase Cloud
-        const { data: st } = await supabase
-          .from("user_stats")
-          .select("*")
-          .eq("user_id", userId)
-          .single();
-
-        if (st) fetchedStats = st;
-      }
-    } catch (e) {
-      console.warn("Supabase auth login fallback", e);
+    if (!result.success) {
+      setErrorMsg(result.error || "Login failed");
+      setIsSubmitting(false);
+      return;
     }
 
-    setUser({ id: userId, email: emailStr });
-    setProfile({
-      id: userId,
-      user_id: userId,
-      full_name: fetchedProfile?.full_name || (language === "hi" ? "अमित जैन" : "Amit Jain"),
-      phone: fetchedProfile?.phone || phoneStr,
-      gender: fetchedProfile?.gender || "male",
-      age_group: fetchedProfile?.age_group || "24-40",
-      dob: fetchedProfile?.dob || "2000-01-01",
-      email: emailStr,
-      address: fetchedProfile?.city || "Mumbai",
-      state: "",
-      city: fetchedProfile?.city || "Mumbai",
-      temple_id: "temple_01",
-      father_name: fetchedProfile?.father_name || (language === "hi" ? "श्री रमेश जैन" : "Shri Ramesh Jain"),
-      mother_name: fetchedProfile?.mother_name || (language === "hi" ? "श्रीमती कमला जैन" : "Smt. Kamla Jain"),
-      role: "participant",
-      created_at: new Date().toISOString()
-    });
+    // Fetch user and stats to populate Zustand store
+    const isEmail = identifier.includes("@");
+    const { data: user } = await supabase
+      .from("users")
+      .select("*")
+      .eq(isEmail ? "email" : "phone", identifier)
+      .single();
 
-    setStats({
-      id: "stats-" + userId,
-      user_id: userId,
-      total_points: fetchedStats?.total_points ?? 0,
-      today_points: 0,
-      current_streak: fetchedStats?.current_streak ?? 0,
-      longest_streak: fetchedStats?.best_streak ?? 0,
-      best_streak: fetchedStats?.best_streak ?? 0,
-      total_days_participated: 0,
-      completion_percentage: 0,
-      badges: []
-    });
+    if (user) {
+      const { data: stats } = await supabase
+        .from("user_stats")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      setUser({ id: user.id, phone: user.phone, email: user.email });
+      setProfile(user);
+      
+      if (stats) {
+        setStats(stats);
+      }
+    }
 
     router.replace("/dashboard");
   };
@@ -214,14 +190,20 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="btn btn-primary"
               style={{ width: "100%", padding: "16px", marginTop: "8px", fontSize: "1rem" }}
             >
               <span className="font-devanagari">
-                {language === "hi" ? "लॉगिन (Login)" : "Login"}
+                {isSubmitting ? (language === "hi" ? "कृपया प्रतीक्षा करें..." : "Please wait...") : (language === "hi" ? "लॉगिन (Login)" : "Login")}
               </span>
-              <ArrowRight size={18} />
+              {!isSubmitting && <ArrowRight size={18} />}
             </button>
+            {errorMsg && (
+              <div style={{ color: "var(--danger)", textAlign: "center", fontSize: "0.875rem" }}>
+                {errorMsg}
+              </div>
+            )}
           </form>
 
           {/* Quick Demo Mode */}

@@ -5,30 +5,39 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { supabase } from "@/lib/supabase";
 import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
+import { signupAction } from "@/app/actions/auth";
+import { SignupFormData } from "@/types";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { hasSeenOnboarding } = useAuthStore();
+  const { hasSeenOnboarding, user, _hasHydrated } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!hasSeenOnboarding) {
-      router.push("/onboarding");
+    setMounted(true);
+    if (_hasHydrated) {
+      if (!hasSeenOnboarding) {
+        router.push("/onboarding");
+      } else if (user) {
+        router.replace("/dashboard");
+      }
     }
-  }, [hasSeenOnboarding, router]);
+  }, [hasSeenOnboarding, user, _hasHydrated, router]);
+
+  if (!mounted || !_hasHydrated) return null;
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
+    identifier: "",
     password: "",
-    phone: "",
     gender: "",
     ageGroup: "",
     city: "",
-    fatherName: "",
-    motherName: "",
+    guardianName: "",
+    guardianPhone: "",
   });
   const { setUser, setProfile, setStats } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
@@ -40,25 +49,11 @@ export default function SignupPage() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   const handleSubmit = async () => {
-    const userEmail = formData.email || `${formData.phone.replace(/\D/g, "")}@namojinanam.com`;
-    const userPassword = formData.password || "Password123!";
-
-    let userId = "user-" + Date.now();
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userEmail,
-        password: userPassword,
-      });
-
-      if (authData?.user) {
-        userId = authData.user.id;
-      }
-    } catch (e) {
-      console.warn("Supabase auth signup fallback to local ID", e);
-    }
-
-    setUser({ id: userId, email: userEmail });
+    setIsSubmitting(true);
+    setErrorMsg("");
 
     const genderMap: Record<string, "male" | "female" | "other"> = {
       "पुरुष (Male)": "male",
@@ -73,67 +68,40 @@ export default function SignupPage() {
     else if (formData.ageGroup === "13-23") mappedAgeGroup = "13-23";
     else if (formData.ageGroup === "24-40") mappedAgeGroup = "24-40";
 
-    const profileData = {
-      id: userId,
-      user_id: userId,
+    const isEmail = formData.identifier.includes("@");
+    const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
+    const emailVal = isEmail ? formData.identifier.trim() : "";
+    const cleanGuardianPhone = formData.guardianPhone.replace(/\D/g, "");
+
+    const payload: SignupFormData = {
       full_name: formData.fullName,
-      phone: formData.phone,
+      guardian_name: formData.guardianName,
+      guardian_phone: cleanGuardianPhone || undefined,
       gender: mappedGender,
       age_group: mappedAgeGroup,
-      dob: "2000-01-01",
-      email: userEmail,
-      address: formData.city,
-      state: "",
+      phone: cleanPhone || undefined,
+      email: emailVal || undefined,
+      password: formData.password || "Password123!",
       city: formData.city,
-      temple_id: "temple_01",
-      father_name: formData.fatherName,
-      mother_name: formData.motherName,
-      role: "participant" as const,
-      created_at: new Date().toISOString()
     };
 
-    const statsData = {
-      id: "stats-" + userId,
-      user_id: userId,
-      total_points: 0,
-      today_points: 0,
-      current_streak: 0,
-      longest_streak: 0,
-      best_streak: 0,
-      total_days_participated: 0,
-      completion_percentage: 0,
-      badges: []
-    };
+    const result = await signupAction(payload);
+    
+    setIsSubmitting(false);
 
-    setProfile(profileData);
-    setStats(statsData);
-
-    // Save profile and stats to Supabase Cloud
-    try {
-      await supabase.from("profiles").upsert({
-        id: userId,
-        full_name: formData.fullName,
-        father_name: formData.fatherName,
-        mother_name: formData.motherName,
-        email: userEmail,
-        phone: formData.phone,
-        gender: mappedGender,
-        age_group: mappedAgeGroup,
-        dob: "2000-01-01",
-        city: formData.city,
-      });
-
-      await supabase.from("user_stats").upsert({
-        user_id: userId,
-        total_points: 0,
-        current_streak: 0,
-        best_streak: 0
-      });
-    } catch (dbError) {
-      console.warn("Supabase profile save notice", dbError);
+    if (result.success && result.user) {
+      setUser({ id: result.user.id, phone: result.user.phone, email: result.user.email });
+      setProfile(result.user);
+      if (result.stats) {
+        setStats(result.stats);
+      }
+      setStep(5);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
+    } else {
+      setErrorMsg(result.error || "Signup failed");
     }
-
-    router.push("/dashboard");
   };
 
   const getStepContent = () => {
@@ -158,18 +126,9 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="field-label font-devanagari">
-                {language === "hi" ? "ईमेल (Email) - वैकल्पिक" : "Email (Optional)"}
+                {language === "hi" ? "मोबाइल नंबर या ईमेल (Mobile Number or Email)" : "Mobile Number or Email"}
               </label>
-              <input type="email" className="field" placeholder={language === "hi" ? "अपना ईमेल दर्ज करें" : "Enter your email address"} value={formData.email} onChange={(e) => updateForm("email", e.target.value)} />
-            </div>
-            <div>
-              <label className="field-label font-devanagari">
-                {language === "hi" ? "मोबाइल नंबर (Mobile Number)" : "Mobile Number"}
-              </label>
-              <input type="tel" className="field" placeholder={language === "hi" ? "अपना 10 अंकों का मोबाइल नंबर दर्ज करें" : "Enter your 10-digit mobile number"} value={formData.phone} onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "");
-                if (val.length <= 10) updateForm("phone", val);
-              }} />
+              <input type="text" className="field" placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर या ईमेल दर्ज करें" : "Enter 10-digit mobile number or email"} value={formData.identifier} onChange={(e) => updateForm("identifier", e.target.value)} />
             </div>
             <div>
               <label className="field-label font-devanagari">
@@ -224,15 +183,18 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="field-label font-devanagari">
-                {language === "hi" ? "पिता का नाम (Father's Name)" : "Father's Name"}
+                {language === "hi" ? "अभिभावक का नाम (Guardian's Name)" : "Guardian's Name"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "पिता का नाम" : "Father's name"} value={formData.fatherName} onChange={(e) => updateForm("fatherName", e.target.value)} />
+              <input type="text" className="field" placeholder={language === "hi" ? "अभिभावक का नाम" : "Guardian's name"} value={formData.guardianName} onChange={(e) => updateForm("guardianName", e.target.value)} />
             </div>
             <div>
               <label className="field-label font-devanagari">
-                {language === "hi" ? "माता का नाम (Mother's Name)" : "Mother's Name"}
+                {language === "hi" ? "अभिभावक का मोबाइल नंबर (Guardian's Phone)" : "Guardian's Phone"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "माता का नाम" : "Mother's name"} value={formData.motherName} onChange={(e) => updateForm("motherName", e.target.value)} />
+              <input type="tel" className="field" placeholder={language === "hi" ? "अभिभावक का मोबाइल नंबर" : "Guardian's phone number"} value={formData.guardianPhone} onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "");
+                if (val.length <= 10) updateForm("guardianPhone", val);
+              }} />
             </div>
           </div>
         );
@@ -276,13 +238,15 @@ export default function SignupPage() {
                   <>
                     1. मैं संकल्प लेता/लेती हूँ कि इस चातुर्मास अभियान में मैं पूरी ईमानदारी और निष्ठा से भाग लूँगा/लूँगी।<br/><br/>
                     2. मैं प्रतिदिन अपनी आदतों को सत्यनिष्ठा से ट्रैक करूँगा/करूँगी।<br/><br/>
-                    3. मेरे द्वारा दी गई सभी जानकारी सत्य है।
+                    3. मुझे ज्ञात है कि एक बार दैनिक नियम सबमिट करने के बाद, वे उस दिन के लिए लॉक हो जाएंगे और उन्हें बदला नहीं जा सकेगा।<br/><br/>
+                    4. मेरे द्वारा दी गई सभी जानकारी सत्य है।
                   </>
                 ) : (
                   <>
                     1. I resolve that I will participate in this Chaturmas campaign with absolute honesty and commitment.<br/><br/>
                     2. I will track my habits daily with integrity.<br/><br/>
-                    3. All information provided by me is accurate and true.
+                    3. I understand that once daily niyams are submitted, they are permanently locked for the day and cannot be modified.<br/><br/>
+                    4. All information provided by me is accurate and true.
                   </>
                 )}
               </p>
@@ -314,8 +278,11 @@ export default function SignupPage() {
   const canProceed = () => {
     switch (step) {
       case 1: {
-        const cleanPhone = formData.phone.replace(/\D/g, "");
-        return formData.fullName.trim().length >= 2 && cleanPhone.length >= 10 && formData.password.length >= 6;
+        const isEmail = formData.identifier.includes("@");
+        const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
+        const hasPhone = cleanPhone.length === 10;
+        const hasEmail = isEmail && formData.identifier.trim().length > 0 && formData.identifier.includes(".");
+        return formData.fullName.trim().length >= 2 && (hasPhone || hasEmail) && formData.password.length >= 6;
       }
       case 2: 
         return formData.gender !== "" && formData.ageGroup !== "";
@@ -410,17 +377,19 @@ export default function SignupPage() {
             </button>
           ) : step === 4 ? (
             <button
-              onClick={handleNext}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
               className="btn btn-primary"
               style={{ width: "100%", padding: "16px", fontSize: "1rem", background: "var(--emerald)", boxShadow: "0 4px 12px rgba(16,185,129,0.3)" }}
             >
               <span className="font-devanagari">
-                {language === "hi" ? "मैं सहमत हूँ (I Agree)" : "I Agree"}
+                {isSubmitting ? (language === "hi" ? "कृपया प्रतीक्षा करें..." : "Please wait...") : (language === "hi" ? "मैं सहमत हूँ (I Agree)" : "I Agree")}
               </span>
+              {!isSubmitting && <ArrowRight size={18} />}
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={() => router.push("/dashboard")}
               className="btn btn-primary"
               style={{ width: "100%", padding: "16px", fontSize: "1rem" }}
             >
@@ -429,6 +398,11 @@ export default function SignupPage() {
               </span>
               <ArrowRight size={18} />
             </button>
+          )}
+          {errorMsg && (
+            <div style={{ color: "var(--danger)", marginTop: "12px", textAlign: "center", fontSize: "0.875rem" }}>
+              {errorMsg}
+            </div>
           )}
         </div>
       </div>

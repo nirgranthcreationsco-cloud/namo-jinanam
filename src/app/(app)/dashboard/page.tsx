@@ -6,17 +6,49 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useHabitStore } from "@/store/habitStore";
 import { useLanguageStore } from "@/store/languageStore";
+import { getTodayInspiration } from "@/data/challenges";
+import { CATEGORIES, QUESTIONS } from "@/data/content";
 
 import { 
   Moon, Sunrise, Sun, Sunset, 
-  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine
+  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine, Clock, Target, Info, Leaf, Salad, Smartphone, Brain, HeartHandshake, Gem
 } from "lucide-react";
+
+function CountdownTimer() {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    };
+    
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--brand)", fontSize: "0.875rem", fontWeight: 700, fontFamily: "var(--font-sans)" }}>
+      <Clock size={16} />
+      <span>{timeLeft}</span>
+    </div>
+  );
+}
 
 function getGreeting(language: "hi" | "en") {
   const h = new Date().getHours();
   if (language === "hi") {
     if (h < 6) return { text: "जय जिनेन्द्र", sub: "ब्रह्म मुहूर्त में जागरण करें", icon: Moon };
-    if (h < 12) return { text: "जय जिनेन्द्र", sub: "आज की साधना शुरू करें", icon: Sunrise };
+    if (h < 12) return { text: "जय जिनेन्द्र", sub: "आज के टास्क शुरू करें", icon: Sunrise };
     if (h < 17) return { text: "जय जिनेन्द्र", sub: "साधना में एकाग्र रहें", icon: Sun };
     if (h < 20) return { text: "जय जिनेन्द्र", sub: "संध्या वंदना का समय", icon: Sunset };
     return { text: "जय जिनेन्द्र", sub: "प्रतिक्रमण करें और सोएं", icon: Moon };
@@ -88,7 +120,7 @@ function MiniCalendar({ language }: { language: "hi" | "en" }) {
 
 export default function DashboardPage() {
   const { profile, stats } = useAuthStore();
-  const { getDayCompletionPct } = useHabitStore();
+  const { getDayCompletionPct, entries } = useHabitStore();
   const { language } = useLanguageStore();
   
   const today = new Date().toISOString().split("T")[0];
@@ -96,6 +128,22 @@ export default function DashboardPage() {
   const GreetingIcon = greeting.icon;
 
   const todayPct = getDayCompletionPct(today);
+  const inspiration = getTodayInspiration(today);
+  const category = CATEGORIES.find(c => c.id === inspiration.categoryId) || CATEGORIES[0];
+  
+  const todayEntry = (entries as any)[today] || { selectedIds: [], isSubmitted: false };
+  
+  const categoryQuestions = QUESTIONS.filter(q => q.category_id === inspiration.categoryId && q.type === 'daily' && q.is_active !== false);
+  const totalCategoryQuestions = categoryQuestions.length;
+  const completedCategoryQuestions = categoryQuestions.filter(q => todayEntry.selectedIds.includes(q.id)).length;
+  const categoryProgressPct = totalCategoryQuestions === 0 ? 0 : Math.round((completedCategoryQuestions / totalCategoryQuestions) * 100);
+  const isCategoryComplete = completedCategoryQuestions === totalCategoryQuestions && totalCategoryQuestions > 0;
+
+  // Simple icon mapper
+  const IconMap: Record<string, any> = {
+    'Sunrise': Sunrise, 'Salad': Salad, 'Smartphone': Smartphone, 'Om': Sparkles, 'Leaf': Leaf, 'Gem': Gem, 'Brain': Brain, 'HeartHandshake': HeartHandshake
+  };
+  const CategoryIcon = IconMap[category.icon] || Star;
 
 
   return (
@@ -138,7 +186,7 @@ export default function DashboardPage() {
         </Link>
       </motion.div>
 
-      {/* ── Progress Ring Card ── */}
+      {/* ── Today's Inspiration Hero ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
@@ -146,43 +194,107 @@ export default function DashboardPage() {
         className="card"
         style={{
           padding: "24px",
-          background: "linear-gradient(160deg, #fff 0%, #FDF6EE 100%)",
-          border: "1px solid var(--surface-border)"
+          background: `linear-gradient(145deg, #fff 0%, ${category.color}15 100%)`,
+          border: `1px solid ${category.color}30`,
+          boxShadow: `0 12px 32px ${category.color}15`,
+          position: "relative",
+          overflow: "hidden"
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-          {/* Ring */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <ProgressRing percentage={todayPct} size={120} color="var(--brand)" trackColor="var(--surface-overlay)" />
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ fontSize: "1.625rem", fontWeight: 800, color: "var(--brand)", lineHeight: 1, fontFamily: "var(--font-sans)" }}>
-                {todayPct}%
+        {/* Background Accent */}
+        <div style={{ position: "absolute", right: "-30px", top: "-30px", opacity: 0.05, transform: "scale(2.5)", pointerEvents: "none" }}>
+          <CategoryIcon size={120} color={category.color} />
+        </div>
+
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", position: "relative", zIndex: 1 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+              <Sparkles size={14} color="var(--gold)" />
+              <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                {language === "hi" ? "आज की प्रेरणा" : "Today's Inspiration"}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: `${category.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <CategoryIcon size={18} color={category.color} />
               </div>
+              <h2 className="font-devanagari" style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-primary)", margin: 0, lineHeight: 1 }}>
+                {language === "hi" ? category.name_hi : category.name_en}
+              </h2>
             </div>
           </div>
+          <CountdownTimer />
+        </div>
 
-          {/* Text */}
-          <div style={{ flex: 1 }}>
-            <div className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>
-              {language === "hi" ? "आज की साधना" : "Today's Sadhana"}
-            </div>
-            <div className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3, marginBottom: "12px" }}>
-              {todayPct === 0
-                ? (language === "hi" ? "साधना शुरू करें!" : "Start your sadhana!")
-                : todayPct === 100
-                ? (language === "hi" ? <><span className="font-devanagari">शत-प्रतिशत! वाह!</span> <PartyPopper size={16} style={{display:'inline'}}/></> : <><span>Perfect day!</span> <PartyPopper size={16} style={{display:'inline'}}/></>)
-                : (language === "hi" ? <><span className="font-devanagari">बढ़िया जा रहे हैं</span> <ThumbsUp size={16} style={{display:'inline'}}/></> : <><span>Keep going!</span> <ThumbsUp size={16} style={{display:'inline'}}/></>)
-              }
-            </div>
+        {/* Quote */}
+        <div className="font-devanagari" style={{ fontSize: "0.9375rem", color: "var(--text-muted)", fontStyle: "italic", marginBottom: "20px", position: "relative", zIndex: 1 }}>
+          "{language === "hi" ? inspiration.quoteHi : inspiration.quoteEn}"
+        </div>
 
-            <Link href="/habits" style={{ textDecoration: "none" }}>
-              <button className="btn btn-primary btn-sm" style={{ borderRadius: "10px", padding: "9px 18px", fontSize: "0.875rem" }}>
-                <CheckCircle2 size={15} />
-                <span className="font-devanagari">{language === "hi" ? "आदतें ट्रैक करें" : "Track Habits"}</span>
-                <ChevronRight size={14} />
-              </button>
-            </Link>
+        {/* Blessing Callout */}
+        <div style={{ 
+          background: "linear-gradient(90deg, var(--gold-dim) 0%, rgba(255,255,255,0.5) 100%)", 
+          borderLeft: "3px solid var(--gold)", 
+          padding: "10px 14px", 
+          borderRadius: "0 12px 12px 0",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          position: "relative",
+          zIndex: 1
+        }}>
+          <Crown size={16} color="var(--gold)" />
+          <div>
+            <div className="font-devanagari" style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#9A6A15", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              {language === "hi" ? "आज का विशेष आशीर्वाद" : "Today's Blessing"}
+            </div>
+            <div className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-primary)" }}>
+              {language === "hi" ? inspiration.blessingHi : inspiration.blessingEn}
+            </div>
           </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-primary)" }}>
+              {language === "hi" ? "प्रगति" : "Progress"}
+            </span>
+            <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 800, color: isCategoryComplete ? "var(--emerald)" : "var(--brand)" }}>
+              {completedCategoryQuestions} / {totalCategoryQuestions} {language === "hi" ? "पूर्ण" : "Completed"}
+            </span>
+          </div>
+          <div style={{ height: "12px", background: "var(--surface-border)", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${categoryProgressPct}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              style={{ 
+                height: "100%", 
+                background: isCategoryComplete ? "var(--emerald)" : category.color,
+                borderRadius: "6px"
+              }}
+            />
+          </div>
+          
+          {/* Action Button */}
+          <Link href="/habits" style={{ textDecoration: "none", display: "block", marginTop: "16px" }}>
+            <button className="btn btn-primary" style={{ width: "100%", background: isCategoryComplete ? "var(--emerald)" : category.color, color: "#fff", borderColor: isCategoryComplete ? "var(--emerald)" : category.color }}>
+              {isCategoryComplete ? (
+                <>
+                  <CheckCircle2 size={18} />
+                  <span className="font-devanagari">{language === "hi" ? "आशीर्वाद सक्रिय!" : "Blessing Activated!"}</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-devanagari">{language === "hi" ? "चुनौती पूरी करें" : "Complete Challenge"}</span>
+                  <ChevronRight size={18} />
+                </>
+              )}
+            </button>
+          </Link>
         </div>
       </motion.div>
 
@@ -195,8 +307,8 @@ export default function DashboardPage() {
       >
         {[
           { icon: Flame, iconBg: "rgba(200,80,20,0.1)", iconColor: "#C85010", value: stats?.current_streak ?? 0, labelHi: "स्ट्रीक", labelEn: "Streak" },
-          { icon: Award, iconBg: "var(--gold-dim)", iconColor: "var(--gold)", value: stats?.total_points ?? 0, labelHi: "कुल अंक", labelEn: "Total XP" },
-          { icon: CalendarDays, iconBg: "var(--emerald-dim)", iconColor: "var(--emerald)", value: stats?.total_days_participated ?? 0, labelHi: "कुल दिन", labelEn: "Days" },
+          { icon: Award, iconBg: "var(--gold-dim)", iconColor: "var(--gold)", value: stats?.total_xp ?? 0, labelHi: "कुल अंक", labelEn: "Total XP" },
+          { icon: CalendarDays, iconBg: "var(--emerald-dim)", iconColor: "var(--emerald)", value: stats?.days_completed ?? 0, labelHi: "कुल दिन", labelEn: "Days" },
         ].map((stat, i) => (
           <div key={i} className="card" style={{ padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" }}>
             <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: stat.iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -217,36 +329,29 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 10 }} 
         animate={{ opacity: 1, y: 0 }} 
         transition={{ delay: 0.2 }}
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}
+        style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}
       >
         <Link href="/bonus" style={{ textDecoration: "none" }}>
           <div className="card card-interactive" style={{
             padding: "16px",
             background: "linear-gradient(140deg, rgba(160,98,42,0.06) 0%, rgba(160,98,42,0.02) 100%)",
-            borderColor: "rgba(160,98,42,0.2)"
+            borderColor: "rgba(160,98,42,0.2)",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px"
           }}>
-            <Crown size={22} color="var(--gold)" style={{ marginBottom: "8px" }} />
-            <div className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>
-              {language === "hi" ? "बोनस पॉइंट्स" : "Bonus Points"}
+            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(160,98,42,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Crown size={24} color="var(--gold)" />
             </div>
-            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-              {language === "hi" ? "विशेष संकल्प देखें" : "View special vows"}
+            <div style={{ flex: 1 }}>
+              <div className="font-devanagari" style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>
+                {language === "hi" ? "बोनस संकल्प" : "Bonus Sankalp"}
+              </div>
+              <div className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                {language === "hi" ? "विशेष संकल्प देखें और स्वीकारें" : "View and accept special vows"}
+              </div>
             </div>
-          </div>
-        </Link>
-        <Link href="/leaderboard" style={{ textDecoration: "none" }}>
-          <div className="card card-interactive" style={{
-            padding: "16px",
-            background: "linear-gradient(140deg, rgba(92,26,16,0.06) 0%, rgba(92,26,16,0.02) 100%)",
-            borderColor: "rgba(92,26,16,0.15)"
-          }}>
-            <TreePine size={22} color="var(--brand)" style={{ marginBottom: "8px" }} />
-            <div className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>
-              {language === "hi" ? "संयम वन" : "Forest"}
-            </div>
-            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-              {language === "hi" ? "अपनी प्रगति देखें" : "Grow your tree"}
-            </div>
+            <ChevronRight size={18} color="var(--text-muted)" />
           </div>
         </Link>
       </motion.div>

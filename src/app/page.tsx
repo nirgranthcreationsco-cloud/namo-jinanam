@@ -10,19 +10,19 @@ import { ArrowRight, Sparkles, BookOpen, Heart, Trophy, MapPin, Globe, Rocket, F
 
 export default function LandingPage() {
   const { language, setLanguage } = useLanguageStore();
-  const { hasSeenOnboarding } = useAuthStore();
+  const { hasSeenOnboarding, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (!hasSeenOnboarding) {
+    if (_hasHydrated && !hasSeenOnboarding) {
       router.push("/onboarding");
     }
-  }, [hasSeenOnboarding, router]);
+  }, [hasSeenOnboarding, _hasHydrated, router]);
 
   // Prevent hydration mismatch
-  if (!mounted) {
+  if (!mounted || !_hasHydrated) {
     return null;
   }
 

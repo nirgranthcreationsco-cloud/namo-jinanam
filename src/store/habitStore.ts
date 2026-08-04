@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Question } from "@/types";
+import { getISTDateString } from "@/lib/date";
 import { QUESTIONS } from "@/data/content";
 
 interface HabitEntry {
@@ -14,6 +15,7 @@ interface HabitState {
   entries: HabitEntry[];
   totalPointsToday: number;
   lastUpdated: string;
+  submittedDates: Record<string, boolean>;
 
   toggleHabit: (questionId: string, date: string) => { completed: boolean; points: number };
   getEntryForDate: (questionId: string, date: string) => HabitEntry | undefined;
@@ -21,11 +23,13 @@ interface HabitState {
   getDayCompletionPct: (date: string) => number;
   getDayPoints: (date: string) => number;
   isCompletedToday: (questionId: string) => boolean;
+  isSubmittedForDate: (date: string) => boolean;
+  setSubmittedDate: (date: string, submitted: boolean) => void;
   resetDay: (date: string) => void;
 }
 
 function getTodayStr() {
-  return new Date().toISOString().split("T")[0];
+  return getISTDateString();
 }
 
 function getQuestion(id: string): Question | undefined {
@@ -40,6 +44,7 @@ export const useHabitStore = create<HabitState>()(
       entries: [],
       totalPointsToday: 0,
       lastUpdated: "",
+      submittedDates: {},
 
       toggleHabit: (questionId, date) => {
         const { entries } = get();
@@ -116,12 +121,39 @@ export const useHabitStore = create<HabitState>()(
         return entry?.completed ?? false;
       },
 
+      isSubmittedForDate: (date) => {
+        return !!get().submittedDates?.[date];
+      },
+
+      setSubmittedDate: (date, submitted) => {
+        set({
+          submittedDates: {
+            ...(get().submittedDates || {}),
+            [date]: submitted
+          }
+        });
+      },
+
       resetDay: (date) => {
         set({ entries: get().entries.filter((e) => e.date !== date) });
       },
     }),
     {
       name: "namo-jinanam-habits",
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0) {
+          // If the old version didn't have a version number, it defaults to 0
+          // We clear the state safely since questions or IDs might have changed
+          return {
+            entries: [],
+            totalPointsToday: 0,
+            lastUpdated: "",
+            submittedDates: {}
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

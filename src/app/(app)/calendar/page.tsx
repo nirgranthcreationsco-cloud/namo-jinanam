@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useHabitStore } from "@/store/habitStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getISTDateString } from "@/lib/date";
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -30,7 +31,7 @@ export default function CalendarPage() {
     days.push({ day: i, dateStr, pct, d });
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getISTDateString();
 
   return (
     <div className="page" style={{ padding: "20px 16px 100px" }}>
