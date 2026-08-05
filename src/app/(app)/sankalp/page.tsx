@@ -11,7 +11,7 @@ import { IconResolver } from "@/components/IconResolver";
 import { fetchAcceptedSankalps, acceptSankalpAction } from "@/app/actions/sankalp";
 import { 
   Sparkles, Lock, CheckCircle2, Search, ChevronDown, ChevronUp, 
-  ShieldCheck, Heart, Landmark, Flower2, Award
+  ShieldCheck, Heart, Landmark, Flower2, Award, Sun, Sunrise, Crown
 } from "lucide-react";
 
 // Categorize sankalps logically into meaningful spiritual categories
@@ -53,6 +53,36 @@ export default function SankalpPage() {
   const [sankalpToConfirm, setSankalpToConfirm] = useState<Question | null>(null);
   const [acceptedToast, setAcceptedToast] = useState<string | null>(null);
   const [collapsedCats, setCollapsedCats] = useState<Record<string, boolean>>({});
+
+  // Daily changing inspirational quote for the top hero card
+  const dailyQuote = useMemo(() => {
+    const quotes = [
+      {
+        en: "A promise made to yourself is the first step toward transformation.",
+        hi: "स्वयं से की गई प्रतिज्ञा आत्म-रूपांतरण का प्रथम चरण है।"
+      },
+      {
+        en: "Great journeys begin with a single sincere commitment.",
+        hi: "महान यात्राओं का प्रारंभ एक सच्चे संकल्प से होता है।"
+      },
+      {
+        en: "Discipline is the quiet bridge between your vows and spiritual growth.",
+        hi: "संयम ही संकल्प और साधना के बीच का पवित्र पथ है।"
+      },
+      {
+        en: "Awareness transforms every small habit into sacred Sadhana.",
+        hi: "जागरूकता ही साधारण नियम को पवित्र साधना बनाती है।"
+      },
+      {
+        en: "Purity of intention transforms small actions into sacred achievements.",
+        hi: "मंशा की पवित्रता ही छोटे प्रयासों को महान साधना बनाती है।"
+      }
+    ];
+    const todayStr = new Date().toISOString().split("T")[0];
+    const parts = todayStr.split('-');
+    const epochDay = Math.floor(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)) / 86400000);
+    return quotes[epochDay % quotes.length];
+  }, []);
 
   // All Sankalps
   const allSankalps = useMemo(() => {
@@ -242,67 +272,282 @@ export default function SankalpPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Page Header & Hero Section ── */}
+      {/* ── Sacred Introduction Hero Card (Apple Glassmorphism Style) ── */}
       <motion.div 
-        initial={{ opacity: 0, y: -10 }} 
+        initial={{ opacity: 0, y: 15 }} 
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{
-          background: "linear-gradient(135deg, #2D1500 0%, #5A270B 100%)",
-          borderRadius: "24px",
-          padding: "28px 24px",
+          background: "linear-gradient(150deg, #2D1500 0%, #4D230B 50%, #1F0D02 100%)",
+          borderRadius: "28px",
+          padding: "32px 24px",
           color: "white",
-          boxShadow: "0 12px 32px rgba(45,21,0,0.25)",
+          boxShadow: "0 20px 48px rgba(45, 21, 0, 0.3)",
+          border: "1px solid rgba(245, 158, 11, 0.3)",
           marginBottom: "24px",
           position: "relative",
           overflow: "hidden"
         }}
       >
-        <div style={{ position: "absolute", top: -30, right: -30, opacity: 0.08 }}>
-          <Landmark size={180} color="white" />
+        {/* Background Ambient Glow & Icon */}
+        <div style={{ position: "absolute", top: -40, right: -40, opacity: 0.06, pointerEvents: "none" }}>
+          <Landmark size={240} color="white" />
         </div>
+        <div style={{
+          position: "absolute",
+          top: "10%",
+          left: "5%",
+          width: "250px",
+          height: "250px",
+          background: "radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(0,0,0,0) 70%)",
+          pointerEvents: "none",
+          filter: "blur(40px)"
+        }} />
 
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-          <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", border: "1px solid rgba(255,255,255,0.2)" }}>
-            <Flower2 size={24} color="var(--gold)" />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          
+          {/* ⭐ Top Daily Inspirational Quote Badge ⭐ */}
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                borderRadius: "30px",
+                background: "rgba(245, 158, 11, 0.15)",
+                border: "1px solid rgba(245, 158, 11, 0.35)",
+                color: "#FDE68A",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+              }}
+            >
+              <Sparkles size={14} color="#F59E0B" />
+              <span className="font-devanagari">"{language === "hi" ? dailyQuote.hi : dailyQuote.en}"</span>
+            </motion.div>
           </div>
 
-          <h1 className="heading-xl font-devanagari" style={{ color: "white", marginBottom: "8px" }}>
-            {language === "hi" ? "🪷 मेरे आजीवन संकल्प" : "🪷 My Lifetime Sankalp"}
-          </h1>
-          
-          <p className="font-devanagari" style={{ opacity: 0.9, fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "340px", margin: "0 auto 24px", fontStyle: "italic", color: "#FCE7D0" }}>
-            {language === "hi"
-              ? "“संकल्प विवेक के साथ ली जाने वाली प्रतिज्ञा है। केवल उन्हीं संकल्पों को स्वीकार करें जिन्हें आप निष्ठापूर्वक निभाना चाहते हैं।”"
-              : "“A Sankalp is a promise made with awareness. Accept only those commitments you genuinely intend to follow.”"
-            }
-          </p>
-
-          {/* Progress Indicator (No percentages) */}
-          <div style={{ background: "rgba(0,0,0,0.25)", borderRadius: "16px", padding: "16px", border: "1px solid rgba(255,255,255,0.1)" }}>
-            <div style={{ display: "flex", justifyContent: "space-around", marginBottom: "12px" }}>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--gold)", fontFamily: "var(--font-sans)" }}>{acceptedCount}</div>
-                <div className="font-devanagari" style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", fontWeight: 600 }}>
-                  {language === "hi" ? "स्वीकृत संकल्प" : "Accepted"}
-                </div>
-              </div>
-              <div style={{ width: "1px", background: "rgba(255,255,255,0.15)" }} />
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "white", fontFamily: "var(--font-sans)" }}>{remainingCount}</div>
-                <div className="font-devanagari" style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", fontWeight: 600 }}>
-                  {language === "hi" ? "शेष संकल्प" : "Remaining"}
-                </div>
-              </div>
+          {/* Hero Header */}
+          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <div style={{ 
+              width: "52px", height: "52px", borderRadius: "50%", 
+              background: "linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%)", 
+              display: "flex", alignItems: "center", justifyContent: "center", 
+              margin: "0 auto 14px", border: "1px solid rgba(245, 158, 11, 0.4)",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.2)"
+            }}>
+              <Flower2 size={26} color="var(--gold)" />
             </div>
 
-            {/* Minimal progress bar */}
-            <div style={{ height: "6px", background: "rgba(255,255,255,0.15)", borderRadius: "3px", overflow: "hidden" }}>
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: totalCount > 0 ? `${(acceptedCount / totalCount) * 100}%` : "0%" }}
-                transition={{ duration: 0.8 }}
-                style={{ height: "100%", background: "var(--gold)", borderRadius: "3px" }}
-              />
+            <h1 className="heading-xl font-devanagari" style={{ color: "#FFFDF9", marginBottom: "10px", fontSize: "1.625rem" }}>
+              {language === "hi" ? "🪷 आजीवन एवं चातुर्मास संकल्प" : "🪷 Lifetime & Chaturmas Sankalp"}
+            </h1>
+            
+            <p className="font-devanagari" style={{ opacity: 0.9, fontSize: "0.9rem", lineHeight: 1.6, maxWidth: "420px", margin: "0 auto", color: "#FCE7D0" }}>
+              {language === "hi"
+                ? "“संकल्प विवेक और भक्ति के साथ ली गई एक पावन प्रतिज्ञा है। यह केवल पूरा करने वाला टास्क नहीं, बल्कि जीने का एक मार्ग है।”"
+                : "“A Sankalp is a sincere promise made with awareness and devotion. It is not a task to complete, but a commitment to live by.”"
+              }
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: "1px", background: "linear-gradient(90deg, transparent 0%, rgba(245, 158, 11, 0.3) 50%, transparent 100%)", margin: "24px 0" }} />
+
+          {/* 🌸 Section: Understanding Sankalp 🌸 */}
+          <div style={{ marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+              <Flower2 size={18} color="var(--gold)" />
+              <h2 className="font-devanagari" style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#FDE68A" }}>
+                {language === "hi" ? "🌸 संकल्प को समझें" : "🌸 Understanding Sankalp"}
+              </h2>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                {
+                  en: "Accept only those Sankalps that you genuinely intend to follow.",
+                  hi: "केवल उन्हीं संकल्पों को स्वीकार करें जिन्हें आप सच्चे मन से निभाना चाहते हैं।",
+                  icon: Heart,
+                  color: "#F43F5E"
+                },
+                {
+                  en: "Once accepted, a Sankalp becomes a permanent commitment.",
+                  hi: "एक बार स्वीकार करने के बाद, संकल्प एक स्थायी प्रतिबद्धता बन जाता है।",
+                  icon: Lock,
+                  color: "#F59E0B"
+                },
+                {
+                  en: "Complete your Daily Niyams to receive that day's blessings.",
+                  hi: "उस दिन का विशेष आशीर्वाद प्राप्त करने के लिए अपने दैनिक नियम पूरे करें।",
+                  icon: Sparkles,
+                  color: "#10B981"
+                },
+                {
+                  en: "Every day is a new opportunity. Missed blessings are not carried forward.",
+                  hi: "हर दिन एक नया अवसर है। छूटे हुए आशीर्वाद अगले दिन नहीं जोड़े जाते।",
+                  icon: Sun,
+                  color: "#3B82F6"
+                }
+              ].map((rule, idx) => (
+                <motion.div 
+                  key={idx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + idx * 0.08 }}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "12px",
+                    padding: "12px 14px",
+                    borderRadius: "14px",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    backdropFilter: "blur(10px)"
+                  }}
+                >
+                  <div style={{
+                    width: "28px", height: "28px", borderRadius: "8px",
+                    background: `${rule.color}20`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, marginTop: "2px"
+                  }}>
+                    <CheckCircle2 size={16} color={rule.color} />
+                  </div>
+                  <div className="font-devanagari" style={{ fontSize: "0.875rem", color: "#F3F4F6", lineHeight: 1.5, fontWeight: 500 }}>
+                    {language === "hi" ? rule.hi : rule.en}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* 🌸 Section: Journey Timeline 🌸 */}
+          <div style={{ marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+              <Crown size={18} color="var(--gold)" />
+              <h2 className="font-devanagari" style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#FDE68A" }}>
+                {language === "hi" ? "🌸 यात्रा का क्रम (Journey Overview)" : "🌸 Journey Overview"}
+              </h2>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              {[
+                {
+                  step: "1",
+                  titleHi: "संकल्प स्वीकार करें",
+                  titleEn: "Accept Sankalp",
+                  icon: Flower2,
+                  color: "#F59E0B"
+                },
+                {
+                  step: "2",
+                  titleHi: "दैनिक आशीर्वाद पाएं",
+                  titleEn: "Receive Blessings",
+                  icon: Sparkles,
+                  color: "#10B981"
+                },
+                {
+                  step: "3",
+                  titleHi: "60-दिवसीय यात्रा",
+                  titleEn: "60-Day Journey",
+                  icon: Sunrise,
+                  color: "#3B82F6"
+                },
+                {
+                  step: "4",
+                  titleHi: "अभियान पूर्णता",
+                  titleEn: "Complete Campaign",
+                  icon: Award,
+                  color: "#8B5CF6"
+                }
+              ].map((stepItem, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.08 }}
+                  style={{
+                    padding: "14px 12px",
+                    borderRadius: "16px",
+                    background: "rgba(0, 0, 0, 0.25)",
+                    border: "1px solid rgba(245, 158, 11, 0.2)",
+                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                >
+                  <div style={{
+                    width: "32px", height: "32px", borderRadius: "10px",
+                    background: `${stepItem.color}25`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: stepItem.color
+                  }}>
+                    <stepItem.icon size={18} />
+                  </div>
+                  <div className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#FFFDF9" }}>
+                    {language === "hi" ? stepItem.titleHi : stepItem.titleEn}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Highlighted Bottom Info Banner */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.08) 100%)",
+            borderLeft: "4px solid var(--gold)",
+            borderRadius: "0 16px 16px 0",
+            padding: "14px 16px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "10px"
+          }}>
+            <Flower2 size={18} color="var(--gold)" style={{ flexShrink: 0, marginTop: "2px" }} />
+            <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "#FCE7D0", lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
+              {language === "hi"
+                ? "“संकल्प का आशीर्वाद संपूर्ण अभियान के दौरान आपकी दैनिक साधना का संबल बनता है। यह एक साथ मिलने के बजाय आपकी निरंतर साधना से प्राप्त होता है।”"
+                : "“The blessings of a Sankalp accompany your daily journey throughout the campaign. They are received through your continued participation rather than all at once.”"
+              }
+            </p>
+          </div>
+
+        </div>
+      </motion.div>
+
+      {/* ── Active Blessings Summary Counter ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        style={{
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(16px)",
+          borderRadius: "20px",
+          padding: "16px 20px",
+          border: "1px solid var(--surface-border)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+          marginBottom: "24px"
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--gold)", fontFamily: "var(--font-sans)", lineHeight: 1 }}>{acceptedCount}</div>
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginTop: "4px" }}>
+              {language === "hi" ? "स्वीकृत संकल्प" : "Accepted"}
+            </div>
+          </div>
+          <div style={{ width: "1px", height: "32px", background: "var(--surface-border)" }} />
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-sans)", lineHeight: 1 }}>{remainingCount}</div>
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginTop: "4px" }}>
+              {language === "hi" ? "शेष संकल्प" : "Remaining"}
             </div>
           </div>
         </div>
