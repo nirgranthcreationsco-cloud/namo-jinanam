@@ -38,7 +38,7 @@ const CATEGORIES: { id: string; name_hi: string; name_en: string; ids: string[] 
     id: "lifestyle",
     name_hi: "आहार एवं आचरण शुद्धि",
     name_en: "Food & Conduct Purity",
-    ids: ["q_sankalp_08"]
+    ids: ["q_sankalp_08", "q_chaturmas_bonus_12"]
   }
 ];
 
@@ -75,8 +75,7 @@ const CHATURMAS_CATEGORIES: { id: string; name_hi: string; name_en: string; ids:
       "q_chaturmas_bonus_08",
       "q_chaturmas_bonus_09",
       "q_chaturmas_bonus_10",
-      "q_chaturmas_bonus_11",
-      "q_chaturmas_bonus_12"
+      "q_chaturmas_bonus_11"
     ]
   }
 ];
@@ -754,18 +753,11 @@ export default function SankalpPage() {
                                   {language === "hi" ? sankalp.description_hi : sankalp.description_en}
                                 </p>
 
-                                {/* Blessing & Acceptance Details */}
+                                {/* Acceptance Details */}
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", borderTop: "1px solid var(--surface-border)", paddingTop: "12px" }}>
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                      <Award size={14} color="var(--gold)" />
-                                      <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "#7A4A15" }}>
-                                        {language === "hi" ? "बोनस अंक: " : "Bonus Points: "} +{sankalp.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} {language === "hi" ? "अंक" : "Points"}
-                                      </span>
-                                    </div>
-
+                                  <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                                     {isAccepted ? (
-                                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(22,163,74,0.1)", padding: "4px 10px", borderRadius: "20px" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(22,163,74,0.1)", padding: "6px 12px", borderRadius: "20px" }}>
                                         <CheckCircle2 size={14} color="#16A34A" />
                                         <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "#16A34A" }}>
                                           {language === "hi" ? `स्वीकृत (${formatDate(acceptedAt)})` : `Accepted (${formatDate(acceptedAt)})`}
