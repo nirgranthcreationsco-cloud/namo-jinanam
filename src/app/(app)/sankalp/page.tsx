@@ -382,14 +382,14 @@ export default function SankalpPage() {
                   color: "#F59E0B"
                 },
                 {
-                  en: "Complete your Daily Niyams to receive that day's blessings.",
-                  hi: "उस दिन का विशेष आशीर्वाद प्राप्त करने के लिए अपने दैनिक नियम पूरे करें।",
+                  en: "Complete your Daily Niyams to receive daily bonus points as blessings.",
+                  hi: "दैनिक नियम पूरे करने पर उस दिन के बोनस पुण्य अंक (Bonus Points) प्राप्त होंगे।",
                   icon: Sparkles,
                   color: "#10B981"
                 },
                 {
                   en: "Every day is a new opportunity. Missed blessings are not carried forward.",
-                  hi: "हर दिन एक नया अवसर है। छूटे हुए आशीर्वाद अगले दिन नहीं जोड़े जाते।",
+                  hi: "हर दिन एक नया अवसर है। छूटे हुए अंक अगले दिन नहीं जोड़े जाते।",
                   icon: Sun,
                   color: "#3B82F6"
                 }
@@ -446,8 +446,8 @@ export default function SankalpPage() {
                 },
                 {
                   step: "2",
-                  titleHi: "दैनिक आशीर्वाद पाएं",
-                  titleEn: "Receive Blessings",
+                  titleHi: "दैनिक बोनस अंक पाएं",
+                  titleEn: "Receive Daily Bonus Points",
                   icon: Sparkles,
                   color: "#10B981"
                 },
@@ -512,8 +512,8 @@ export default function SankalpPage() {
             <Flower2 size={18} color="var(--gold)" style={{ flexShrink: 0, marginTop: "2px" }} />
             <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "#FCE7D0", lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
               {language === "hi"
-                ? "“संकल्प का आशीर्वाद संपूर्ण अभियान के दौरान आपकी दैनिक साधना का संबल बनता है। यह एक साथ मिलने के बजाय आपकी निरंतर साधना से प्राप्त होता है।”"
-                : "“The blessings of a Sankalp accompany your daily journey throughout the campaign. They are received through your continued participation rather than all at once.”"
+                ? "“संकल्प का आशीर्वाद संपूर्ण अभियान के दौरान आपकी दैनिक साधना का संबल बनता है। प्रतिदिन अपने नियम पूरे करने पर बोनस अंक हर दिन जोड़े जाते हैं।”"
+                : "“The blessings of a Sankalp accompany your daily journey throughout the campaign. By completing your Daily Niyams, bonus points are awarded every day rather than all at once.”"
               }
             </p>
           </div>
