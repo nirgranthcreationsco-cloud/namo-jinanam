@@ -11,9 +11,22 @@ import { SignupFormData } from "@/types";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { hasSeenOnboarding, user, _hasHydrated } = useAuthStore();
+  const { hasSeenOnboarding, user, setUser, setProfile, setStats, _hasHydrated } = useAuthStore();
+  const { language, setLanguage } = useLanguageStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [step, setStep] = useState(1);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    identifier: "",
+    password: "",
+    gender: "",
+    ageGroup: "",
+    city: "",
+    guardianName: "",
+    guardianPhone: "",
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -28,28 +41,12 @@ export default function SignupPage() {
 
   if (!mounted || !_hasHydrated) return null;
 
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    identifier: "",
-    password: "",
-    gender: "",
-    ageGroup: "",
-    city: "",
-    guardianName: "",
-    guardianPhone: "",
-  });
-  const { setUser, setProfile, setStats } = useAuthStore();
-  const { language, setLanguage } = useLanguageStore();
-
   const handleNext = () => setStep((s) => Math.min(s + 1, 5));
   const handlePrev = () => setStep((s) => Math.max(s - 1, 1));
 
   const updateForm = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
-
-  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
