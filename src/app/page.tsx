@@ -10,7 +10,7 @@ import { ArrowRight, Sparkles, BookOpen, Heart, Trophy, MapPin, Globe, Rocket, F
 
 export default function LandingPage() {
   const { language, setLanguage } = useLanguageStore();
-  const { user, hasSeenOnboarding, _hasHydrated } = useAuthStore();
+  const { hasSeenOnboarding, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -57,11 +57,9 @@ export default function LandingPage() {
             <Globe size={14} style={{ display: "inline" }} /> {language === "hi" ? "English" : "हिन्दी"}
           </button>
           
-          <Link href={user ? "/dashboard" : "/login"} style={{ textDecoration: "none" }}>
+          <Link href="/login" style={{ textDecoration: "none" }}>
             <button className="btn btn-primary" style={{ padding: "8px 20px", fontSize: "0.9375rem" }}>
-              {user 
-                ? (language === "hi" ? "डैशबोर्ड" : "Dashboard")
-                : (language === "hi" ? "लॉगिन" : "Login")}
+              {language === "hi" ? "लॉगिन" : "Login"}
             </button>
           </Link>
         </div>
@@ -120,24 +118,10 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
-            <Link href={user ? "/dashboard" : "/signup"} style={{ textDecoration: "none", width: "100%", maxWidth: "300px" }}>
+            <Link href="/signup" style={{ textDecoration: "none", width: "100%", maxWidth: "300px" }}>
               <button className="btn btn-primary" style={{ width: "100%", padding: "16px 32px", fontSize: "1.125rem", borderRadius: "var(--r-xl)", background: "linear-gradient(135deg, var(--brand), var(--brand-light))", boxShadow: "0 8px 24px var(--brand-glow)" }}>
-                {user ? (
-                  <>
-                    <span className="font-devanagari">
-                      {language === "hi" ? "डैशबोर्ड पर जाएँ" : "Go to Dashboard"}
-                    </span>
-                    <ArrowRight size={20} style={{ marginLeft: "6px" }} />
-                  </>
-                ) : (
-                  <>
-                    <span className="font-devanagari">
-                      {language === "hi" ? "अभी रजिस्टर करें " : "Register Now "}
-                    </span>
-                    <Rocket size={18} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
-                    <ArrowRight size={20} />
-                  </>
-                )}
+                  {language === "hi" ? "अभी रजिस्टर करें " : "Register Now "} <Rocket size={18} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
+                <ArrowRight size={20} />
               </button>
             </Link>
             <div className="font-devanagari text-dimmed" style={{ fontSize: "0.875rem", fontWeight: 500 }}>
