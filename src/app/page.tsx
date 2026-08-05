@@ -18,39 +18,52 @@ export default function SplashScreen() {
   useEffect(() => {
     if (!mounted || !_hasHydrated) return;
 
-    // Wait at least 1200ms for splash, then validate session and route
-    const splashTimer = setTimeout(async () => {
-      setPhase("fading");
+    let isCancelled = false;
 
-      // Small delay for fade-out animation
+    async function initApp() {
+      // 1. Minimum branding duration promise (800ms)
+      const minDisplayPromise = new Promise((resolve) => setTimeout(resolve, 800));
+
+      // 2. Async session validation task
+      let isValidSession = false;
+      const validateSessionTask = (async () => {
+        if (user?.id) {
+          try {
+            const resp = await fetch("/api/session");
+            const data = await resp.json();
+            isValidSession = !!data.valid;
+          } catch {
+            isValidSession = false;
+          }
+        }
+      })();
+
+      // 3. Concurrently await minimum branding duration and all async tasks
+      await Promise.all([minDisplayPromise, validateSessionTask]);
+
+      if (isCancelled) return;
+
+      // 4. Trigger smooth fade-out animation
+      setPhase("fading");
       await new Promise((res) => setTimeout(res, 300));
 
+      if (isCancelled) return;
+
+      // 5. Event-driven route dispatching
       if (!hasSeenOnboarding) {
-        // First-time user: show onboarding
         router.replace("/onboarding");
-        return;
+      } else if (user?.id && isValidSession) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
       }
+    }
 
-      if (user?.id) {
-        // User object exists in Zustand — validate the server-side session via API
-        try {
-          const resp = await fetch("/api/session");
-          const data = await resp.json();
-          if (data.valid) {
-            // Session is valid — go straight to dashboard
-            router.replace("/dashboard");
-            return;
-          }
-        } catch (_) {
-          // Session check failed — fall through to login
-        }
-      }
+    initApp();
 
-      // No valid session — show login
-      router.replace("/login");
-    }, 1200);
-
-    return () => clearTimeout(splashTimer);
+    return () => {
+      isCancelled = true;
+    };
   }, [mounted, _hasHydrated, hasSeenOnboarding, user, router]);
 
   if (!mounted) return null;
