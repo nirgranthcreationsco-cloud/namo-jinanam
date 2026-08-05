@@ -42,6 +42,45 @@ const CATEGORIES: { id: string; name_hi: string; name_en: string; ids: string[] 
   }
 ];
 
+const CHATURMAS_CATEGORIES: { id: string; name_hi: string; name_en: string; ids: string[] }[] = [
+  {
+    id: "diet_conduct",
+    name_hi: "आहार एवं आचरण शुद्धि",
+    name_en: "Diet & Conduct Purity",
+    ids: [
+      "q_chaturmas_bonus_01",
+      "q_chaturmas_bonus_02",
+      "q_chaturmas_bonus_03",
+      "q_chaturmas_bonus_06",
+      "q_chaturmas_bonus_13",
+      "q_chaturmas_bonus_14"
+    ]
+  },
+  {
+    id: "knowledge_devotion",
+    name_hi: "ज्ञान, स्वाध्याय एवं भक्ति",
+    name_en: "Knowledge, Swadhyay & Devotion",
+    ids: [
+      "q_chaturmas_bonus_04",
+      "q_chaturmas_bonus_05",
+      "q_chaturmas_bonus_07",
+      "q_chaturmas_bonus_15"
+    ]
+  },
+  {
+    id: "discipline_moderation",
+    name_hi: "संयम एवं इन्द्रिय नियंत्रण",
+    name_en: "Discipline & Moderation",
+    ids: [
+      "q_chaturmas_bonus_08",
+      "q_chaturmas_bonus_09",
+      "q_chaturmas_bonus_10",
+      "q_chaturmas_bonus_11",
+      "q_chaturmas_bonus_12"
+    ]
+  }
+];
+
 export default function SankalpPage() {
   const { language } = useLanguageStore();
   const { user, stats, setStats } = useAuthStore();
@@ -84,10 +123,18 @@ export default function SankalpPage() {
     return quotes[epochDay % quotes.length];
   }, []);
 
-  // All Sankalps
+  // All Sankalps (includes Lifetime and Chaturmas bonus commitments)
   const allSankalps = useMemo(() => {
-    return QUESTIONS.filter((q) => q.category_id === "sankalp" || q.type === "sankalp");
+    return QUESTIONS.filter(
+      (q) => 
+        q.category_id === "sankalp" || 
+        q.type === "sankalp" || 
+        q.category_id === "bonus" || 
+        q.type === "bonus"
+    );
   }, []);
+
+  const [activeTab, setActiveTab] = useState<"lifetime" | "chaturmas">("lifetime");
 
   // Fetch accepted sankalps on mount from Supabase
   useEffect(() => {
@@ -577,6 +624,56 @@ export default function SankalpPage() {
         </div>
       </div>
 
+      {/* ── Segmented Tab Selector (Apple Style) ── */}
+      <div style={{
+        background: "rgba(255, 255, 255, 0.6)",
+        borderRadius: "14px",
+        padding: "4px",
+        display: "flex",
+        marginBottom: "20px",
+        border: "1px solid var(--surface-border)",
+        backdropFilter: "blur(8px)"
+      }}>
+        <button
+          onClick={() => setActiveTab("lifetime")}
+          style={{
+            flex: 1,
+            padding: "10px 12px",
+            borderRadius: "10px",
+            border: "none",
+            background: activeTab === "lifetime" ? "#ffffff" : "transparent",
+            color: activeTab === "lifetime" ? "var(--text-primary)" : "var(--text-muted)",
+            fontWeight: activeTab === "lifetime" ? 700 : 500,
+            fontSize: "0.875rem",
+            boxShadow: activeTab === "lifetime" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
+            cursor: "pointer",
+            transition: "all 0.2s ease"
+          }}
+          className="font-devanagari"
+        >
+          {language === "hi" ? "🪷 आजीवन संकल्प" : "🪷 Lifetime Sankalp"}
+        </button>
+        <button
+          onClick={() => setActiveTab("chaturmas")}
+          style={{
+            flex: 1,
+            padding: "10px 12px",
+            borderRadius: "10px",
+            border: "none",
+            background: activeTab === "chaturmas" ? "#ffffff" : "transparent",
+            color: activeTab === "chaturmas" ? "var(--text-primary)" : "var(--text-muted)",
+            fontWeight: activeTab === "chaturmas" ? 700 : 500,
+            fontSize: "0.875rem",
+            boxShadow: activeTab === "chaturmas" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
+            cursor: "pointer",
+            transition: "all 0.2s ease"
+          }}
+          className="font-devanagari"
+        >
+          {language === "hi" ? "🌸 चातुर्मास संकल्प" : "🌸 Chaturmas Sankalp"}
+        </button>
+      </div>
+
       {/* ── Categories & Cards ── */}
       {filteredSankalps.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px 20px", background: "rgba(255,255,255,0.6)", borderRadius: "20px", border: "1px dashed var(--surface-border)" }}>
@@ -590,7 +687,7 @@ export default function SankalpPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {CATEGORIES.map((category) => {
+          {(activeTab === "lifetime" ? CATEGORIES : CHATURMAS_CATEGORIES).map((category) => {
             const catSankalps = filteredSankalps.filter((q) => category.ids.includes(q.id));
             if (catSankalps.length === 0) return null;
             
@@ -663,7 +760,7 @@ export default function SankalpPage() {
                                     <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                       <Award size={14} color="var(--gold)" />
                                       <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "#7A4A15" }}>
-                                        {language === "hi" ? "आशीर्वाद: " : "Blessing: "} +{sankalp.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} {language === "hi" ? "पुण्य अंक" : "Punya"}
+                                        {language === "hi" ? "बोनस अंक: " : "Bonus Points: "} +{sankalp.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} {language === "hi" ? "अंक" : "Points"}
                                       </span>
                                     </div>
 
