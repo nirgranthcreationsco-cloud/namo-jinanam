@@ -38,11 +38,11 @@ export async function signupAction(data: SignupFormData) {
         phone: phoneVal || null,
         email: emailVal || null,
         password_hash: passwordHash,
-        guardian_name: data.guardian_name,
-        guardian_phone: data.guardian_phone || null,
-        gender: data.gender,
-        age_group: data.age_group,
-        city: data.city,
+        guardian_name: data.guardian_name || '',
+        guardian_phone: data.guardian_phone || '',
+        gender: data.gender || '',
+        age_group: data.age_group || '',
+        city: data.city || '',
       })
       .select('*')
       .single();
