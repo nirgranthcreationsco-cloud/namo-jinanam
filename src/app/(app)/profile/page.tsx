@@ -163,7 +163,7 @@ export default function ProfilePage() {
         {profile && <CertificateGenerator userName={profile.full_name || "Sadhak"} />}
       </motion.div>
 
-      {/* Contact Developers */}
+      {/* Help & Support Developer Contact Card */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -171,45 +171,36 @@ export default function ProfilePage() {
         className="card"
         style={{
           padding: "20px",
-          background: "var(--surface-raised)",
+          background: "linear-gradient(135deg, rgba(92, 26, 16, 0.03) 0%, var(--surface-raised) 100%)",
           border: "1px solid var(--surface-border)",
           borderRadius: "var(--r-xl)",
-          marginBottom: "20px",
-          textAlign: "center"
+          marginBottom: "20px"
         }}
       >
-        <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
-          {language === "hi" ? "किसी भी सहायता के लिए संपर्क करें" : "For Any Help, Contact"}
+        <h3 className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+          📞 {language === "hi" ? "मदद एवं सहायता" : "Help & Support"}
         </h3>
-        <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "14px", fontWeight: 500 }}>
-          {language === "hi" ? "निर्ग्रंथ क्रिएशन्स (Nirgranth Creations)" : "Nirgranth Creations"}
+        <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>
+          {language === "hi"
+            ? "किसी भी शंका या सहायता के लिए डेवलपर “निर्ग्रंथ क्रिएशन्स” से संपर्क करें:"
+            : "For any doubts or help, please contact the developer “Nirgranth Creations”:"}
         </p>
-        <a
-          href="tel:8109224176"
-          style={{ textDecoration: "none", display: "block" }}
-        >
-          <button
-            className="btn font-devanagari"
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", background: "var(--surface-overlay)", padding: "10px 14px", borderRadius: "12px", border: "1px solid var(--surface-border)" }}>
+          <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-primary)" }}>
+            Nirgranth Creations
+          </span>
+          <a 
+            href="tel:8109224176" 
             style={{ 
-              width: "100%", 
-              padding: "12px", 
-              fontSize: "0.875rem", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              gap: "8px", 
-              background: "linear-gradient(135deg, var(--brand) 0%, #8A2B1A 100%)", 
-              color: "white",
-              border: "none", 
-              fontWeight: 700,
-              borderRadius: "10px",
-              boxShadow: "0 2px 8px rgba(138,43,26,0.2)",
-              cursor: "pointer" 
+              fontSize: "0.8125rem", 
+              fontWeight: 800, 
+              color: "var(--brand)", 
+              textDecoration: "none" 
             }}
           >
-            📞 8109224176
-          </button>
-        </a>
+            +91 8109224176
+          </a>
+        </div>
       </motion.div>
 
       {/* Logout */}

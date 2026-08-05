@@ -287,6 +287,14 @@ export function HabitCard({
                 </div>
               </div>
             </div>
+
+            {/* Points badge */}
+            <div
+              className={isCompleted ? "chip chip-emerald" : isSankalp ? "chip chip-gold" : "chip chip-brand"}
+              style={{ flexShrink: 0, fontWeight: 700, background: !isCompleted && isSankalp ? "rgba(232, 93, 4, 0.15)" : undefined, color: !isCompleted && isSankalp ? "#E85D04" : undefined }}
+            >
+              +{question.points.toLocaleString(language === "hi" ? "hi-IN" : "en-US")} XP
+            </div>
           </div>
 
           <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "8px", lineHeight: 1.5 }}>
@@ -537,21 +545,21 @@ function HabitsContent() {
             boxShadow: "0 4px 14px rgba(245, 158, 11, 0.1)"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(16, 185, 129, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Lock size={20} color="var(--emerald)" />
+              <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Crown size={20} color="var(--gold)" />
               </div>
               <div>
-                <div className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--emerald)", lineHeight: 1.2 }}>
-                  {language === "hi" ? "नियम सबमिट और लॉक हैं" : "Daily Niyams Locked & Submitted"}
+                <div className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "#9A6A15", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  {language === "hi" ? "आज का अर्जित पुण्य अंक" : "Today's Submitted Score"}
                 </div>
-                <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                  {language === "hi" ? "आज के नियम सुरक्षित रूप से दर्ज कर लिए गए हैं।" : "Your commitments for today have been successfully recorded."}
+                <div className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.2 }}>
+                  +{stats?.last_submission_date === today ? (stats?.last_submission_xp || todayPoints) : todayPoints} {language === "hi" ? "पुण्य अंक" : "Punya Points"}
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", fontWeight: 700, color: "var(--emerald)", background: "rgba(16,185,129,0.15)", padding: "6px 10px", borderRadius: "20px" }}>
-              <CheckCircle2 size={13} color="var(--emerald)" />
-              <span>{language === "hi" ? "दर्ज" : "Recorded"}</span>
+              <Lock size={13} />
+              <span>{language === "hi" ? "सबमिट लॉक" : "Locked"}</span>
             </div>
           </div>
         )}
@@ -615,12 +623,44 @@ function HabitsContent() {
           </div>
 
           {isSubmittedToday ? (
-            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--emerald)", fontWeight: 600, borderLeft: "2px solid var(--emerald)", paddingLeft: "8px", marginTop: "2px" }}>
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--emerald)", fontWeight: 600, borderLeft: "2px solid var(--emerald)", paddingLeft: "8px", marginTop: "4px" }}>
               {language === "hi" ? "🔒 आज का सबमिशन पूरा हो चुका है और आपका स्कोर लॉक हो गया है।" : "🔒 Today's score is locked & submitted."}
             </div>
           ) : (
-            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", fontWeight: 600, borderLeft: "2px solid var(--brand)", paddingLeft: "8px", marginTop: "2px" }}>
-              {language === "hi" ? "⚠️ आज के नियम चेक करने के बाद सबमिट करना न भूलें" : "⚠️ Don't forget to submit after checking today's niyams"}
+            <div style={{
+              background: "rgba(245, 158, 11, 0.08)",
+              border: "1.5px solid rgba(245, 158, 11, 0.3)",
+              borderRadius: "12px",
+              padding: "10px 12px",
+              fontSize: "0.75rem",
+              color: "#D97706",
+              lineHeight: 1.5,
+              marginTop: "10px",
+              boxShadow: "0 2px 8px rgba(245,158,11,0.05)"
+            }}>
+              <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span>⚠️</span>
+                <span className="font-devanagari">
+                  {language === "hi" ? "जरूरी निर्देश (सबमिशन नियम):" : "Important Rules of Submitting:"}
+                </span>
+              </div>
+              <ul className="font-devanagari" style={{ margin: 0, paddingLeft: "16px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <li>
+                  {language === "hi" 
+                    ? "नियम केवल टिक करने से सेव नहीं होंगे, ऊपर 'सबमिट करें' बटन दबाना आवश्यक है।"
+                    : "Simply ticking options will NOT save them, you must click the 'Submit' button above."}
+                </li>
+                <li>
+                  {language === "hi"
+                    ? "आप दिन में केवल एक बार ही सबमिट कर सकते हैं।"
+                    : "You can only submit once a day."}
+                </li>
+                <li>
+                  {language === "hi"
+                    ? "सबमिट करने के बाद आज की सूची में कोई बदलाव संभव नहीं होगा (पूरी सूची लॉक हो जाएगी)।"
+                    : "After submission, you cannot make any changes to the list for the rest of the day."}
+                </li>
+              </ul>
             </div>
           )}
         </div>
@@ -640,53 +680,6 @@ function HabitsContent() {
       </div>
 
       <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* ── Submission Rules Card (Apple Style Glassmorphism) ── */}
-        {!isSubmittedToday && (
-          <div style={{
-            background: "linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%)",
-            border: "1px solid rgba(217, 119, 6, 0.25)",
-            borderRadius: "16px",
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.02)"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Lock size={16} color="var(--brand)" />
-              <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--brand)", margin: 0 }}>
-                {language === "hi" ? "🌸 आवश्यक नियम एवं निर्देश" : "🌸 Vow Submission Rules"}
-              </h3>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.45 }}>
-              <div className="font-devanagari" style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                <span style={{ color: "var(--gold)", fontWeight: "bold" }}>✓</span>
-                <span>
-                  {language === "hi" 
-                    ? "आप दिन में केवल एक बार ही सबमिट कर सकते हैं।" 
-                    : "You can only submit your Niyams once a day."}
-                </span>
-              </div>
-              <div className="font-devanagari" style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                <span style={{ color: "var(--gold)", fontWeight: "bold" }}>✓</span>
-                <span>
-                  {language === "hi" 
-                    ? "नियमों को टिक करने के बाद 'सबमिट' बटन दबाना अनिवार्य है। सिर्फ टिक करने से सबमिट नहीं होगा।" 
-                    : "Simply checking/ticking is not enough. You must click the 'Submit' button to save them."}
-                </span>
-              </div>
-              <div className="font-devanagari" style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                <span style={{ color: "var(--gold)", fontWeight: "bold" }}>✓</span>
-                <span>
-                  {language === "hi" 
-                    ? "सबमिट करने के बाद आज की सूची में कोई बदलाव नहीं किया जा सकेगा (सभी नियम लॉक हो जाएंगे)।" 
-                    : "Once submitted, you cannot modify your answers for the rest of the day."}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
