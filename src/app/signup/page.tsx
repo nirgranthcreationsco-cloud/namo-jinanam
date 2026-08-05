@@ -33,11 +33,11 @@ export default function SignupPage() {
     if (_hasHydrated) {
       if (!hasSeenOnboarding) {
         router.push("/onboarding");
-      } else if (user) {
+      } else if (user && step !== 5) {
         router.replace("/dashboard");
       }
     }
-  }, [hasSeenOnboarding, user, _hasHydrated, router]);
+  }, [hasSeenOnboarding, user, _hasHydrated, router, step]);
 
   if (!mounted || !_hasHydrated) return null;
 
@@ -87,15 +87,22 @@ export default function SignupPage() {
     setIsSubmitting(false);
 
     if (result.success && result.user) {
-      setUser({ id: result.user.id, phone: result.user.phone, email: result.user.email });
-      setProfile(result.user);
-      if (result.stats) {
-        setStats(result.stats);
-      }
       setStep(5);
+      
+      // Update store after Step 5 mounts
+      setTimeout(() => {
+        if (result.user) {
+          setUser({ id: result.user.id, phone: result.user.phone, email: result.user.email });
+          setProfile(result.user);
+          if (result.stats) {
+            setStats(result.stats);
+          }
+        }
+      }, 100);
+
       setTimeout(() => {
         router.push("/dashboard");
-      }, 2000);
+      }, 2500);
     } else {
       setErrorMsg(result.error || "Signup failed");
     }
