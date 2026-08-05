@@ -206,26 +206,6 @@ export default function LoginPage() {
             )}
           </form>
 
-          {/* Quick Demo Mode */}
-          <div style={{ marginTop: "32px", textAlign: "center" }}>
-            <div className="divider font-devanagari" style={{ marginBottom: "24px" }}>
-              {language === "hi" ? "या" : "OR"}
-            </div>
-            <button
-              onClick={() => {
-                setIdentifier("9876543210");
-                setPassword("password123");
-                setTimeout(() => handleLogin({ preventDefault: () => {} } as any), 100);
-              }}
-              className="btn btn-secondary"
-              style={{ width: "100%" }}
-            >
-              <span className="font-devanagari">
-                {language === "hi" ? "डेमो खाता खोलें (Try Demo)" : "Try Demo Account"}
-              </span>
-            </button>
-          </div>
-
           <div style={{ marginTop: "24px", textAlign: "center" }}>
             <span className="font-devanagari" style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
               {language === "hi" ? "खाता नहीं है? " : "Don't have an account? "}
