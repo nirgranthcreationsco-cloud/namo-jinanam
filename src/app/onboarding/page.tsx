@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -17,10 +17,18 @@ const IMAGES = [
 export default function OnboardingPage() {
   const [current, setCurrent] = useState(0);
   const router = useRouter();
-  const { setHasSeenOnboarding } = useAuthStore();
+  const { setHasSeenOnboarding, _hasHydrated } = useAuthStore();
   const { language } = useLanguageStore();
+  const [mounted, setMounted] = useState(false);
+
+  // Next.js hydration fix for persisted Zustand stores
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isLast = current === IMAGES.length - 1;
+
+  if (!mounted || !_hasHydrated) return null;
 
   const handleNext = () => {
     if (!isLast) {
