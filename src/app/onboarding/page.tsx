@@ -5,254 +5,154 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, BookOpen, Trophy, Award, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
-const SLIDES = [
-  {
-    id: 1,
-    image: "/dailyniyam.png",
-    titleHi: "१. दैनिक नियम कैसे ट्रैक करें?",
-    titleEn: "1. How to Track Daily Niyams?",
-    descHi: "लॉगिन करें और अपने नियमों के आगे टिक करें। अंत में 'Submit' दबाएँ। ध्यान दें: एक बार सबमिट करने के बाद आप नियमों को बदल नहीं पाएंगे।",
-    descEn: "Log in and check off your completed vows. Tap Submit to claim Punya points. Note: Once submitted, your choices are locked for the day.",
-    badgeHi: "स्टेप १: नियम ट्रैकिंग",
-    badgeEn: "Step 1: Habit Check",
-    icon: BookOpen,
-    color: "#D97706",
-  },
-  {
-    id: 2,
-    image: "/dailychallenge.png",
-    titleHi: "२. आज का विशेष आशीर्वाद",
-    titleEn: "2. Today's Special Blessing",
-    descHi: "प्रतिदिन होम स्क्रीन पर एक विशेष अनुभाग की चुनौती मिलेगी। उस अनुभाग के सभी नियम पूरे करने पर आपको अतिरिक्त बोनस पुण्य मिलेगा!",
-    descEn: "Every day features a special section challenge. Complete all niyams in that section to unlock extra bonus Punya points as a Blessing!",
-    badgeHi: "स्टेप २: आज का आशीर्वाद",
-    badgeEn: "Step 2: Today's Blessing",
-    icon: Sparkles,
-    color: "#059669",
-  },
-  {
-    id: 3,
-    image: "/lifetime sankalp.png",
-    titleHi: "३. आजीवन एवं चातुर्मास संकल्प",
-    titleEn: "3. Lifetime & Chaturmas Sankalp",
-    descHi: "ऐसे संकल्प लें जिनका आप जीवन भर या चातुर्मास में पालन कर सकें। एक बार संकल्प लेने के बाद यह स्थायी रूप से लॉक हो जाएगा।",
-    descEn: "Take vows you can follow for a lifetime or during Chaturmas. Once accepted, your Sankalp is permanently locked.",
-    badgeHi: "स्टेप ३: संकल्प",
-    badgeEn: "Step 3: Vows",
-    icon: CheckCircle2,
-    color: "#7C3AED",
-  },
-  {
-    id: 4,
-    image: "/certificate.png",
-    titleHi: "४. डिजिटल सर्टिफिकेट",
-    titleEn: "4. Digital Certificate",
-    descHi: "अपना आध्यात्मिक सफर पूरा करने पर अपनी प्रोफाइल स्क्रीन से अपना डिजिटल सर्टिफिकेट डाउनलोड करें।",
-    descEn: "After completing your spiritual journey, go to the Profile screen to download your customized digital certificate.",
-    badgeHi: "स्टेप ४: सर्टिफिकेट",
-    badgeEn: "Step 4: Certification",
-    icon: Award,
-    color: "#2563EB",
-  },
+const IMAGES = [
+  "/dailyniyam.png",
+  "/dailychallenge.png",
+  "/lifetime sankalp.png",
+  "/certificate.png",
 ];
 
 export default function OnboardingPage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [current, setCurrent] = useState(0);
   const router = useRouter();
   const { setHasSeenOnboarding } = useAuthStore();
   const { language } = useLanguageStore();
 
+  const isLast = current === IMAGES.length - 1;
+
   const handleNext = () => {
-    if (currentSlide < SLIDES.length - 1) {
-      setCurrentSlide((prev) => prev + 1);
+    if (!isLast) {
+      setCurrent((prev) => prev + 1);
     } else {
-      finishOnboarding();
+      setHasSeenOnboarding(true);
+      router.push("/");
     }
   };
 
-  const handlePrev = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide((prev) => prev - 1);
-    }
-  };
-
-  const finishOnboarding = () => {
+  const handleSkip = () => {
     setHasSeenOnboarding(true);
     router.push("/");
   };
 
-  const slide = SLIDES[currentSlide];
-  const IconComponent = slide.icon;
-
   return (
     <div
       style={{
-        height: "100dvh",
-        maxHeight: "100dvh",
-        background: "var(--surface-bg)",
-        color: "var(--text-primary)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "16px 20px 16px",
-        maxWidth: "480px",
-        margin: "0 auto",
-        position: "relative",
+        position: "fixed",
+        inset: 0,
+        background: "#000",
         overflow: "hidden",
       }}
     >
-      {/* Top Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 10, height: "40px" }}>
-        {currentSlide > 0 ? (
-          <button
-            onClick={handlePrev}
-            style={{
-              background: "var(--surface-overlay)",
-              border: "1px solid var(--surface-border)",
-              borderRadius: "50%",
-              width: "36px",
-              height: "36px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              color: "var(--text-primary)",
-            }}
-          >
-            <ChevronLeft size={18} />
-          </button>
-        ) : (
-          <div style={{ width: "36px" }} />
-        )}
+      {/* Full-screen image */}
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={IMAGES[current]}
+          alt={`Slide ${current + 1}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35 }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+          }}
+        />
+      </AnimatePresence>
 
+      {/* Skip button — top right */}
+      <button
+        onClick={handleSkip}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          background: "rgba(0,0,0,0.45)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          color: "#fff",
+          fontWeight: 600,
+          fontSize: "0.8125rem",
+          padding: "6px 14px",
+          borderRadius: "999px",
+          cursor: "pointer",
+          zIndex: 20,
+        }}
+      >
+        {language === "hi" ? "स्किप" : "Skip"}
+      </button>
+
+      {/* Bottom overlay: dots + Next button */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: "32px 24px 48px",
+          background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "20px",
+          zIndex: 20,
+        }}
+      >
         {/* Progress dots */}
         <div style={{ display: "flex", gap: "6px" }}>
-          {SLIDES.map((_, idx) => (
-            <div
+          {IMAGES.map((_, idx) => (
+            <button
               key={idx}
-              onClick={() => setCurrentSlide(idx)}
+              onClick={() => setCurrent(idx)}
               style={{
-                width: currentSlide === idx ? "20px" : "6px",
-                height: "6px",
-                borderRadius: "3px",
-                background: currentSlide === idx ? "var(--brand)" : "var(--surface-border)",
-                transition: "all 0.3s ease",
+                width: current === idx ? "24px" : "7px",
+                height: "7px",
+                borderRadius: "4px",
+                background: current === idx ? "#fff" : "rgba(255,255,255,0.4)",
+                border: "none",
+                padding: 0,
                 cursor: "pointer",
+                transition: "all 0.3s ease",
               }}
             />
           ))}
         </div>
 
-        {/* Skip Button */}
-        <button
-          onClick={finishOnboarding}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--text-muted)",
-            fontWeight: 600,
-            fontSize: "0.8125rem",
-            cursor: "pointer",
-          }}
-        >
-          {language === "hi" ? "स्किप" : "Skip"}
-        </button>
-      </div>
-
-      {/* Main Slide Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", margin: "8px 0" }}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}
-          >
-            {/* Image Preview */}
-            <div
-              style={{
-                position: "relative",
-                width: "100%",
-                maxHeight: "200px",
-                aspectRatio: "1.6/1",
-                borderRadius: "16px",
-                overflow: "hidden",
-                boxShadow: "0 12px 24px rgba(0,0,0,0.12)",
-                marginBottom: "12px",
-                border: "1px solid var(--surface-border)",
-              }}
-            >
-              <img
-                src={slide.image}
-                alt={language === "hi" ? slide.titleHi : slide.titleEn}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-
-            {/* Badge */}
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "4px 10px",
-                borderRadius: "var(--r-pill)",
-                background: "var(--brand-dim)",
-                color: slide.color,
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                marginBottom: "8px",
-              }}
-            >
-              <IconComponent size={14} />
-              <span>{language === "hi" ? slide.badgeHi : slide.badgeEn}</span>
-            </div>
-
-            {/* Title */}
-            <h2 className="heading-lg font-devanagari text-brand" style={{ marginBottom: "8px", lineHeight: 1.2, fontSize: "1.25rem" }}>
-              {language === "hi" ? slide.titleHi : slide.titleEn}
-            </h2>
-
-            {/* Description */}
-            <p className="body-sm font-devanagari text-muted" style={{ maxWidth: "320px", lineHeight: 1.5, fontSize: "0.875rem" }}>
-              {language === "hi" ? slide.descHi : slide.descEn}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Bottom Navigation / Action Button */}
-      <div style={{ zIndex: 10 }}>
+        {/* Next / Get Started button */}
         <button
           onClick={handleNext}
-          className="btn btn-primary"
           style={{
             width: "100%",
-            padding: "14px",
-            fontSize: "0.9375rem",
-            borderRadius: "var(--r-lg)",
-            background: "linear-gradient(135deg, var(--brand), var(--brand-light))",
-            boxShadow: "0 6px 18px var(--brand-glow)",
+            maxWidth: "360px",
+            padding: "16px",
+            borderRadius: "999px",
+            background: isLast
+              ? "linear-gradient(135deg, #B45309, #D97706)"
+              : "rgba(255,255,255,0.95)",
+            color: isLast ? "#fff" : "#1a1a1a",
+            fontWeight: 700,
+            fontSize: "1rem",
+            border: "none",
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: "8px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
           }}
         >
-          <span>
-            {currentSlide === SLIDES.length - 1
-              ? language === "hi"
-                ? "अभियान से जुड़ें"
-                : "Get Started"
-              : language === "hi"
-              ? "आगे बढ़ें"
-              : "Next"}
+          <span className="font-devanagari">
+            {isLast
+              ? language === "hi" ? "अभियान से जुड़ें" : "Get Started"
+              : language === "hi" ? "आगे बढ़ें" : "Next"}
           </span>
-          {currentSlide === SLIDES.length - 1 ? <CheckCircle2 size={18} /> : <ArrowRight size={18} />}
+          {isLast ? <CheckCircle2 size={18} /> : <ArrowRight size={18} />}
         </button>
       </div>
     </div>
