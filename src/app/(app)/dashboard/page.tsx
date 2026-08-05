@@ -8,6 +8,7 @@ import { useHabitStore } from "@/store/habitStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { getTodayInspiration } from "@/data/challenges";
 import { CATEGORIES, QUESTIONS } from "@/data/content";
+import { getISTDateString } from "@/lib/date";
 
 import { 
   Moon, Sunrise, Sun, Sunset, 
@@ -123,7 +124,7 @@ export default function DashboardPage() {
   const { getDayCompletionPct, entries } = useHabitStore();
   const { language } = useLanguageStore();
   
-  const today = new Date().toISOString().split("T")[0];
+  const today = getISTDateString();
   const greeting = getGreeting(language);
   const GreetingIcon = greeting.icon;
 

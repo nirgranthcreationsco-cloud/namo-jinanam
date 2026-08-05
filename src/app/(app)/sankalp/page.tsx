@@ -9,6 +9,7 @@ import { QUESTIONS } from "@/data/content";
 import type { Question } from "@/types";
 import { IconResolver } from "@/components/IconResolver";
 import { fetchAcceptedSankalps, acceptSankalpAction } from "@/app/actions/sankalp";
+import { getISTDateString } from "@/lib/date";
 import { 
   Sparkles, Lock, CheckCircle2, Search, ChevronDown, ChevronUp, 
   ShieldCheck, Heart, Landmark, Flower2, Award, Sun, Sunrise, Crown
@@ -116,7 +117,7 @@ export default function SankalpPage() {
         hi: "मंशा की पवित्रता ही छोटे प्रयासों को महान साधना बनाती है।"
       }
     ];
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getISTDateString();
     const parts = todayStr.split('-');
     const epochDay = Math.floor(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)) / 86400000);
     return quotes[epochDay % quotes.length];
