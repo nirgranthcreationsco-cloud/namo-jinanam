@@ -627,42 +627,47 @@ function HabitsContent() {
               {language === "hi" ? "🔒 आज का सबमिशन पूरा हो चुका है और आपका स्कोर लॉक हो गया है।" : "🔒 Today's score is locked & submitted."}
             </div>
           ) : (
-            <div style={{
-              background: "rgba(245, 158, 11, 0.08)",
-              border: "1.5px solid rgba(245, 158, 11, 0.3)",
-              borderRadius: "12px",
-              padding: "10px 12px",
-              fontSize: "0.75rem",
-              color: "#D97706",
-              lineHeight: 1.5,
-              marginTop: "10px",
-              boxShadow: "0 2px 8px rgba(245,158,11,0.05)"
-            }}>
-              <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
-                <span>⚠️</span>
-                <span className="font-devanagari">
-                  {language === "hi" ? "जरूरी निर्देश (सबमिशन नियम):" : "Important Rules of Submitting:"}
-                </span>
-              </div>
-              <ul className="font-devanagari" style={{ margin: 0, paddingLeft: "16px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                <li>
-                  {language === "hi" 
-                    ? "नियम केवल टिक करने से सेव नहीं होंगे, ऊपर 'सबमिट करें' बटन दबाना आवश्यक है।"
-                    : "Simply ticking options will NOT save them, you must click the 'Submit' button above."}
-                </li>
-                <li>
-                  {language === "hi"
-                    ? "आप दिन में केवल एक बार ही सबमिट कर सकते हैं।"
-                    : "You can only submit once a day."}
-                </li>
-                <li>
-                  {language === "hi"
-                    ? "सबमिट करने के बाद आज की सूची में कोई बदलाव संभव नहीं होगा (पूरी सूची लॉक हो जाएगी)।"
-                    : "After submission, you cannot make any changes to the list for the rest of the day."}
-                </li>
-              </ul>
+            <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--brand)", fontWeight: 600, borderLeft: "2px solid var(--brand)", paddingLeft: "8px", marginTop: "4px" }}>
+              {language === "hi" ? "⚠️ आज के नियम चेक करने के बाद सबमिट करना न भूलें" : "⚠️ Don't forget to submit after checking today's niyams"}
             </div>
           )}
+
+          {/* Rules Card - Always Visible */}
+          <div style={{
+            background: "rgba(245, 158, 11, 0.08)",
+            border: "1.5px solid rgba(245, 158, 11, 0.3)",
+            borderRadius: "12px",
+            padding: "10px 12px",
+            fontSize: "0.75rem",
+            color: "#D97706",
+            lineHeight: 1.5,
+            marginTop: "10px",
+            boxShadow: "0 2px 8px rgba(245,158,11,0.05)"
+          }}>
+            <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
+              <span>⚠️</span>
+              <span className="font-devanagari">
+                {language === "hi" ? "जरूरी निर्देश (सबमिशन नियम):" : "Important Rules of Submitting:"}
+              </span>
+            </div>
+            <ul className="font-devanagari" style={{ margin: 0, paddingLeft: "16px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <li>
+                {language === "hi" 
+                  ? "नियम केवल टिक करने से सेव नहीं होंगे, ऊपर 'सबमिट करें' बटन दबाना आवश्यक है।"
+                  : "Simply ticking options will NOT save them, you must click the 'Submit' button above."}
+              </li>
+              <li>
+                {language === "hi"
+                  ? "आप दिन में केवल एक बार ही सबमिट कर सकते हैं।"
+                  : "You can only submit once a day."}
+              </li>
+              <li>
+                {language === "hi"
+                  ? "सबमिट करने के बाद आज की सूची में कोई बदलाव संभव नहीं होगा (पूरी सूची लॉक हो जाएगी)।"
+                  : "After submission, you cannot make any changes to the list for the rest of the day."}
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="no-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
