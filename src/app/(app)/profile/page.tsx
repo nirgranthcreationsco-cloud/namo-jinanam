@@ -179,7 +179,7 @@ export default function ProfilePage() {
         }}
       >
         <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
-          {language === "hi" ? "डेवलपर्स से संपर्क करें" : "Contact Developers"}
+          {language === "hi" ? "किसी भी सहायता के लिए संपर्क करें" : "For Any Help, Contact"}
         </h3>
         <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "14px", fontWeight: 500 }}>
           {language === "hi" ? "निर्ग्रंथ क्रिएशन्स (Nirgranth Creations)" : "Nirgranth Creations"}
