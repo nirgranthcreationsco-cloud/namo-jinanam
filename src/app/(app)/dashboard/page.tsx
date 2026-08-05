@@ -132,6 +132,8 @@ export default function DashboardPage() {
   const inspiration = getTodayInspiration(today);
   const category = CATEGORIES.find(c => c.id === inspiration.categoryId) || CATEGORIES[0];
   
+  const isTodaySubmitted = stats?.last_submission_date === today;
+
   // Correctly read completed entries for today from habit store array
   const completedQuestionIds = (entries || [])
     .filter((e: any) => e.date === today && e.completed)
@@ -139,7 +141,11 @@ export default function DashboardPage() {
   
   const categoryQuestions = QUESTIONS.filter(q => q.category_id === inspiration.categoryId && q.type === 'daily' && q.is_active !== false);
   const totalCategoryQuestions = categoryQuestions.length;
-  const completedCategoryQuestions = categoryQuestions.filter(q => completedQuestionIds.includes(q.id)).length;
+  
+  const completedCategoryQuestions = isTodaySubmitted 
+    ? totalCategoryQuestions 
+    : categoryQuestions.filter(q => completedQuestionIds.includes(q.id)).length;
+
   const categoryProgressPct = totalCategoryQuestions === 0 ? 0 : Math.round((completedCategoryQuestions / totalCategoryQuestions) * 100);
   const isCategoryComplete = completedCategoryQuestions === totalCategoryQuestions && totalCategoryQuestions > 0;
 
