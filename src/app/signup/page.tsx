@@ -33,11 +33,9 @@ export default function SignupPage() {
     if (_hasHydrated) {
       if (!hasSeenOnboarding) {
         router.push("/onboarding");
-      } else if (user && step !== 5) {
-        router.replace("/dashboard");
       }
     }
-  }, [hasSeenOnboarding, user, _hasHydrated, router, step]);
+  }, [hasSeenOnboarding, _hasHydrated, router]);
 
   if (!mounted || !_hasHydrated) return null;
 

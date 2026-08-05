@@ -23,10 +23,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true);
-    if (_hasHydrated && user) {
-      router.replace("/dashboard");
-    }
-  }, [user, _hasHydrated, router]);
+  }, []);
 
   if (!mounted || !_hasHydrated) return null;
 
