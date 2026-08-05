@@ -163,6 +163,55 @@ export default function ProfilePage() {
         {profile && <CertificateGenerator userName={profile.full_name || "Sadhak"} />}
       </motion.div>
 
+      {/* Contact Developers */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+        className="card"
+        style={{
+          padding: "20px",
+          background: "var(--surface-raised)",
+          border: "1px solid var(--surface-border)",
+          borderRadius: "var(--r-xl)",
+          marginBottom: "20px",
+          textAlign: "center"
+        }}
+      >
+        <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
+          {language === "hi" ? "डेवलपर्स से संपर्क करें" : "Contact Developers"}
+        </h3>
+        <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "14px", fontWeight: 500 }}>
+          {language === "hi" ? "निर्ग्रंथ क्रिएशन्स (Nirgranth Creations)" : "Nirgranth Creations"}
+        </p>
+        <a
+          href="tel:8109224176"
+          style={{ textDecoration: "none", display: "block" }}
+        >
+          <button
+            className="btn font-devanagari"
+            style={{ 
+              width: "100%", 
+              padding: "12px", 
+              fontSize: "0.875rem", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              gap: "8px", 
+              background: "linear-gradient(135deg, var(--brand) 0%, #8A2B1A 100%)", 
+              color: "white",
+              border: "none", 
+              fontWeight: 700,
+              borderRadius: "10px",
+              boxShadow: "0 2px 8px rgba(138,43,26,0.2)",
+              cursor: "pointer" 
+            }}
+          >
+            📞 8109224176
+          </button>
+        </a>
+      </motion.div>
+
       {/* Logout */}
       <motion.button
         initial={{ opacity: 0 }}
