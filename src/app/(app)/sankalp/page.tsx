@@ -388,8 +388,8 @@ export default function SankalpPage() {
                   color: "#10B981"
                 },
                 {
-                  en: "Every day is a new opportunity. Missed blessings are not carried forward.",
-                  hi: "हर दिन एक नया अवसर है। छूटे हुए अंक अगले दिन नहीं जोड़े जाते।",
+                  en: "If you miss tracking your Niyams on any day, that day's bonus points will not be added.",
+                  hi: "यदि आप किसी दिन नियम ट्रैक करना भूल जाते हैं, तो उस दिन के बोनस अंक नहीं जोड़े जाएंगे।",
                   icon: Sun,
                   color: "#3B82F6"
                 }
