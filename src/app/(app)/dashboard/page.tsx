@@ -142,9 +142,7 @@ export default function DashboardPage() {
   const categoryQuestions = QUESTIONS.filter(q => q.category_id === inspiration.categoryId && q.type === 'daily' && q.is_active !== false);
   const totalCategoryQuestions = categoryQuestions.length;
   
-  const completedCategoryQuestions = isTodaySubmitted 
-    ? totalCategoryQuestions 
-    : categoryQuestions.filter(q => completedQuestionIds.includes(q.id)).length;
+  const completedCategoryQuestions = categoryQuestions.filter(q => completedQuestionIds.includes(q.id)).length;
 
   const categoryProgressPct = totalCategoryQuestions === 0 ? 0 : Math.round((completedCategoryQuestions / totalCategoryQuestions) * 100);
   const isCategoryComplete = completedCategoryQuestions === totalCategoryQuestions && totalCategoryQuestions > 0;
