@@ -11,6 +11,7 @@ import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine, 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
   { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
+  { href: "/leaderboard", icon: Trophy, label: "Ranks", labelHi: "लीडरबोर्ड" },
   { href: "/sankalp", icon: Sparkles, label: "Sankalp", labelHi: "संकल्प" },
   { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
 ];
@@ -114,21 +115,19 @@ function TopBar() {
   const pageTitleHi: Record<string, string> = {
     "/dashboard": "मुख्य पृष्ठ",
     "/habits": "नियम",
+    "/leaderboard": "शीर्ष साधक (लीडरबोर्ड)",
     "/sankalp": "आजीवन संकल्प",
     "/profile": "प्रोफ़ाइल",
     "/calendar": "कैलेंडर",
-    "/badges": "बैज",
-    "/certificates": "प्रमाण पत्र",
   };
 
   const pageTitleEn: Record<string, string> = {
     "/dashboard": "Dashboard",
     "/habits": "Niyam",
+    "/leaderboard": "Top Performers Leaderboard",
     "/sankalp": "My Lifetime Sankalp",
     "/profile": "Profile",
     "/calendar": "Calendar",
-    "/badges": "Badges",
-    "/certificates": "Certificates",
   };
 
   const pageTitle = language === "hi" ? pageTitleHi : pageTitleEn;
