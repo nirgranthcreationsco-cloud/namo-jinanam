@@ -7,12 +7,32 @@ import { createSession, destroySession, getSession } from '@/lib/session';
 
 export async function signupAction(data: SignupFormData) {
   try {
-    // 1. Check if user already exists
-    const phoneVal = data.phone ? data.phone.trim() : null;
-    const emailVal = data.email ? data.email.trim() : null;
+    const phoneVal = data.phone ? data.phone.replace(/\D/g, "").trim() : null;
+    const emailVal = data.email ? data.email.trim().toLowerCase() : null;
+    const guardianPhoneVal = data.guardian_phone ? data.guardian_phone.replace(/\D/g, "").trim() : null;
+
+    if (!data.full_name || data.full_name.trim().length < 2) {
+      return { success: false, error: 'Full name must be at least 2 characters.' };
+    }
 
     if (!phoneVal && !emailVal) {
-      return { success: false, error: 'Either mobile number or email is required.' };
+      return { success: false, error: 'Either a valid 10-digit mobile number or email is required.' };
+    }
+
+    if (phoneVal && phoneVal.length !== 10) {
+      return { success: false, error: 'Mobile number must be exactly 10 digits.' };
+    }
+
+    if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+
+    if (guardianPhoneVal && guardianPhoneVal.length > 0 && guardianPhoneVal.length !== 10) {
+      return { success: false, error: 'Guardian mobile number must be exactly 10 digits.' };
+    }
+
+    if (!data.password || data.password.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters long.' };
     }
 
     let query = supabase.from('users').select('id');

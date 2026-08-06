@@ -107,6 +107,16 @@ export default function SignupPage() {
   };
 
   const getStepContent = () => {
+    const isEmail = formData.identifier.includes("@");
+    const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
+    const isPhoneValid = !isEmail && cleanPhone.length === 10;
+    const isEmailValid = isEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.identifier.trim());
+    const isIdentifierValid = isPhoneValid || isEmailValid;
+    const isNameValid = formData.fullName.trim().length >= 2;
+    const isPasswordValid = formData.password.length >= 6;
+    const isGuardianPhoneValid = formData.guardianPhone.length === 0 || formData.guardianPhone.length === 10;
+    const isCityValid = formData.city.trim().length >= 2;
+
     switch (step) {
       case 1:
         return (
@@ -120,26 +130,91 @@ export default function SignupPage() {
                 {language === "hi" ? "आपका नाम और संपर्क विवरण" : "Your name and contact details"}
               </p>
             </div>
+
+            {/* Full Name */}
             <div>
               <label className="field-label font-devanagari">
                 {language === "hi" ? "पूरा नाम (Full Name)" : "Full Name"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "आपका पूरा नाम" : "Your full name"} value={formData.fullName} onChange={(e) => updateForm("fullName", e.target.value)} />
+              <input
+                type="text"
+                className="field"
+                placeholder={language === "hi" ? "आपका पूरा नाम" : "Your full name"}
+                value={formData.fullName}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[0-9]/g, "");
+                  updateForm("fullName", cleaned);
+                }}
+              />
+              {formData.fullName.length > 0 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: isNameValid ? "#059669" : "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {isNameValid
+                    ? (language === "hi" ? "✓ नाम सही है" : "✓ Valid name")
+                    : (language === "hi" ? "✕ नाम कम से कम 2 अक्षरों का होना चाहिए" : "✕ Name must be at least 2 characters")}
+                </div>
+              )}
             </div>
+
+            {/* Identifier: 10-digit Phone or Email */}
             <div>
               <label className="field-label font-devanagari">
                 {language === "hi" ? "मोबाइल नंबर या ईमेल (Mobile Number or Email)" : "Mobile Number or Email"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर या ईमेल दर्ज करें" : "Enter 10-digit mobile number or email"} value={formData.identifier} onChange={(e) => updateForm("identifier", e.target.value)} />
+              <input
+                type="text"
+                className="field"
+                placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर या ईमेल" : "Enter 10-digit mobile or email"}
+                value={formData.identifier}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val.includes("@")) {
+                    // Smart phone formatting: keep only digits and cap at 10
+                    const digits = val.replace(/\D/g, "").slice(0, 10);
+                    updateForm("identifier", digits);
+                  } else {
+                    updateForm("identifier", val);
+                  }
+                }}
+              />
+              {/* Helper/Validation Text */}
+              {formData.identifier.length > 0 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: isIdentifierValid ? "#059669" : "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {!isEmail ? (
+                    cleanPhone.length === 10
+                      ? (language === "hi" ? "✓ 10 अंकों का मोबाइल नंबर सही है" : "✓ Valid 10-digit mobile number")
+                      : (language === "hi" ? `✕ मोबाइल नंबर 10 अंकों का होना चाहिए (अभी ${cleanPhone.length}/10 अंक हैं)` : `✕ Mobile number must be 10 digits (currently ${cleanPhone.length}/10)`)
+                  ) : (
+                    isEmailValid
+                      ? (language === "hi" ? "✓ ईमेल सही है" : "✓ Valid email address")
+                      : (language === "hi" ? "✕ कृपया सही ईमेल पता दर्ज करें (उदा. user@domain.com)" : "✕ Please enter a valid email address")
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Password */}
             <div>
               <label className="field-label font-devanagari">
                 {language === "hi" ? "पासवर्ड (Password)" : "Password"}
               </label>
-              <input type="password" className="field" placeholder={language === "hi" ? "नया पासवर्ड बनाएँ" : "Create new password"} value={formData.password} onChange={(e) => updateForm("password", e.target.value)} />
+              <input
+                type="password"
+                className="field"
+                placeholder={language === "hi" ? "कम से कम 6 अक्षरों का पासवर्ड" : "Create password (min 6 chars)"}
+                value={formData.password}
+                onChange={(e) => updateForm("password", e.target.value)}
+              />
+              {formData.password.length > 0 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: isPasswordValid ? "#059669" : "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {isPasswordValid
+                    ? (language === "hi" ? "✓ पासवर्ड सुरक्षित है" : "✓ Valid password")
+                    : (language === "hi" ? `✕ पासवर्ड कम से कम 6 अक्षरों का होना चाहिए (अभी ${formData.password.length}/6 हैं)` : `✕ Password must be at least 6 characters (currently ${formData.password.length}/6)`)}
+                </div>
+              )}
             </div>
           </div>
         );
+
       case 2:
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -187,19 +262,42 @@ export default function SignupPage() {
               <label className="field-label font-devanagari">
                 {language === "hi" ? "अभिभावक का नाम (Guardian's Name)" : "Guardian's Name"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "अभिभावक का नाम" : "Guardian's name"} value={formData.guardianName} onChange={(e) => updateForm("guardianName", e.target.value)} />
+              <input
+                type="text"
+                className="field"
+                placeholder={language === "hi" ? "अभिभावक का नाम (ऐच्छिक)" : "Guardian's name (optional)"}
+                value={formData.guardianName}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[0-9]/g, "");
+                  updateForm("guardianName", cleaned);
+                }}
+              />
             </div>
             <div>
               <label className="field-label font-devanagari">
                 {language === "hi" ? "अभिभावक का मोबाइल नंबर (Guardian's Phone)" : "Guardian's Phone"}
               </label>
-              <input type="tel" className="field" placeholder={language === "hi" ? "अभिभावक का मोबाइल नंबर" : "Guardian's phone number"} value={formData.guardianPhone} onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "");
-                if (val.length <= 10) updateForm("guardianPhone", val);
-              }} />
+              <input
+                type="tel"
+                className="field"
+                placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर (ऐच्छिक)" : "10-digit phone number (optional)"}
+                value={formData.guardianPhone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  updateForm("guardianPhone", val);
+                }}
+              />
+              {formData.guardianPhone.length > 0 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: isGuardianPhoneValid ? "#059669" : "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {isGuardianPhoneValid
+                    ? (language === "hi" ? "✓ 10 अंकों का मोबाइल नंबर" : "✓ Valid 10-digit phone")
+                    : (language === "hi" ? `✕ अभिभावक का मोबाइल नंबर 10 अंकों का होना चाहिए (अभी ${formData.guardianPhone.length}/10 अंक हैं)` : `✕ Guardian phone must be 10 digits (currently ${formData.guardianPhone.length}/10)`)}
+                </div>
+              )}
             </div>
           </div>
         );
+
       case 3:
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -213,10 +311,24 @@ export default function SignupPage() {
               <label className="field-label font-devanagari">
                 {language === "hi" ? "शहर (City)" : "City"}
               </label>
-              <input type="text" className="field" placeholder={language === "hi" ? "उदा. मुंबई" : "e.g. Mumbai"} value={formData.city} onChange={(e) => updateForm("city", e.target.value)} />
+              <input
+                type="text"
+                className="field"
+                placeholder={language === "hi" ? "उदा. मुंबई" : "e.g. Mumbai"}
+                value={formData.city}
+                onChange={(e) => updateForm("city", e.target.value)}
+              />
+              {formData.city.length > 0 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: isCityValid ? "#059669" : "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {isCityValid
+                    ? (language === "hi" ? "✓ शहर दर्ज हुआ" : "✓ City entered")
+                    : (language === "hi" ? "✕ शहर का नाम दर्ज करें" : "✕ Please enter city name")}
+                </div>
+              )}
             </div>
           </div>
         );
+
       case 4:
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -255,6 +367,7 @@ export default function SignupPage() {
             </div>
           </div>
         );
+
       case 5:
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "center", padding: "20px 0" }}>
@@ -272,6 +385,7 @@ export default function SignupPage() {
             </p>
           </div>
         );
+
       default:
         return null;
     }
@@ -282,14 +396,20 @@ export default function SignupPage() {
       case 1: {
         const isEmail = formData.identifier.includes("@");
         const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
-        const hasPhone = cleanPhone.length === 10;
-        const hasEmail = isEmail && formData.identifier.trim().length > 0 && formData.identifier.includes(".");
-        return formData.fullName.trim().length >= 2 && (hasPhone || hasEmail) && formData.password.length >= 6;
+        const isPhoneValid = !isEmail && cleanPhone.length === 10;
+        const isEmailValid = isEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.identifier.trim());
+        const isIdentifierValid = isPhoneValid || isEmailValid;
+        const isNameValid = formData.fullName.trim().length >= 2;
+        const isPasswordValid = formData.password.length >= 6;
+
+        return isNameValid && isIdentifierValid && isPasswordValid;
       }
-      case 2: 
-        return formData.gender !== "" && formData.ageGroup !== "";
+      case 2: {
+        const isGuardianPhoneValid = formData.guardianPhone.length === 0 || formData.guardianPhone.length === 10;
+        return formData.gender !== "" && formData.ageGroup !== "" && isGuardianPhoneValid;
+      }
       case 3: 
-        return formData.city.trim().length > 1;
+        return formData.city.trim().length >= 2;
       default: 
         return true;
     }

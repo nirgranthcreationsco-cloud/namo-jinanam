@@ -162,12 +162,25 @@ export default function LoginPage() {
               <input
                 type="text"
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder={language === "hi" ? "अपना ईमेल या मोबाइल नंबर दर्ज करें" : "Enter your email or mobile number"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val.includes("@")) {
+                    const digits = val.replace(/\D/g, "").slice(0, 10);
+                    setIdentifier(digits);
+                  } else {
+                    setIdentifier(val);
+                  }
+                }}
+                placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर या ईमेल" : "Enter 10-digit mobile or email"}
                 className="field"
                 required
                 style={{ fontSize: "1rem" }}
               />
+              {identifier.length > 0 && !identifier.includes("@") && identifier.length < 10 && (
+                <div style={{ fontSize: "0.75rem", marginTop: "4px", color: "#DC2626", fontWeight: 600 }} className="font-devanagari">
+                  {language === "hi" ? `✕ मोबाइल नंबर 10 अंकों का होना चाहिए (अभी ${identifier.length}/10 अंक हैं)` : `✕ Mobile number must be 10 digits (currently ${identifier.length}/10)`}
+                </div>
+              )}
             </div>
             
             <div>
@@ -187,7 +200,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (!identifier.includes("@") && identifier.length > 0 && identifier.length !== 10)}
               className="btn btn-primary"
               style={{ width: "100%", padding: "16px", marginTop: "8px", fontSize: "1rem" }}
             >
