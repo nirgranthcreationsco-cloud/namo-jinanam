@@ -224,12 +224,19 @@ export default function RegistrationSuccessPage() {
     setTestMode(isTestModeEnabled());
   }, []);
 
-  // If campaign is now live (and no test-mode override needed), redirect dashboard
+  // Guard: if not logged in, send to login first
   useEffect(() => {
-    if (mounted && isCampaignAccessible()) {
-      router.replace(user?.id ? "/dashboard" : "/login");
+    if (mounted && _hasHydrated && !user?.id) {
+      router.replace("/login");
     }
-  }, [mounted, user, router]);
+  }, [mounted, _hasHydrated, user, router]);
+
+  // If campaign is now live, redirect to appropriate page
+  useEffect(() => {
+    if (mounted && _hasHydrated && user?.id && isCampaignAccessible()) {
+      router.replace("/dashboard");
+    }
+  }, [mounted, _hasHydrated, user, router]);
 
   const enableTestMode = useCallback(() => {
     localStorage.setItem("campaign_test_mode", "true");
@@ -243,7 +250,8 @@ export default function RegistrationSuccessPage() {
     window.location.reload();
   }, []);
 
-  if (!mounted || !_hasHydrated) return null;
+  // Don't render until hydrated, mounted, and user is confirmed logged in
+  if (!mounted || !_hasHydrated || !user?.id) return null;
 
   const isHi = language === "hi";
   const countdown_labels = isHi

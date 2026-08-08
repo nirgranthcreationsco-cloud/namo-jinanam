@@ -289,21 +289,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!_hasHydrated) return;
 
-    // Before campaign launches, all protected routes redirect to registration-success
-    if (!isCampaignAccessible()) {
-      router.replace("/registration-success");
+    // Require login first always
+    if (!user) {
+      router.replace("/login");
       return;
     }
 
-    // Campaign is live — require login as normal
-    if (!user) {
-      router.replace("/login");
+    // Logged-in user, but campaign hasn't started yet → pre-launch holding page
+    if (!isCampaignAccessible()) {
+      router.replace("/registration-success");
     }
   }, [user, _hasHydrated, router]);
 
   if (!_hasHydrated) return null;
-  if (!isCampaignAccessible()) return null;
   if (!user) return null;
+  if (!isCampaignAccessible()) return null;
 
   return (
     <div style={{ paddingBottom: "84px", overflowX: "hidden" }}>
