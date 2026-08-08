@@ -23,9 +23,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (_hasHydrated && user?.id) {
+      router.replace("/dashboard");
+    }
+  }, [_hasHydrated, user, router]);
 
-  if (!mounted || !_hasHydrated) return null;
+  if (!mounted || !_hasHydrated || user?.id) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

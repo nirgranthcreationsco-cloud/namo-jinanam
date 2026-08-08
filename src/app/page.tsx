@@ -10,19 +10,23 @@ import { ArrowRight, Sparkles, Heart, Trophy, Globe, Rocket, Flame } from "lucid
 
 export default function LandingPage() {
   const { language, setLanguage } = useLanguageStore();
-  const { hasSeenOnboarding, _hasHydrated } = useAuthStore();
+  const { user, hasSeenOnboarding, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (_hasHydrated && !hasSeenOnboarding) {
-      router.push("/onboarding");
+    if (_hasHydrated) {
+      if (user?.id) {
+        router.replace("/dashboard");
+      } else if (!hasSeenOnboarding) {
+        router.replace("/onboarding");
+      }
     }
-  }, [hasSeenOnboarding, _hasHydrated, router]);
+  }, [user, hasSeenOnboarding, _hasHydrated, router]);
 
-  // Prevent hydration mismatch
-  if (!mounted || !_hasHydrated) {
+  // Prevent hydration mismatch or showing landing page to logged in users
+  if (!mounted || !_hasHydrated || user?.id) {
     return null;
   }
 

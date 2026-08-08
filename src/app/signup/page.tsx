@@ -31,13 +31,15 @@ export default function SignupPage() {
   useEffect(() => {
     setMounted(true);
     if (_hasHydrated) {
-      if (!hasSeenOnboarding) {
+      if (user?.id) {
+        router.replace("/dashboard");
+      } else if (!hasSeenOnboarding) {
         router.push("/onboarding");
       }
     }
-  }, [hasSeenOnboarding, _hasHydrated, router]);
+  }, [user, hasSeenOnboarding, _hasHydrated, router]);
 
-  if (!mounted || !_hasHydrated) return null;
+  if (!mounted || !_hasHydrated || user?.id) return null;
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 5));
   const handlePrev = () => setStep((s) => Math.max(s - 1, 1));
