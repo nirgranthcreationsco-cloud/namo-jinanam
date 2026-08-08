@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
+import { isCampaignAccessible } from "@/config/campaign";
 import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine, Target, Sparkles } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -286,13 +287,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    // Only redirect if store has finished loading from localStorage
-    if (_hasHydrated && !user) {
+    if (!_hasHydrated) return;
+
+    // Before campaign launches, all protected routes redirect to registration-success
+    if (!isCampaignAccessible()) {
+      router.replace("/registration-success");
+      return;
+    }
+
+    // Campaign is live — require login as normal
+    if (!user) {
       router.replace("/login");
     }
   }, [user, _hasHydrated, router]);
 
-  if (!_hasHydrated || !user) return null;
+  if (!_hasHydrated) return null;
+  if (!isCampaignAccessible()) return null;
+  if (!user) return null;
 
   return (
     <div style={{ paddingBottom: "84px", overflowX: "hidden" }}>

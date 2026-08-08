@@ -100,9 +100,15 @@ export default function SignupPage() {
         }
       }, 100);
 
+      // Redirect based on campaign state
+      const { isCampaignAccessible } = await import("@/config/campaign");
       setTimeout(() => {
-        router.push("/dashboard");
-      }, 2500);
+        if (isCampaignAccessible()) {
+          router.replace("/dashboard");
+        } else {
+          router.replace("/registration-success");
+        }
+      }, 2000);
     } else {
       setErrorMsg(result.error || "Signup failed");
     }

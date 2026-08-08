@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
 import { useAuthStore } from "@/store/authStore";
+import { isCampaignAccessible } from "@/config/campaign";
 import { ArrowRight, Sparkles, Heart, Trophy, Globe, Rocket, Flame } from "lucide-react";
 
 export default function LandingPage() {
@@ -18,14 +19,15 @@ export default function LandingPage() {
     setMounted(true);
     if (_hasHydrated) {
       if (user?.id) {
-        router.replace("/dashboard");
+        // Logged in: campaign live → dashboard; pre-launch → registration-success
+        router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success");
       } else if (!hasSeenOnboarding) {
         router.replace("/onboarding");
       }
     }
   }, [user, hasSeenOnboarding, _hasHydrated, router]);
 
-  // Prevent hydration mismatch or showing landing page to logged in users
+  // Prevent hydration mismatch or showing landing page to logged-in users
   if (!mounted || !_hasHydrated || user?.id) {
     return null;
   }
