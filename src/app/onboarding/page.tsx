@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { isCampaignAccessible } from "@/config/campaign";
 
 const IMAGES = [
   "/dailyniyam.png",
@@ -24,7 +25,11 @@ export default function OnboardingPage() {
   // Next.js hydration fix for persisted Zustand stores
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!isCampaignAccessible()) {
+      // Pre-launch: onboarding is skipped, go straight to signup
+      router.replace("/signup");
+    }
+  }, [router]);
 
   const isLast = current === IMAGES.length - 1;
 

@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { ArrowRight, Globe } from "lucide-react";
 import { loginAction } from "@/app/actions/auth";
+import { isCampaignAccessible } from "@/config/campaign";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,12 +24,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true);
-    if (_hasHydrated && user?.id) {
-      router.replace("/dashboard");
+    if (_hasHydrated) {
+      if (!isCampaignAccessible()) {
+        // Pre-launch: only signup and registration-success are accessible
+        router.replace(user?.id ? "/registration-success" : "/signup");
+        return;
+      }
+      if (user?.id) {
+        router.replace("/dashboard");
+      }
     }
   }, [_hasHydrated, user, router]);
 
-  if (!mounted || !_hasHydrated || user?.id) return null;
+  if (!mounted || !_hasHydrated || user?.id || !isCampaignAccessible()) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +76,7 @@ export default function LoginPage() {
       }
     }
 
-    router.replace("/dashboard");
+    router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success");
   };
 
   return (
