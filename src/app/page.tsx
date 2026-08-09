@@ -21,14 +21,17 @@ export default function LandingPage() {
       if (user?.id) {
         // Logged in: campaign live → dashboard; pre-launch → registration-success
         router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success");
+      } else if (!isCampaignAccessible()) {
+        // Pre-launch: unregistered users should register first
+        router.replace("/signup");
       } else if (!hasSeenOnboarding) {
         router.replace("/onboarding");
       }
     }
   }, [user, hasSeenOnboarding, _hasHydrated, router]);
 
-  // Prevent hydration mismatch or showing landing page to logged-in users
-  if (!mounted || !_hasHydrated || user?.id) {
+  // Don't show landing page during pre-launch
+  if (!mounted || !_hasHydrated || user?.id || !isCampaignAccessible()) {
     return null;
   }
 

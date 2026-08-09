@@ -8,6 +8,7 @@ import { useLanguageStore } from "@/store/languageStore";
 import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
 import { signupAction } from "@/app/actions/auth";
 import { SignupFormData } from "@/types";
+import { isCampaignAccessible, CAMPAIGN_START_DISPLAY_EN, CAMPAIGN_START_DISPLAY_HI } from "@/config/campaign";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -32,10 +33,10 @@ export default function SignupPage() {
     setMounted(true);
     if (_hasHydrated) {
       if (user?.id) {
-        router.replace("/dashboard");
-      } else if (!hasSeenOnboarding) {
-        router.push("/onboarding");
+        // Logged-in user: go to appropriate destination
+        router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success");
       }
+      // Note: during pre-launch, skip the onboarding check — signup IS the entry point
     }
   }, [user, hasSeenOnboarding, _hasHydrated, router]);
 
@@ -423,19 +424,48 @@ export default function SignupPage() {
     }
   };
 
+  const prelaunch = !isCampaignAccessible();
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--surface-bg)", color: "var(--text-primary)", display: "flex", flexDirection: "column" }}>
+
+      {/* ── Pre-launch Hero Banner ── */}
+      {prelaunch && step < 5 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: "linear-gradient(135deg, #4B1D15 0%, #7C2D12 55%, #B45309 100%)",
+            padding: "28px 24px 22px",
+            textAlign: "center",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(255,200,80,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
+          <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🪷</div>
+          <h1 className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 800, color: "#fff", margin: "0 0 4px", lineHeight: 1.3 }}>
+            {language === "hi" ? "सन्मति - सुनील - संस्कार अभियान" : "Sanmati Sunil Sanskar Abhiyan"}
+          </h1>
+          <p className="font-devanagari" style={{ fontSize: "0.8rem", color: "rgba(255,230,180,0.9)", margin: 0 }}>
+            {language === "hi"
+              ? `अभियान ${CAMPAIGN_START_DISPLAY_HI} से शुरू होगा। अभी पंजीकरण करें।`
+              : `Campaign begins ${CAMPAIGN_START_DISPLAY_EN}. Register now.`}
+          </p>
+        </motion.div>
+      )}
+
       {/* ── Top Nav ── */}
-      <div style={{ padding: "20px", display: "flex", alignItems: "center", borderBottom: "1px solid var(--surface-border)" }}>
+      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", borderBottom: "1px solid var(--surface-border)" }}>
         {step > 1 && step < 5 && (
           <button onClick={handlePrev} className="btn-ghost" style={{ padding: "8px", border: "none", background: "transparent", cursor: "pointer", color: "var(--text-primary)" }}>
             <ChevronLeft size={24} />
           </button>
         )}
         <div className="font-devanagari heading-sm" style={{ flex: 1, textAlign: "center", paddingRight: step > 1 && step < 5 ? "40px" : "0" }}>
-          {language === "hi" ? "नया खाता बनाएँ" : "Create New Account"}
+          {language === "hi" ? "नया पंजीकरण" : "New Registration"}
         </div>
-        <div style={{ position: "absolute", top: "16px", right: "16px" }}>
+        <div style={{ position: "absolute", top: prelaunch && step < 5 ? "108px" : "12px", right: "16px" }}>
           <button
             onClick={() => setLanguage(language === "hi" ? "en" : "hi")}
             style={{
@@ -519,12 +549,14 @@ export default function SignupPage() {
             </button>
           ) : (
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success")}
               className="btn btn-primary"
               style={{ width: "100%", padding: "16px", fontSize: "1rem" }}
             >
               <span className="font-devanagari">
-                {language === "hi" ? "डैशबोर्ड पर जाएँ (Go to Dashboard)" : "Go to Dashboard"}
+                {isCampaignAccessible()
+                  ? (language === "hi" ? "डैशबोर्ड पर जाएँ" : "Go to Dashboard")
+                  : (language === "hi" ? "विवरण देखें" : "View Details")}
               </span>
               <ArrowRight size={18} />
             </button>

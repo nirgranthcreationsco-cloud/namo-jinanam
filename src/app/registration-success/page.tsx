@@ -224,10 +224,11 @@ export default function RegistrationSuccessPage() {
     setTestMode(isTestModeEnabled());
   }, []);
 
-  // Guard: if not logged in, send to login first
+  // Guard: if not logged in, send to appropriate auth page
   useEffect(() => {
     if (mounted && _hasHydrated && !user?.id) {
-      router.replace("/login");
+      // Pre-launch: register first; post-launch: login
+      router.replace(isCampaignAccessible() ? "/login" : "/signup");
     }
   }, [mounted, _hasHydrated, user, router]);
 

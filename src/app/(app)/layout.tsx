@@ -291,7 +291,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     // Require login first always
     if (!user) {
-      router.replace("/login");
+      // Pre-launch: primary action is registration
+      router.replace(isCampaignAccessible() ? "/login" : "/signup");
       return;
     }
 
