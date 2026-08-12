@@ -237,13 +237,13 @@ export default function LandingPage() {
             rotate: { repeat: Infinity, duration: 15, ease: "linear" },
           }}
           style={{
-            width: "88px",
-            height: "88px",
+            width: "116px",
+            height: "116px",
             borderRadius: "50%",
-            margin: "0 auto 16px",
+            margin: "0 auto 20px",
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(255, 200, 80, 0.4), 0 0 0 3px rgba(255, 255, 255, 0.5)",
-            border: "2px solid rgba(255, 255, 255, 0.8)",
+            boxShadow: "0 10px 40px rgba(255, 200, 80, 0.45), 0 0 0 4px rgba(255, 255, 255, 0.5)",
+            border: "3px solid rgba(255, 255, 255, 0.9)",
             display: "inline-block",
             background: "#FFFFFF",
           }}
@@ -426,13 +426,13 @@ export default function LandingPage() {
               className="font-devanagari"
               style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--brand)", margin: "8px 0 2px" }}
             >
-              चर्या चक्रवर्ती आचार्यश्री सुनीलसागर जी महाराज
+              {isHi ? "चर्या चक्रवर्ती आचार्यश्री सुनीलसागर जी महाराज" : "Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj"}
             </h3>
             <p
               className="font-devanagari"
               style={{ fontSize: "0.78125rem", color: "var(--text-muted)", margin: "0 0 16px" }}
             >
-              Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj
+              {isHi ? "परम पूज्य आचार्यश्री सुनीलसागर जी महाराज" : "Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj"}
             </p>
 
             <div style={{ height: "1px", background: "var(--surface-border)", margin: "14px 0" }} />
@@ -454,13 +454,13 @@ export default function LandingPage() {
                 className="font-devanagari"
                 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
               >
-                आर्यिका सुदृढ़मती माताजी
+                {isHi ? "आर्यिका 105 सुदृढ़मती माताजी" : "Aaryika Sudradhmati Mataji"}
               </div>
               <div
                 className="font-devanagari"
                 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
               >
-                आर्यिका सुस्वरमती माताजी
+                {isHi ? "आर्यिका 105 सुस्वरमती माताजी" : "Aaryika Suswarmati Mataji"}
               </div>
             </div>
           </div>
@@ -878,7 +878,7 @@ export default function LandingPage() {
               className="font-devanagari"
               style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-primary)" }}
             >
-              Pratham Gangwal • Nirgranth Creations
+              {isHi ? "प्रथम गंगवाल • निर्ग्रन्थ क्रिएशंस" : "Pratham Gangwal • Nirgranth Creations"}
             </div>
           </div>
         </motion.section>
