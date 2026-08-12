@@ -520,12 +520,16 @@ export default function SignupPage() {
 
       {/* ── Top Nav ── */}
       <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", borderBottom: "1px solid var(--surface-border)" }}>
-        {step > 1 && step < 5 && (
+        {step > 1 && step < 5 ? (
           <button onClick={handlePrev} className="btn-ghost" style={{ padding: "8px", border: "none", background: "transparent", cursor: "pointer", color: "var(--text-primary)" }}>
             <ChevronLeft size={24} />
           </button>
+        ) : (
+          <button onClick={() => router.push("/")} className="btn-ghost" style={{ padding: "8px", border: "none", background: "transparent", cursor: "pointer", color: "var(--text-primary)" }}>
+            <ChevronLeft size={24} />
+          </button>
         )}
-        <div className="font-devanagari heading-sm" style={{ flex: 1, textAlign: "center", paddingRight: step > 1 && step < 5 ? "40px" : "0" }}>
+        <div className="font-devanagari heading-sm" style={{ flex: 1, textAlign: "center", paddingRight: "40px" }}>
           {language === "hi" ? "नया पंजीकरण" : "New Registration"}
         </div>
         <div style={{ position: "absolute", top: prelaunch && step < 5 ? "108px" : "12px", right: "16px" }}>
