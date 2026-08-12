@@ -229,12 +229,30 @@ export default function LandingPage() {
         />
 
         <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", damping: 14, delay: 0.1 }}
-          style={{ fontSize: "3.25rem", marginBottom: "12px", display: "inline-block" }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1, rotate: 360 }}
+          transition={{
+            scale: { type: "spring", damping: 14, delay: 0.1 },
+            opacity: { duration: 0.5 },
+            rotate: { repeat: Infinity, duration: 15, ease: "linear" },
+          }}
+          style={{
+            width: "88px",
+            height: "88px",
+            borderRadius: "50%",
+            margin: "0 auto 16px",
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(255, 200, 80, 0.4), 0 0 0 3px rgba(255, 255, 255, 0.5)",
+            border: "2px solid rgba(255, 255, 255, 0.8)",
+            display: "inline-block",
+            background: "#FFFFFF",
+          }}
         >
-          🪷
+          <img
+            src="/logo.png"
+            alt="सन्मति - सुनील - संस्कार अभियान Logo"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </motion.div>
 
         <motion.div
