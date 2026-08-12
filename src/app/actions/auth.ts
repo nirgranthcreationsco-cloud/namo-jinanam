@@ -62,6 +62,7 @@ export async function signupAction(data: SignupFormData) {
         guardian_phone: data.guardian_phone || '',
         gender: data.gender || '',
         age_group: data.age_group || '',
+        dob: data.dob || null,
         city: data.city || '',
       })
       .select('*')

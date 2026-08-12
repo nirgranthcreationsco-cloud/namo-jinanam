@@ -160,6 +160,7 @@ export interface SignupFormData {
   email?: string;
   password?: string;
   city: string;
+  dob?: string;
 }
 
 export interface CampaignSettings {

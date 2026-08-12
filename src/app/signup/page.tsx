@@ -7,8 +7,28 @@ import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
 import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
 import { signupAction } from "@/app/actions/auth";
-import { SignupFormData } from "@/types";
+import { SignupFormData, AgeGroup } from "@/types";
 import { isCampaignAccessible, isTestModeEnabled, CAMPAIGN_START_DISPLAY_EN, CAMPAIGN_START_DISPLAY_HI } from "@/config/campaign";
+
+function calculateAge(dobString: string): number {
+  if (!dobString) return 0;
+  const dobDate = new Date(dobString);
+  if (isNaN(dobDate.getTime())) return 0;
+  const today = new Date();
+  let age = today.getFullYear() - dobDate.getFullYear();
+  const m = today.getMonth() - dobDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function getAgeGroupFromAge(age: number): AgeGroup | "" {
+  if (age >= 6 && age <= 12) return "6-12";
+  if (age >= 13 && age <= 23) return "13-23";
+  if (age >= 24 && age <= 42) return "24-40";
+  return "";
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,7 +44,7 @@ export default function SignupPage() {
     identifier: "",
     password: "",
     gender: "",
-    ageGroup: "",
+    dob: "",
     city: "",
     guardianName: "",
     guardianPhone: "",
@@ -75,10 +95,8 @@ export default function SignupPage() {
     };
     const mappedGender = genderMap[formData.gender] || "other";
 
-    let mappedAgeGroup: "6-12" | "13-23" | "24-40" = "24-40";
-    if (formData.ageGroup === "6-12") mappedAgeGroup = "6-12";
-    else if (formData.ageGroup === "13-23") mappedAgeGroup = "13-23";
-    else if (formData.ageGroup === "24-40") mappedAgeGroup = "24-40";
+    const age = calculateAge(formData.dob);
+    const mappedAgeGroup: AgeGroup = getAgeGroupFromAge(age) || "24-40";
 
     const isEmail = formData.identifier.includes("@");
     const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
@@ -91,6 +109,7 @@ export default function SignupPage() {
       guardian_phone: cleanGuardianPhone || undefined,
       gender: mappedGender,
       age_group: mappedAgeGroup,
+      dob: formData.dob || undefined,
       phone: cleanPhone || undefined,
       email: emailVal || undefined,
       password: formData.password || "Password123!",
@@ -238,7 +257,9 @@ export default function SignupPage() {
           </div>
         );
 
-      case 2:
+      case 2: {
+        const calculatedAge = calculateAge(formData.dob);
+        const computedAgeGroup = getAgeGroupFromAge(calculatedAge);
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ textAlign: "center", marginBottom: "8px" }}>
@@ -272,14 +293,39 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="field-label font-devanagari">
-                {language === "hi" ? "आयु वर्ग (Age Group)" : "Age Group"}
+                {language === "hi" ? "जन्म तिथि (Date of Birth)" : "Date of Birth"}
               </label>
-              <select className="field" value={formData.ageGroup} onChange={(e) => updateForm("ageGroup", e.target.value)}>
-                <option value="">{language === "hi" ? "चुनें..." : "Select..."}</option>
-                <option value="6-12">6 - 12</option>
-                <option value="13-23">13 - 23</option>
-                <option value="24-40">24 - 40</option>
-              </select>
+              <input
+                type="date"
+                className="field"
+                value={formData.dob}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => updateForm("dob", e.target.value)}
+                style={{ fontSize: "1rem" }}
+              />
+              {formData.dob && (
+                <div style={{ fontSize: "0.75rem", marginTop: "6px", fontWeight: 600 }} className="font-devanagari">
+                  {calculatedAge < 6 ? (
+                    <span style={{ color: "#DC2626" }}>
+                      ✕ {language === "hi"
+                        ? "यह अभियान केवल 6 वर्ष या उससे अधिक आयु के प्रतिभागियों के लिए है।"
+                        : "This campaign is open only to participants aged 6 years and above."}
+                    </span>
+                  ) : calculatedAge > 42 ? (
+                    <span style={{ color: "#DC2626" }}>
+                      ✕ {language === "hi"
+                        ? "यह अभियान केवल 40 वर्ष तक की आयु के प्रतिभागियों के लिए है।"
+                        : "This campaign is currently open only to participants up to 40 years of age."}
+                    </span>
+                  ) : (
+                    <span style={{ color: "#059669" }}>
+                      ✓ {language === "hi"
+                        ? `आयु: ${calculatedAge} वर्ष (वर्ग: ${computedAgeGroup})`
+                        : `Age: ${calculatedAge} years (Group: ${computedAgeGroup})`}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="field-label font-devanagari">
@@ -320,6 +366,7 @@ export default function SignupPage() {
             </div>
           </div>
         );
+      }
 
       case 3:
         return (
@@ -428,8 +475,10 @@ export default function SignupPage() {
         return isNameValid && isIdentifierValid && isPasswordValid;
       }
       case 2: {
+        const age = calculateAge(formData.dob);
+        const isAgeValid = formData.dob !== "" && age >= 6 && age <= 42;
         const isGuardianPhoneValid = formData.guardianPhone.length === 0 || formData.guardianPhone.length === 10;
-        return formData.gender !== "" && formData.ageGroup !== "" && isGuardianPhoneValid;
+        return formData.gender !== "" && isAgeValid && isGuardianPhoneValid;
       }
       case 3: 
         return formData.city.trim().length >= 2;
