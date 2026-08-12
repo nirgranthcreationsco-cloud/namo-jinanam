@@ -10,70 +10,43 @@ export interface InspirationCategory {
   quoteEn: string;
 }
 
-// These are the possible category focuses. We define them in an array to rotate through them.
+// These are the 4 active daily category focuses for rotation.
 export const INSPIRATION_TEMPLATES: InspirationCategory[] = [
-  {
-    id: "insp_food",
-    categoryId: "food",
-    multiplier: 2,
-    blessingHi: "2× आहार पुण्य",
-    blessingEn: "Double Food Punya",
-    quoteHi: "आहार की शुद्धि से विचारों की शुद्धि होती है।",
-    quoteEn: "Purity of food supports purity of thoughts."
-  },
   {
     id: "insp_morning",
     categoryId: "morning",
     multiplier: 1.5,
-    blessingHi: "1.5× प्रातः पुण्य",
+    blessingHi: "1.5× सुप्रभातम पुण्य",
     blessingEn: "1.5× Morning Punya",
     quoteHi: "प्रातः काल की शुरुआत संयम के साथ, दिन को सफल बनाती है।",
     quoteEn: "Starting the morning with discipline brings success to the day."
   },
   {
-    id: "insp_tech",
+    id: "insp_food",
+    categoryId: "food",
+    multiplier: 2,
+    blessingHi: "2× सात्विक आहार पुण्य",
+    blessingEn: "Double Food Punya",
+    quoteHi: "आहार की शुद्धि से विचारों और आत्मा की शुद्धि होती है।",
+    quoteEn: "Purity of food supports purity of thoughts and soul."
+  },
+  {
+    id: "insp_discipline",
     categoryId: "technology",
     multiplier: 2.5,
-    blessingHi: "2.5× तकनीक संयम पुण्य",
-    blessingEn: "2.5× Tech Discipline Punya",
-    quoteHi: "स्क्रीन से दूरी, स्वयं से निकटता लाती है।",
-    quoteEn: "Distance from the screen brings closeness to the self."
+    blessingHi: "2.5× आत्म अनुशासन पुण्य",
+    blessingEn: "2.5× Self Discipline Punya",
+    quoteHi: "इंद्रिय संयम और आत्म-अनुशासन ही महानता का आधार है।",
+    quoteEn: "Self discipline and control over senses is the pillar of greatness."
   },
   {
     id: "insp_spiritual",
     categoryId: "spiritual",
     multiplier: 2,
-    blessingHi: "2× आध्यात्मिक पुण्य",
+    blessingHi: "2× आध्यात्मिक भक्ति पुण्य",
     blessingEn: "Double Spiritual Punya",
-    quoteHi: "प्रभु की भक्ति और साधना ही आत्मा का सच्चा धन है।",
-    quoteEn: "Devotion and sadhana are the true wealth of the soul."
-  },
-  {
-    id: "insp_env",
-    categoryId: "environment",
-    multiplier: 1.75,
-    blessingHi: "1.75× पर्यावरण पुण्य",
-    blessingEn: "1.75× Environment Punya",
-    quoteHi: "जीवों पर करुणा, जैन धर्म का मूलाधार है।",
-    quoteEn: "Compassion towards all beings is the foundation of Jainism."
-  },
-  {
-    id: "insp_lifestyle",
-    categoryId: "lifestyle",
-    multiplier: 1.5,
-    blessingHi: "1.5× जीवनशैली पुण्य",
-    blessingEn: "1.5× Lifestyle Punya",
-    quoteHi: "सरल जीवन और सादगी से मन को शांति मिलती है।",
-    quoteEn: "Simple living brings profound peace to the mind."
-  },
-  {
-    id: "insp_memory",
-    categoryId: "memory",
-    multiplier: 2,
-    blessingHi: "2× स्मृति पुण्य",
-    blessingEn: "Double Memory Punya",
-    quoteHi: "स्वाध्याय से अज्ञान मिटता है और ज्ञान का प्रकाश फैलता है।",
-    quoteEn: "Swadhyay dispels ignorance and spreads the light of knowledge."
+    quoteHi: "प्रभु की भक्ति और स्वाध्याय ही आत्मा का सच्चा धन है।",
+    quoteEn: "Devotion and Swadhyay are the true wealth of the soul."
   }
 ];
 

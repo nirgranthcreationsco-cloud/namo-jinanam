@@ -27,7 +27,7 @@ const CATEGORIES: { id: string; name_hi: string; name_en: string; ids: string[] 
     id: "family",
     name_hi: "परिवार एवं संस्कार",
     name_en: "Family & Ethical Values",
-    ids: ["q_sankalp_02", "q_sankalp_03", "q_sankalp_03b", "q_sankalp_06", "q_sankalp_07"]
+    ids: ["q_sankalp_02", "q_sankalp_03", "q_sankalp_03b", "q_sankalp_06", "q_sankalp_07", "q_sankalp_14"]
   },
   {
     id: "spiritual",
@@ -39,7 +39,7 @@ const CATEGORIES: { id: string; name_hi: string; name_en: string; ids: string[] 
     id: "lifestyle",
     name_hi: "आहार एवं आचरण शुद्धि",
     name_en: "Food & Conduct Purity",
-    ids: ["q_sankalp_08", "q_chaturmas_bonus_12"]
+    ids: ["q_sankalp_08", "q_sankalp_10", "q_sankalp_11", "q_sankalp_12", "q_sankalp_13"]
   }
 ];
 
@@ -53,6 +53,7 @@ const CHATURMAS_CATEGORIES: { id: string; name_hi: string; name_en: string; ids:
       "q_chaturmas_bonus_02",
       "q_chaturmas_bonus_03",
       "q_chaturmas_bonus_06",
+      "q_chaturmas_bonus_12",
       "q_chaturmas_bonus_13",
       "q_chaturmas_bonus_14"
     ]
