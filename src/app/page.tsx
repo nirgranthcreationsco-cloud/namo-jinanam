@@ -371,6 +371,83 @@ export default function LandingPage() {
 
       <div style={{ padding: "28px 18px 0", maxWidth: "480px", margin: "0 auto" }}>
 
+        {/* ── DIVINE BLESSINGS (INSPIRATION) ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          style={{ marginBottom: "28px" }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #FFFFFF 0%, #FAF3EA 100%)",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              border: "1.5px solid var(--surface-border-md)",
+              boxShadow: "0 6px 24px rgba(92,26,16,0.08)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🙏</div>
+            <div
+              className="font-devanagari"
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                color: "var(--gold)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "4px",
+              }}
+            >
+              {isHi ? "परम पूज्य गुरुदेव का मंगल आशीर्वाद" : "With Divine Blessings"}
+            </div>
+
+            <h3
+              className="font-devanagari"
+              style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--brand)", margin: "8px 0 2px" }}
+            >
+              चर्या चक्रवर्ती आचार्यश्री सुनीलसागर जी महाराज
+            </h3>
+            <p
+              className="font-devanagari"
+              style={{ fontSize: "0.78125rem", color: "var(--text-muted)", margin: "0 0 16px" }}
+            >
+              Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj
+            </p>
+
+            <div style={{ height: "1px", background: "var(--surface-border)", margin: "14px 0" }} />
+
+            <div
+              className="font-devanagari"
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                color: "var(--text-muted)",
+                marginBottom: "8px",
+              }}
+            >
+              {isHi ? "परिकल्पना एवं आध्यात्मिक मार्गदर्शन" : "Concept & Spiritual Guidance"}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div
+                className="font-devanagari"
+                style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
+              >
+                आर्यिका सुदृढ़मती माताजी
+              </div>
+              <div
+                className="font-devanagari"
+                style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
+              >
+                आर्यिका सुस्वरमती माताजी
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
         {/* ── SECTION 1: YOUR JOURNEY ── */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -718,83 +795,6 @@ export default function LandingPage() {
               {isHi
                 ? "प्रत्येक आयु वर्ग के उत्कृष्ट प्रतिभागियों को विशेष सम्मान प्रदान किया जाएगा।"
                 : "Outstanding participants from every age group will receive special recognition."}
-            </div>
-          </div>
-        </motion.section>
-
-        {/* ── SECTION 5: WITH DIVINE BLESSINGS ── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          style={{ marginBottom: "28px" }}
-        >
-          <div
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              border: "1px solid var(--surface-border)",
-              boxShadow: "0 4px 20px rgba(92,26,16,0.06)",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🙏</div>
-            <div
-              className="font-devanagari"
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: 800,
-                color: "var(--gold)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "4px",
-              }}
-            >
-              {isHi ? "परम पूज्य गुरुदेव का मंगल आशीर्वाद" : "With Divine Blessings"}
-            </div>
-
-            <h3
-              className="font-devanagari"
-              style={{ fontSize: "1.0625rem", fontWeight: 800, color: "var(--brand)", margin: "8px 0 2px" }}
-            >
-              चर्या चक्रवर्ती आचार्यश्री सुनीलसागर जी महाराज
-            </h3>
-            <p
-              className="font-devanagari"
-              style={{ fontSize: "0.78125rem", color: "var(--text-muted)", margin: "0 0 16px" }}
-            >
-              {isHi ? "Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj" : "Charya Chakravarti Acharyashri Sunilsagar Ji Maharaj"}
-            </p>
-
-            <div style={{ height: "1px", background: "var(--surface-border)", margin: "14px 0" }} />
-
-            <div
-              className="font-devanagari"
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                color: "var(--text-muted)",
-                marginBottom: "8px",
-              }}
-            >
-              {isHi ? "परिकल्पना एवं आध्यात्मिक मार्गदर्शन" : "Concept & Spiritual Guidance"}
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div
-                className="font-devanagari"
-                style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
-              >
-                आर्यिका सुदृढ़मती माताजी
-              </div>
-              <div
-                className="font-devanagari"
-                style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-primary)" }}
-              >
-                आर्यिका सुस्वरमती माताजी
-              </div>
             </div>
           </div>
         </motion.section>
