@@ -252,11 +252,10 @@ export default function LandingPage() {
 
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1, rotate: 360 }}
+          animate={{ scale: 1, opacity: 1 }}
           transition={{
             scale: { type: "spring", damping: 14, delay: 0.1 },
             opacity: { duration: 0.5 },
-            rotate: { repeat: Infinity, duration: 15, ease: "linear" },
           }}
           style={{
             width: "116px",
