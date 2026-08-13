@@ -6,8 +6,13 @@ import { useLanguageStore } from "@/store/languageStore";
 import { CertificateGenerator } from "@/components/CertificateGenerator";
 import { 
   LogOut, Flame, Calendar, Star, 
-  Download, ShieldCheck 
+  Download, ShieldCheck, Lock 
 } from "lucide-react";
+import { 
+  isCertificateDownloadUnlocked, 
+  CERTIFICATE_UNLOCK_DISPLAY_HI, 
+  CERTIFICATE_UNLOCK_DISPLAY_EN 
+} from "@/config/campaign";
 
 export default function ProfilePage() {
   const { profile, stats, logout } = useAuthStore();
@@ -139,28 +144,81 @@ export default function ProfilePage() {
           border: "1px solid var(--surface-border)",
           borderRadius: "var(--r-xl)",
           marginBottom: "20px",
-          textAlign: "center"
+          textAlign: "center",
+          position: "relative",
+          overflow: "hidden"
         }}
       >
-        <ShieldCheck size={28} color="var(--gold)" style={{ margin: "0 auto 8px" }} />
-        <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
-          {language === "hi" ? "भागीदारी प्रमाण पत्र" : "Certificate of Completion"}
-        </h3>
-        <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-          {language === "hi" ? "अपनी भागीदारी का प्रमाण पत्र डाउनलोड करें" : "Download your participation certificate"}
-        </p>
-        <button
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              (window as any).downloadSanmatiCertificate?.();
-            }
-          }}
-          className="btn btn-primary font-devanagari"
-          style={{ width: "100%", padding: "10px", fontSize: "0.8125rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "var(--surface-overlay)", border: "1px solid var(--surface-border)", color: "var(--brand)", cursor: "pointer" }}
-        >
-          <Download size={14} /> {language === "hi" ? "डाउनलोड करें" : "Download Now"}
-        </button>
-        {profile && <CertificateGenerator userName={profile.full_name || "Sadhak"} />}
+        {isCertificateDownloadUnlocked() ? (
+          <>
+            <ShieldCheck size={28} color="var(--gold)" style={{ margin: "0 auto 8px" }} />
+            <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
+              {language === "hi" ? "भागीदारी प्रमाण पत्र" : "Certificate of Completion"}
+            </h3>
+            <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+              {language === "hi" ? "अपनी भागीदारी का प्रमाण पत्र डाउनलोड करें" : "Download your participation certificate"}
+            </p>
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  (window as any).downloadSanmatiCertificate?.();
+                }
+              }}
+              className="btn btn-primary font-devanagari"
+              style={{ width: "100%", padding: "10px", fontSize: "0.8125rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "var(--surface-overlay)", border: "1px solid var(--surface-border)", color: "var(--brand)", cursor: "pointer" }}
+            >
+              <Download size={14} /> {language === "hi" ? "डाउनलोड करें" : "Download Now"}
+            </button>
+            {profile && <CertificateGenerator userName={profile.full_name || "Sadhak"} />}
+          </>
+        ) : (
+          <>
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                background: "rgba(160, 98, 42, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 10px"
+              }}
+            >
+              <Lock size={22} color="var(--gold)" />
+            </div>
+            <h3 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
+              {language === "hi" ? "भागीदारी प्रमाण पत्र (लॉक्ड)" : "Certificate of Completion (Locked)"}
+            </h3>
+            <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "12px", lineHeight: 1.4 }}>
+              {language === "hi"
+                ? `प्रमाण पत्र अभियान के अंतिम सप्ताह (${CERTIFICATE_UNLOCK_DISPLAY_HI}) से डाउनलोड के लिए उपलब्ध होगा।`
+                : `Certificate will unlock for download in the final week of campaign (${CERTIFICATE_UNLOCK_DISPLAY_EN}).`}
+            </p>
+            <div
+              className="font-devanagari"
+              style={{
+                width: "100%",
+                padding: "10px",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                background: "rgba(0,0,0,0.04)",
+                border: "1px dashed var(--surface-border)",
+                borderRadius: "10px",
+                color: "var(--text-muted)"
+              }}
+            >
+              <Lock size={14} />
+              {language === "hi"
+                ? `अनलॉक: ${CERTIFICATE_UNLOCK_DISPLAY_HI} (अंतिम सप्ताह)`
+                : `Unlocks: ${CERTIFICATE_UNLOCK_DISPLAY_EN} (Final Week)`}
+            </div>
+          </>
+        )}
       </motion.div>
 
       {/* Help & Support Developer Contact Card */}

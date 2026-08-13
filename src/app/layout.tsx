@@ -4,6 +4,7 @@ import { PWAUpdater } from "@/components/PWAUpdater";
 import { InstallPrompt } from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://sanmati-sanskar.vercel.app"),
   title: "सन्मति - सुनील - संस्कार अभियान",
   description: "संस्कार • संयम • साधना • सफलता — एक प्रीमियम जैन आध्यात्मिक अभ्यास ट्रैकर",
   keywords: ["jain", "chaturmas", "sanskar", "habit tracker", "spiritual", "namo jinanam", "sanmati sunilam"],
@@ -18,9 +19,23 @@ export const metadata: Metadata = {
     title: "सन्मति - सुनील - संस्कार अभियान",
     description: "संस्कार • संयम • साधना • सफलता",
     type: "website",
+    images: [
+      {
+        url: "/punya-rising.png",
+        width: 800,
+        height: 800,
+        alt: "सन्मति - सुनील - संस्कार अभियान",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "सन्मति - सुनील - संस्कार अभियान",
+    description: "संस्कार • संयम • साधना • सफलता",
+    images: ["/punya-rising.png"],
   },
   icons: {
-    icon: "/logo.png",
+    icon: "/icon-192.png",
     apple: "/logo.png",
   },
 };
@@ -46,7 +61,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
       </head>

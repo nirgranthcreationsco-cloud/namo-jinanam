@@ -45,3 +45,17 @@ export const CAMPAIGN_START_DISPLAY_HI = "19 अगस्त 2026";
 export const CAMPAIGN_START_DISPLAY_EN = "19 August 2026";
 export const CAMPAIGN_END_DISPLAY_HI = "19 अक्टूबर 2026";
 export const CAMPAIGN_END_DISPLAY_EN = "19 October 2026";
+
+/**
+ * The date the certificate download unlocks (final week of campaign).
+ */
+export const CERTIFICATE_UNLOCK_DATE = new Date("2026-10-12T00:00:00+05:30");
+export const CERTIFICATE_UNLOCK_DISPLAY_HI = "12 अक्टूबर 2026";
+export const CERTIFICATE_UNLOCK_DISPLAY_EN = "12 October 2026";
+
+/**
+ * Returns true if certificate download is unlocked (final week or test mode).
+ */
+export function isCertificateDownloadUnlocked(): boolean {
+  return new Date() >= CERTIFICATE_UNLOCK_DATE || isTestModeEnabled();
+}
