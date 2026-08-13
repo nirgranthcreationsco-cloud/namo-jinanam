@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Share, MoreVertical, Plus, Laptop, Download } from "lucide-react";
+import { X, Share, Plus, MoreVertical } from "lucide-react";
 
-type Platform = "ios" | "android" | "desktop";
+type Platform = "ios" | "android" | "other";
 
 function detectPlatform(): Platform {
-  if (typeof window === "undefined") return "desktop";
+  if (typeof window === "undefined") return "other";
   const ua = navigator.userAgent.toLowerCase();
   if (/iphone|ipad|ipod/.test(ua)) return "ios";
   if (/android/.test(ua)) return "android";
-  return "desktop";
+  return "other"; // defaults to ios style instructions for desktop testing
 }
 
 function isRunningStandalone(): boolean {
@@ -25,44 +25,39 @@ function isRunningStandalone(): boolean {
 
 export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
-  const [platform, setPlatform] = useState<Platform>("desktop");
-  const [step, setStep] = useState(0);
+  const [platform, setPlatform] = useState<Platform>("ios");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Detect platform
     const detected = detectPlatform();
-    setPlatform(detected);
+    setPlatform(detected === "android" ? "android" : "ios");
 
-    // Listen for Chrome / Android native PWA install prompt event
+    // Native install prompt listener (Android/Chrome)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log("[PWA] beforeinstallprompt event captured!");
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // Listen for manual trigger event from buttons
-    const handleOpenTrigger = () => {
-      setVisible(true);
-    };
-
+    // Manual trigger listener
+    const handleOpenTrigger = () => setVisible(true);
     window.addEventListener("open-install-prompt", handleOpenTrigger);
 
-    // Auto-show prompt if not in standalone mode
+    // Auto-show logic
     if (!isRunningStandalone()) {
-      const timer = setTimeout(() => {
-        setVisible(true);
-      }, 1000);
-
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-        window.removeEventListener("open-install-prompt", handleOpenTrigger);
-      };
+      // Check if user dismissed it in this session (so we don't annoy them on every page reload)
+      const dismissed = sessionStorage.getItem("pwa_install_dismissed");
+      if (!dismissed) {
+        const timer = setTimeout(() => setVisible(true), 1500);
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+          window.removeEventListener("open-install-prompt", handleOpenTrigger);
+        };
+      }
     }
 
     return () => {
@@ -73,80 +68,27 @@ export function InstallPrompt() {
 
   function handleDismiss() {
     setVisible(false);
-    localStorage.setItem("namo_install_dismissed", "1");
+    sessionStorage.setItem("pwa_install_dismissed", "1");
   }
 
   async function handleNativeInstall() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      console.log(`[PWA] User choice outcome: ${outcome}`);
-      setDeferredPrompt(null);
-      setVisible(false);
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+        setVisible(false);
+      }
     }
   }
 
-  const iosSteps = [
-    {
-      icon: <Share size={26} strokeWidth={1.8} style={{ color: "#007AFF" }} />,
-      label: "1. Share बटन दबाएँ",
-      desc: "Safari ब्राउज़र में नीचे दिए गए Share icon पर टैप करें",
-    },
-    {
-      icon: <Plus size={26} strokeWidth={1.8} style={{ color: "#34C759" }} />,
-      label: '2. "Add to Home Screen" चुनें',
-      desc: "मेनू सूची को स्क्रॉल करके 'Add to Home Screen' पर टैप करें",
-    },
-    {
-      icon: <span style={{ fontSize: "1.5rem" }}>🏠</span>,
-      label: '3. "Add" पर टैप करें',
-      desc: "ऊपर दाईं ओर 'Add' दबाएँ, ऐप आपकी होम स्क्रीन पर जुड़ जाएगा!",
-    },
-  ];
-
-  const androidSteps = [
-    {
-      icon: <MoreVertical size={26} strokeWidth={1.8} style={{ color: "#4285F4" }} />,
-      label: "1. Chrome Menu दबाएँ",
-      desc: "Chrome ब्राउज़र में ऊपर-दाईं ओर दिए गए 3-डॉट्स (⋮) मेनू पर टैप करें",
-    },
-    {
-      icon: <Plus size={26} strokeWidth={1.8} style={{ color: "#34A853" }} />,
-      label: '2. "Install App" चुनें',
-      desc: "'Install App' या 'Add to Home Screen' विकल्प पर टैप करें",
-    },
-    {
-      icon: <span style={{ fontSize: "1.5rem" }}>🏠</span>,
-      label: '3. "Install" दबाएँ',
-      desc: "पुष्टि करके 'Install' दबाएँ, ऐप होम स्क्रीन पर इंस्टॉल हो जाएगा!",
-    },
-  ];
-
-  const desktopSteps = [
-    {
-      icon: <Download size={26} strokeWidth={1.8} style={{ color: "#4285F4" }} />,
-      label: "1. Install आइकन दबाएँ",
-      desc: "Chrome ब्राउज़र में एड्रेस बार (URL) के दाईं ओर Install (⊕) बटन दबाएँ",
-    },
-    {
-      icon: <Laptop size={26} strokeWidth={1.8} style={{ color: "#A0622A" }} />,
-      label: '2. "Install" चुनें',
-      desc: "पॉपअप में 'Install' पर क्लिक करें",
-    },
-    {
-      icon: <span style={{ fontSize: "1.5rem" }}>🖥️</span>,
-      label: "3. डेस्कटॉप पर चालू करें",
-      desc: "ऐप आपके कंप्यूटर / मैक के ऐप लॉन्चर में इंस्टॉल हो जाएगा!",
-    },
-  ];
-
-  const steps = platform === "ios" ? iosSteps : platform === "android" ? androidSteps : desktopSteps;
+  const isAndroid = platform === "android";
 
   return (
     <AnimatePresence>
       {visible && (
         <>
-          {/* Backdrop */}
+          {/* Dark Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -156,18 +98,18 @@ export function InstallPrompt() {
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(25, 15, 10, 0.65)",
-              backdropFilter: "blur(6px)",
-              zIndex: 9998,
+              background: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(4px)",
+              zIndex: 99998,
             }}
           />
 
-          {/* Dialog Container */}
+          {/* Bottom Sheet Modal */}
           <motion.div
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 240 }}
+            transition={{ type: "spring", damping: 25, stiffness: 220 }}
             style={{
               position: "fixed",
               bottom: 0,
@@ -176,24 +118,12 @@ export function InstallPrompt() {
               width: "100%",
               maxWidth: "480px",
               background: "#FFFFFF",
-              borderRadius: "28px 28px 0 0",
-              padding: "20px 20px 24px",
-              zIndex: 9999,
-              boxShadow: "0 -12px 60px rgba(0,0,0,0.3)",
-              overflow: "hidden",
+              borderRadius: "24px 24px 0 0",
+              padding: "24px",
+              zIndex: 99999,
+              boxShadow: "0 -8px 40px rgba(0,0,0,0.2)",
             }}
           >
-            {/* Top Drag Indicator */}
-            <div
-              style={{
-                width: "42px",
-                height: "4px",
-                background: "var(--surface-border-md)",
-                borderRadius: "2px",
-                margin: "0 auto 16px",
-              }}
-            />
-
             {/* Close Button */}
             <button
               onClick={handleDismiss}
@@ -204,7 +134,7 @@ export function InstallPrompt() {
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: "rgba(37,23,16,0.06)",
+                background: "#F3F4F6",
                 border: "none",
                 display: "flex",
                 alignItems: "center",
@@ -212,129 +142,133 @@ export function InstallPrompt() {
                 cursor: "pointer",
               }}
             >
-              <X size={18} color="#574638" />
+              <X size={18} color="#4B5563" />
             </button>
 
-            {/* Header */}
-            <div style={{ textAlign: "center", marginBottom: "18px" }}>
+            {/* Header Content */}
+            <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "24px" }}>
               <div
                 style={{
-                  width: "64px",
-                  height: "64px",
-                  borderRadius: "50%",
-                  margin: "0 auto 10px",
-                  background: "#FFFFFF",
-                  boxShadow: "0 6px 20px rgba(92,26,16,0.15)",
-                  border: "2px solid var(--surface-border)",
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "14px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  flexShrink: 0,
                 }}
               >
                 <img src="/logo.png" alt="App Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
-
-              <h2
-                className="font-devanagari"
-                style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--brand)", margin: "0 0 4px" }}
-              >
-                Home Screen पर ऐप इंस्टॉल करें
-              </h2>
-              <p
-                className="font-devanagari"
-                style={{ fontSize: "0.8125rem", color: "var(--text-muted)", margin: 0 }}
-              >
-                बिना डाउनलोड किए 1-क्लिक में होम स्क्रीन पर जोड़ें
-              </p>
+              <div>
+                <h2
+                  className="font-devanagari"
+                  style={{ fontSize: "1.125rem", fontWeight: 800, color: "#111827", margin: "0 0 4px" }}
+                >
+                  App इंस्टॉल करें
+                </h2>
+                <p
+                  className="font-devanagari"
+                  style={{ fontSize: "0.875rem", color: "#6B7280", margin: 0, lineHeight: 1.4 }}
+                >
+                  तेज़ और बेहतर अनुभव के लिए इसे अपनी Home Screen पर जोड़ें।
+                </p>
+              </div>
             </div>
 
-            {/* Native 1-Click Install Button (if browser supports it) */}
-            {deferredPrompt && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            {/* If native install prompt is available (Android Chrome), show 1-click button */}
+            {deferredPrompt ? (
+              <button
                 onClick={handleNativeInstall}
                 style={{
                   width: "100%",
-                  padding: "14px",
-                  background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                  padding: "16px",
+                  background: "#2563EB",
                   color: "#FFFFFF",
                   border: "none",
-                  borderRadius: "var(--r-xl)",
+                  borderRadius: "12px",
                   fontSize: "1rem",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   cursor: "pointer",
-                  marginBottom: "16px",
-                  boxShadow: "0 4px 16px rgba(16,185,129,0.3)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",
+                  marginBottom: "16px",
                 }}
                 className="font-devanagari"
               >
-                <Download size={20} /> 📲 डायरेक्ट इंस्टॉल करें (Install Now)
-              </motion.button>
+                📲 एक-क्लिक में इंस्टॉल करें (Install)
+              </button>
+            ) : (
+              /* Otherwise show Manual Steps */
+              <div
+                style={{
+                  background: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "16px",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                {isAndroid ? (
+                  <>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <MoreVertical size={24} color="#4B5563" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <div>
+                        <div className="font-devanagari" style={{ fontWeight: 700, color: "#374151", fontSize: "0.9375rem" }}>1. Chrome Menu खोलें</div>
+                        <div className="font-devanagari" style={{ color: "#6B7280", fontSize: "0.8125rem", marginTop: "2px" }}>ऊपर दाईं ओर दिए 3-डॉट्स (⋮) पर टैप करें</div>
+                      </div>
+                    </div>
+                    <div style={{ width: "1px", height: "12px", background: "#E5E7EB", marginLeft: "11px", marginTop: "-12px", marginBottom: "-12px" }} />
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <Plus size={24} color="#374151" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <div>
+                        <div className="font-devanagari" style={{ fontWeight: 700, color: "#374151", fontSize: "0.9375rem" }}>2. Add to Home Screen चुनें</div>
+                        <div className="font-devanagari" style={{ color: "#6B7280", fontSize: "0.8125rem", marginTop: "2px" }}>"Install App" या "Add to Home Screen" दबाएँ</div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <Share size={24} color="#007AFF" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <div>
+                        <div className="font-devanagari" style={{ fontWeight: 700, color: "#374151", fontSize: "0.9375rem" }}>1. Share बटन दबाएँ</div>
+                        <div className="font-devanagari" style={{ color: "#6B7280", fontSize: "0.8125rem", marginTop: "2px" }}>ब्राउज़र में नीचे दिए Share icon पर टैप करें</div>
+                      </div>
+                    </div>
+                    <div style={{ width: "1px", height: "12px", background: "#E5E7EB", marginLeft: "11px", marginTop: "-12px", marginBottom: "-12px" }} />
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <Plus size={24} color="#374151" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <div>
+                        <div className="font-devanagari" style={{ fontWeight: 700, color: "#374151", fontSize: "0.9375rem" }}>2. Add to Home Screen चुनें</div>
+                        <div className="font-devanagari" style={{ color: "#6B7280", fontSize: "0.8125rem", marginTop: "2px" }}>सूची में "Add to Home Screen" पर टैप करें</div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
 
-            {/* Step-by-Step Guide */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "18px" }}>
-              {steps.map((s, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setStep(idx)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    background: idx === step ? "rgba(92,26,16,0.06)" : "#FAF6F0",
-                    border: idx === step ? "1.5px solid var(--brand)" : "1px solid var(--surface-border)",
-                    borderRadius: "14px",
-                    padding: "10px 14px",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <div style={{ flexShrink: 0 }}>{s.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div
-                      className="font-devanagari"
-                      style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--brand)" }}
-                    >
-                      {s.label}
-                    </div>
-                    <div
-                      className="font-devanagari"
-                      style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
-                    >
-                      {s.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom Actions */}
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                onClick={handleDismiss}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  background: "linear-gradient(135deg, #5C1A10 0%, #7C2D12 100%)",
-                  color: "#FFFFFF",
-                  border: "none",
-                  borderRadius: "var(--r-pill)",
-                  fontSize: "0.875rem",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-                className="font-devanagari"
-              >
-                🌸 ठीक है, समझ गया!
-              </button>
-            </div>
+            <button
+              onClick={handleDismiss}
+              style={{
+                width: "100%",
+                padding: "14px",
+                background: "transparent",
+                color: "#6B7280",
+                border: "none",
+                fontSize: "0.9375rem",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+              className="font-devanagari"
+            >
+              बाद में (Later)
+            </button>
           </motion.div>
         </>
       )}
@@ -342,9 +276,6 @@ export function InstallPrompt() {
   );
 }
 
-/**
- * Helper function that any component can call to trigger the Install Prompt manually!
- */
 export function triggerInstallPrompt() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("open-install-prompt"));
