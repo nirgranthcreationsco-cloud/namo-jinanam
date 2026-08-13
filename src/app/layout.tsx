@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PWAUpdater } from "@/components/PWAUpdater";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
   title: "सन्मति - सुनील - संस्कार अभियान",
@@ -59,6 +60,7 @@ export default function RootLayout({
         padding: "12px"
       }}>
         <PWAUpdater />
+        <InstallPrompt />
         <div style={{
           width: "100%",
           maxWidth: "480px",

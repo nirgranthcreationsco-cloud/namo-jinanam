@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
 import { useAuthStore } from "@/store/authStore";
+import { triggerInstallPrompt } from "@/components/InstallPrompt";
 import {
   CAMPAIGN_START,
   isCampaignAccessible,
@@ -188,6 +189,27 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={triggerInstallPrompt}
+            style={{
+              padding: "6px 10px",
+              borderRadius: "var(--r-pill)",
+              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+              border: "none",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              fontSize: "0.71875rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
+            }}
+            className="font-devanagari"
+          >
+            📲 {isHi ? "ऐप इंस्टॉल करें" : "Install App"}
+          </button>
+
           <button
             onClick={() => setLanguage(isHi ? "en" : "hi")}
             style={{
