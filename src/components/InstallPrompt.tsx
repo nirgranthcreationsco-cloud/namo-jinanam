@@ -106,15 +106,14 @@ export function InstallPrompt() {
 
           {/* Bottom Sheet Modal */}
           <motion.div
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
+            initial={{ y: "100%", x: "-50%", opacity: 0 }}
+            animate={{ y: 0, x: "-50%", opacity: 1 }}
+            exit={{ y: "100%", x: "-50%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
             style={{
               position: "fixed",
               bottom: 0,
               left: "50%",
-              transform: "translateX(-50%)",
               width: "100%",
               maxWidth: "480px",
               background: "#FFFFFF",
