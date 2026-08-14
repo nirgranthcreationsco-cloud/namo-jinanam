@@ -26,8 +26,18 @@ export function AuthSessionSync() {
 
         if (!isMounted) return;
 
-        // If user was deleted from DB (e.g. DB reset) or doesn't exist
-        if (userError || !dbUser) {
+        // If offline or network request failed, preserve local session (don't log out)
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          return;
+        }
+
+        if (userError) {
+          console.warn("[AuthSync] Network or Supabase query error, preserving local session:", userError.message);
+          return;
+        }
+
+        // If query succeeded and DB explicitly confirmed user does not exist (e.g. DB reset/account deleted)
+        if (!dbUser) {
           console.warn("[AuthSync] User ID not found in database. Purging stale local session...");
           logout();
           if (typeof window !== "undefined") {
