@@ -53,6 +53,18 @@ export default function SignupPage() {
   useEffect(() => {
     setMounted(true);
     setTestMode(isTestModeEnabled());
+
+    // If explicitly registering another person, clear any previous session
+    if (typeof window !== "undefined" && window.location.search.includes("new=1")) {
+      useAuthStore.getState().logout();
+      try {
+        localStorage.removeItem("namo-jinanam-auth");
+      } catch (e) {
+        console.error(e);
+      }
+      return;
+    }
+
     if (_hasHydrated) {
       if (user?.id) {
         // Logged-in user: go to appropriate destination

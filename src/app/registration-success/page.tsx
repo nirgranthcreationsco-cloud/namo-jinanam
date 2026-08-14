@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
+import { Users, UserPlus, Share2, CheckCircle2, Globe, Sparkles } from "lucide-react";
 import {
   CAMPAIGN_START,
   CAMPAIGN_END,
@@ -212,8 +213,8 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
 
 // ─────────────── Main Page ───────────────
 export default function RegistrationSuccessPage() {
-  const { language } = useLanguageStore();
-  const { user, _hasHydrated } = useAuthStore();
+  const { language, setLanguage } = useLanguageStore();
+  const { user, profile, logout, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const countdown = useCountdown(CAMPAIGN_START);
   const [mounted, setMounted] = useState(false);
@@ -251,6 +252,38 @@ export default function RegistrationSuccessPage() {
     window.location.reload();
   }, []);
 
+  const handleRegisterAnother = useCallback(() => {
+    logout();
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("namo-jinanam-auth");
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    router.push("/signup?new=1");
+  }, [logout, router]);
+
+  const handleShare = async () => {
+    const text = isHi
+      ? `🙏 जय जिनेन्द्र! मैंने "सन्मति - सुनील - संस्कार अभियान" (चातुर्मास 2026) में अपना पंजीकरण कर लिया है। आप भी आज ही अपने परिवार सहित जुड़ें और आध्यात्मिक लाभ प्राप्त करें:\n${typeof window !== "undefined" ? window.location.origin : "https://sanmati-sanskar.vercel.app"}`
+      : `🙏 Jai Jinendra! I have registered for the "Sanmati Sunil Sanskar Abhiyan" (Chaturmas 2026). Join with your family today:\n${typeof window !== "undefined" ? window.location.origin : "https://sanmati-sanskar.vercel.app"}`;
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: "सन्मति - सुनील - संस्कार अभियान",
+          text,
+          url: window.location.origin,
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    } else if (typeof window !== "undefined") {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  };
+
   // Don't render until hydrated, mounted, and user is confirmed logged in
   if (!mounted || !_hasHydrated || !user?.id) return null;
 
@@ -266,7 +299,7 @@ export default function RegistrationSuccessPage() {
       <div
         style={{
           background: "linear-gradient(160deg, #4B1D15 0%, #7C2D12 45%, #B45309 100%)",
-          padding: "52px 24px 44px",
+          padding: "44px 20px 40px",
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
@@ -275,11 +308,60 @@ export default function RegistrationSuccessPage() {
         {/* Decorative radial glow */}
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(255,200,80,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
 
+        {/* Top Floating Controls: Language Toggle & User Chip */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", position: "relative", zIndex: 10 }}>
+          {profile?.full_name ? (
+            <div
+              className="font-devanagari"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 12px",
+                borderRadius: "var(--r-pill)",
+                background: "rgba(255, 255, 255, 0.15)",
+                backdropFilter: "blur(8px)",
+                color: "#fff",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+              }}
+            >
+              <span>👤</span>
+              <span style={{ maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {profile.full_name}
+              </span>
+            </div>
+          ) : (
+            <div />
+          )}
+
+          <button
+            onClick={() => setLanguage(isHi ? "en" : "hi")}
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--r-pill)",
+              background: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(8px)",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            <Globe size={13} /> {isHi ? "English" : "हिन्दी"}
+          </button>
+        </div>
+
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", damping: 14, delay: 0.1 }}
-          style={{ fontSize: "3.5rem", marginBottom: "16px" }}
+          style={{ fontSize: "3.25rem", marginBottom: "12px" }}
         >
           🪷
         </motion.div>
@@ -294,18 +376,18 @@ export default function RegistrationSuccessPage() {
             style={{
               fontSize: "0.8rem",
               fontWeight: 700,
-              color: "rgba(255,220,130,0.9)",
+              color: "rgba(255,220,130,0.95)",
               textTransform: "uppercase",
               letterSpacing: "0.12em",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            {isHi ? "पंजीकरण सफल" : "Registration Successful"}
+            {isHi ? "✓ पंजीकरण सफलतापूर्वक पूर्ण" : "✓ Registration Successful"}
           </div>
           <h1
             className="font-devanagari"
             style={{
-              fontSize: "1.625rem",
+              fontSize: "1.5rem",
               fontWeight: 800,
               color: "#fff",
               lineHeight: 1.25,
@@ -318,16 +400,17 @@ export default function RegistrationSuccessPage() {
           <p
             className="font-devanagari"
             style={{
-              fontSize: "0.9rem",
-              color: "rgba(255,240,210,0.85)",
-              lineHeight: 1.55,
+              fontSize: "0.875rem",
+              color: "rgba(255,240,210,0.88)",
+              lineHeight: 1.5,
               maxWidth: "340px",
-              margin: "0 auto 28px",
+              margin: "0 auto 24px",
             }}
           >
+            {profile?.full_name ? `${profile.full_name}, ` : ""}
             {isHi
-              ? "आपका पंजीकरण सफलतापूर्वक पूर्ण हो गया है। अभियान 19 अगस्त 2026 से शुरू होगा।"
-              : "Your registration has been completed successfully. The campaign officially begins on 19 August 2026."}
+              ? "आपका पंजीकरण हो गया है। अभियान 19 अगस्त 2026 से शुरू होगा।"
+              : "your registration is confirmed. The campaign starts on 19 August 2026."}
           </p>
         </motion.div>
 
@@ -345,7 +428,7 @@ export default function RegistrationSuccessPage() {
               color: "rgba(255,220,130,0.8)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              marginBottom: "14px",
+              marginBottom: "12px",
             }}
           >
             {isHi ? "अभियान शुरू होने में" : "Campaign starts in"}
@@ -355,7 +438,7 @@ export default function RegistrationSuccessPage() {
               {isHi ? "🎉 अभियान शुरू हो गया!" : "🎉 Campaign has begun!"}
             </div>
           ) : (
-            <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
               <CountdownBlock value={countdown.days} label={countdown_labels[0]} />
               <CountdownBlock value={countdown.hours} label={countdown_labels[1]} />
               <CountdownBlock value={countdown.minutes} label={countdown_labels[2]} />
@@ -365,7 +448,58 @@ export default function RegistrationSuccessPage() {
         </motion.div>
       </div>
 
-      <div style={{ padding: "32px 20px 120px", maxWidth: "480px", margin: "0 auto" }}>
+      <div style={{ padding: "24px 20px 100px", maxWidth: "480px", margin: "0 auto" }}>
+
+        {/* ─── Action Card: Register Another Family Member ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          style={{
+            background: "linear-gradient(135deg, rgba(160,98,42,0.09) 0%, rgba(92,26,16,0.04) 100%)",
+            borderRadius: "20px",
+            padding: "20px",
+            marginBottom: "24px",
+            border: "1.5px dashed rgba(160,98,42,0.4)",
+            textAlign: "center",
+            boxShadow: "0 4px 16px rgba(92,26,16,0.04)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "6px" }}>
+            <Users size={20} color="var(--gold)" />
+            <h3 className="font-devanagari" style={{ fontSize: "1rem", fontWeight: 800, color: "var(--brand)", margin: 0 }}>
+              {isHi ? "परिवार के अन्य सदस्य को जोड़ें" : "Register Another Family Member"}
+            </h3>
+          </div>
+          <p className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginBottom: "14px", lineHeight: 1.45 }}>
+            {isHi
+              ? "क्या आप परिवार के किसी अन्य सदस्य, बच्चे या मित्र का भी पंजीकरण करना चाहते हैं?"
+              : "Would you like to register other family members, children, or friends?"}
+          </p>
+          <button
+            onClick={handleRegisterAnother}
+            className="font-devanagari"
+            style={{
+              width: "100%",
+              padding: "13px 18px",
+              borderRadius: "14px",
+              background: "#fff",
+              color: "var(--brand)",
+              fontSize: "0.9375rem",
+              fontWeight: 800,
+              border: "1.5px solid var(--brand)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              boxShadow: "0 4px 12px rgba(92,26,16,0.08)",
+            }}
+          >
+            <UserPlus size={18} />
+            {isHi ? "+ किसी अन्य सदस्य का पंजीकरण करें" : "+ Register Another Person"}
+          </button>
+        </motion.div>
 
         {/* ─── Timeline ─── */}
         <motion.div
@@ -528,30 +662,92 @@ export default function RegistrationSuccessPage() {
           </p>
         </motion.div>
 
-        {/* ─── Primary Button: I Understand ─── */}
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-          whileTap={{ scale: 0.97 }}
-          className="font-devanagari"
-          style={{
-            width: "100%",
-            padding: "16px",
-            borderRadius: "16px",
-            background: "linear-gradient(135deg, #5C1A10, #7C2D12)",
-            color: "#fff",
-            fontSize: "1.0625rem",
-            fontWeight: 800,
-            border: "none",
-            cursor: "pointer",
-            marginBottom: "32px",
-            boxShadow: "0 8px 24px rgba(92,26,16,0.25)",
-            letterSpacing: "0.01em",
-          }}
-        >
-          {isHi ? "मैं समझ गया / समझी ✓" : "I Understand ✓"}
-        </motion.button>
+        {/* ─── Bottom Actions Stack ─── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "36px" }}>
+          {/* Action 1: Share on WhatsApp / Invite Family */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleShare}
+            className="font-devanagari"
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: "16px",
+              background: "#25D366",
+              color: "#fff",
+              fontSize: "1.0625rem",
+              fontWeight: 800,
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              boxShadow: "0 8px 24px rgba(37,211,102,0.3)",
+              letterSpacing: "0.01em",
+            }}
+          >
+            <Share2 size={20} />
+            {isHi ? "📲 परिजनों व मित्रों के साथ शेयर करें (WhatsApp)" : "📲 Share with Family & Friends (WhatsApp)"}
+          </motion.button>
+
+          {/* Action 2: Register Another Person */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleRegisterAnother}
+            className="font-devanagari"
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: "16px",
+              background: "var(--surface-raised)",
+              color: "var(--brand)",
+              fontSize: "0.9375rem",
+              fontWeight: 800,
+              border: "1.5px solid var(--surface-border)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+            }}
+          >
+            <UserPlus size={18} />
+            {isHi ? "+ परिवार / अन्य सदस्य का पंजीकरण करें" : "+ Register Another Family Member"}
+          </motion.button>
+
+          {/* Action 3: I Understand (Dismiss/Acknowledge) */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.15 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              alert(isHi ? "अभियान 19 अगस्त से शुरू होगा। प्रतिदिन ऐप खोलकर अपने नियम भरें।" : "The campaign starts on 19 August. Open daily to log your Niyams.");
+            }}
+            className="font-devanagari"
+            style={{
+              width: "100%",
+              padding: "13px",
+              borderRadius: "16px",
+              background: "transparent",
+              color: "var(--text-muted)",
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            {isHi ? "मैं समझ गया / समझी ✓" : "I Understand ✓"}
+          </motion.button>
+        </div>
 
         {/* ─── Developer Footer ─── */}
         <div style={{ textAlign: "center", paddingBottom: "24px" }}>
