@@ -99,9 +99,15 @@ export default function SignupPage() {
     const mappedAgeGroup: AgeGroup = getAgeGroupFromAge(age) || "24-40";
 
     const isEmail = formData.identifier.includes("@");
-    const cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
-    const emailVal = isEmail ? formData.identifier.trim() : "";
-    const cleanGuardianPhone = formData.guardianPhone.replace(/\D/g, "");
+    let cleanPhone = !isEmail ? formData.identifier.replace(/\D/g, "") : "";
+    if (cleanPhone.length === 12 && cleanPhone.startsWith("91")) cleanPhone = cleanPhone.slice(2);
+    else if (cleanPhone.length === 11 && cleanPhone.startsWith("0")) cleanPhone = cleanPhone.slice(1);
+
+    const emailVal = isEmail ? formData.identifier.trim().toLowerCase() : "";
+    
+    let cleanGuardianPhone = formData.guardianPhone.replace(/\D/g, "");
+    if (cleanGuardianPhone.length === 12 && cleanGuardianPhone.startsWith("91")) cleanGuardianPhone = cleanGuardianPhone.slice(2);
+    else if (cleanGuardianPhone.length === 11 && cleanGuardianPhone.startsWith("0")) cleanGuardianPhone = cleanGuardianPhone.slice(1);
 
     const payload: SignupFormData = {
       full_name: formData.fullName,

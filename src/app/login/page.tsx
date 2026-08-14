@@ -69,10 +69,20 @@ export default function LoginPage() {
 
     // Fetch user and stats to populate Zustand store
     const isEmail = identifier.includes("@");
+    let cleanId = identifier.trim();
+    if (!isEmail) {
+      let digits = cleanId.replace(/\D/g, "");
+      if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+      else if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
+      cleanId = digits;
+    } else {
+      cleanId = cleanId.toLowerCase();
+    }
+
     const { data: user } = await supabase
       .from("users")
       .select("*")
-      .eq(isEmail ? "email" : "phone", identifier)
+      .eq(isEmail ? "email" : "phone", cleanId)
       .single();
 
     if (user) {

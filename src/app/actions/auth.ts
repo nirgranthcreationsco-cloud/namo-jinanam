@@ -5,11 +5,22 @@ import { SignupFormData, User } from '@/types';
 import bcrypt from 'bcrypt';
 import { createSession, destroySession, getSession } from '@/lib/session';
 
+function normalizePhone(raw?: string | null): string | null {
+  if (!raw) return null;
+  let digits = raw.replace(/\D/g, "").trim();
+  if (digits.length === 12 && digits.startsWith("91")) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+  return digits || null;
+}
+
 export async function signupAction(data: SignupFormData) {
   try {
-    const phoneVal = data.phone ? data.phone.replace(/\D/g, "").trim() : null;
+    const phoneVal = normalizePhone(data.phone);
     const emailVal = data.email ? data.email.trim().toLowerCase() : null;
-    const guardianPhoneVal = data.guardian_phone ? data.guardian_phone.replace(/\D/g, "").trim() : null;
+    const guardianPhoneVal = normalizePhone(data.guardian_phone);
 
     if (!data.full_name || data.full_name.trim().length < 2) {
       return { success: false, error: 'Full name must be at least 2 characters.' };
@@ -100,11 +111,16 @@ export async function loginAction(identifier: string, password: string) {
   try {
     // 1. Find user by email or phone
     const isEmail = identifier.includes('@');
+    const cleanId = isEmail ? identifier.trim().toLowerCase() : normalizePhone(identifier);
     
+    if (!cleanId) {
+      return { success: false, error: 'Please enter a valid mobile number or email.' };
+    }
+
     const { data: user, error } = await supabase
       .from('users')
       .select('id, password_hash, full_name')
-      .eq(isEmail ? 'email' : 'phone', identifier)
+      .eq(isEmail ? 'email' : 'phone', cleanId)
       .single();
 
     if (error || !user) {

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PWAUpdater } from "@/components/PWAUpdater";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { AuthSessionSync } from "@/components/AuthSessionSync";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://sanmati-sanskar.vercel.app"),
@@ -76,6 +77,7 @@ export default function RootLayout({
       }}>
         <PWAUpdater />
         <InstallPrompt />
+        <AuthSessionSync />
         <div style={{
           width: "100%",
           maxWidth: "480px",

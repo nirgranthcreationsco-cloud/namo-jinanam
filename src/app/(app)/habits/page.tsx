@@ -455,6 +455,7 @@ function HabitsContent() {
   const [rewardBreakdown, setRewardBreakdown] = useState<any>(null);
 
   const handleSubmitNiyams = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const completedQuestionIds = useHabitStore.getState().entries
