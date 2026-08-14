@@ -1,13 +1,13 @@
 // PWA Service Worker for Namo Jinanam / Sanmati Sunil Sanskar Abhiyan
-// Version tag updated on every deployment to ensure clean cache invalidation
-const CACHE_NAME = 'namo-jinanam-v2.0.0';
+// ⚠️  BUMP THIS VERSION ON EVERY DEPLOYMENT to force cache invalidation
+const CACHE_NAME = 'namo-jinanam-v2.0.4';
 
-// 1. Install Event: Skip waiting immediately so new code activates without waiting
+// 1. Install Event: Skip waiting immediately so new code activates without delay
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// 2. Activate Event: Claim all clients immediately & purge old caches
+// 2. Activate Event: Claim all clients & purge ALL old caches, then notify them to reload
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -20,8 +20,13 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-      console.log('[SW] Claiming clients for immediate update');
+      console.log('[SW] Claiming clients and triggering reload');
       return self.clients.claim();
+    }).then(() => {
+      // Tell every open tab/window to reload so they get the fresh JS/CSS
+      return self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' }));
+      });
     })
   );
 });

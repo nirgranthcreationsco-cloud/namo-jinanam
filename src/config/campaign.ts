@@ -23,10 +23,25 @@ export function isCampaignLive(): boolean {
   return new Date() >= CAMPAIGN_START;
 }
 
+/** Test account ID — bypasses the pre-launch date lock for internal testing only. */
+export const TEST_USER_ID = "34c577d8-86d1-4d40-ac97-fb2825274e86";
+
 /**
- * Returns true if the campaign is accessible (live).
+ * Returns true if the campaign is accessible (live, or the user is the test account).
+ * Pass userId from auth store when available to enable test bypass.
  */
-export function isCampaignAccessible(): boolean {
+export function isCampaignAccessible(userId?: string | null): boolean {
+  if (userId === TEST_USER_ID) return true;
+  // Also check localStorage in case userId isn't passed (legacy call-sites)
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("namo-jinanam-auth");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.state?.user?.id === TEST_USER_ID) return true;
+      }
+    } catch (_) {}
+  }
   return isCampaignLive();
 }
 

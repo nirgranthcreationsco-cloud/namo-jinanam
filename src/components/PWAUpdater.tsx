@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-const CURRENT_DEPLOYMENT_VERSION = "v2.0.2";
+// ⚠️  BUMP THIS ON EVERY DEPLOYMENT — must match CACHE_NAME in /public/sw.js
+const CURRENT_DEPLOYMENT_VERSION = "v2.0.4";
 
 export function PWAUpdater() {
   useEffect(() => {
@@ -12,14 +13,15 @@ export function PWAUpdater() {
     try {
       const savedVersion = localStorage.getItem("namo_app_version");
       if (savedVersion !== CURRENT_DEPLOYMENT_VERSION) {
-        console.log(`[PWA] New deployment version detected: ${CURRENT_DEPLOYMENT_VERSION} (was ${savedVersion})`);
+        console.log(`[PWA] New version detected: ${CURRENT_DEPLOYMENT_VERSION} (was ${savedVersion})`);
         localStorage.setItem("namo_app_version", CURRENT_DEPLOYMENT_VERSION);
-        
+
         // Clear all CacheStorage caches
         if ("caches" in window) {
           caches.keys().then((names) => {
             Promise.all(names.map((name) => caches.delete(name))).then(() => {
               console.log("[PWA] CacheStorage cleared for new version.");
+              window.location.reload();
             });
           });
         }
@@ -41,7 +43,16 @@ export function PWAUpdater() {
       }
     });
 
-    // 3. Register Service Worker with clean update checks
+    // 3. Listen for SW_UPDATED message from the service worker (sent after activate)
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data?.type === "SW_UPDATED" && !refreshing) {
+        refreshing = true;
+        console.log("[PWA] SW signaled update. Reloading...");
+        window.location.reload();
+      }
+    });
+
+    // 4. Register Service Worker
     navigator.serviceWorker
       .register("/sw.js")
       .then((registration) => {
@@ -50,23 +61,23 @@ export function PWAUpdater() {
         // Check for updates immediately
         registration.update();
 
-        // 4. When app returns to foreground (user taps Home Screen icon), check for updates
+        // 5. When app returns to foreground (Home Screen tap), check for updates
         const handleVisibilityChange = () => {
           if (document.visibilityState === "visible") {
-            console.log("[PWA] App resumed from Home Screen. Checking for updates...");
+            console.log("[PWA] App resumed. Checking for SW updates...");
             registration.update().catch((err) => console.log("[PWA] Update check failed:", err));
           }
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
-        // 5. Handle newly installed waiting workers
+        // 6. Handle newly installed waiting workers
         registration.addEventListener("updatefound", () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener("statechange", () => {
               if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                console.log("[PWA] New content available. Triggering skipWaiting...");
+                console.log("[PWA] New content available. Activating immediately...");
                 newWorker.postMessage({ type: "SKIP_WAITING" });
               }
             });

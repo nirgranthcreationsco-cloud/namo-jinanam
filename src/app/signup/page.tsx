@@ -65,7 +65,7 @@ export default function SignupPage() {
     }
 
     if (_hasHydrated && user?.id && !isRegisteringNew) {
-      router.replace(isCampaignAccessible(user.id) ? "/dashboard" : "/registration-success");
+      router.replace(isCampaignAccessible(user?.id) ? "/dashboard" : "/registration-success");
     }
   }, [user, hasSeenOnboarding, _hasHydrated, isRegisteringNew, logout, router]);
 
