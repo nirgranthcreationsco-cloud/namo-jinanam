@@ -24,20 +24,10 @@ export function isCampaignLive(): boolean {
 }
 
 /**
- * Client-only: returns true if Developer Test Mode is enabled via localStorage.
- * Must never be stored in Supabase or affect server behaviour.
- */
-export function isTestModeEnabled(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem("campaign_test_mode") === "true";
-}
-
-/**
- * Client-only: Combined check — campaign is accessible either when it's live
- * or when developer test mode is explicitly enabled.
+ * Returns true if the campaign is accessible (live).
  */
 export function isCampaignAccessible(): boolean {
-  return isCampaignLive() || isTestModeEnabled();
+  return isCampaignLive();
 }
 
 // Display strings for UI
@@ -54,8 +44,8 @@ export const CERTIFICATE_UNLOCK_DISPLAY_HI = "12 अक्टूबर 2026";
 export const CERTIFICATE_UNLOCK_DISPLAY_EN = "12 October 2026";
 
 /**
- * Returns true if certificate download is unlocked (final week or test mode).
+ * Returns true if certificate download is unlocked (final week).
  */
 export function isCertificateDownloadUnlocked(): boolean {
-  return new Date() >= CERTIFICATE_UNLOCK_DATE || isTestModeEnabled();
+  return new Date() >= CERTIFICATE_UNLOCK_DATE;
 }

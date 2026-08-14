@@ -10,7 +10,6 @@ import { triggerInstallPrompt } from "@/components/InstallPrompt";
 import {
   CAMPAIGN_START,
   isCampaignAccessible,
-  isTestModeEnabled,
   CAMPAIGN_START_DISPLAY_HI,
   CAMPAIGN_START_DISPLAY_EN,
   CAMPAIGN_END_DISPLAY_HI,
@@ -107,11 +106,9 @@ export default function LandingPage() {
   const router = useRouter();
   const countdown = useCountdown(CAMPAIGN_START);
   const [mounted, setMounted] = useState(false);
-  const [testMode, setTestMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setTestMode(isTestModeEnabled());
     if (_hasHydrated) {
       if (user?.id) {
         // Registered / Logged in:
@@ -121,18 +118,6 @@ export default function LandingPage() {
       // Unregistered visitors stay on this page to experience the Campaign Welcome Page!
     }
   }, [user, _hasHydrated, router]);
-
-  const enableTestMode = useCallback(() => {
-    localStorage.setItem("campaign_test_mode", "true");
-    setTestMode(true);
-    router.replace(user?.id ? "/dashboard" : "/login");
-  }, [user, router]);
-
-  const disableTestMode = useCallback(() => {
-    localStorage.removeItem("campaign_test_mode");
-    setTestMode(false);
-    window.location.reload();
-  }, []);
 
   if (!mounted || !_hasHydrated || user?.id) {
     return null;
@@ -903,40 +888,6 @@ export default function LandingPage() {
             </div>
           </div>
         </motion.section>
-
-        {/* Developer Test Mode Toggle Footer */}
-        <div style={{ textAlign: "center", paddingBottom: "20px" }}>
-          {testMode ? (
-            <button
-              onClick={disableTestMode}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#DC2626",
-                fontSize: "0.6875rem",
-                cursor: "pointer",
-                textDecoration: "underline",
-                fontWeight: 600,
-              }}
-            >
-              Exit Test Mode
-            </button>
-          ) : (
-            <button
-              onClick={enableTestMode}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--text-muted)",
-                fontSize: "0.625rem",
-                cursor: "pointer",
-                opacity: 0.45,
-              }}
-            >
-              Developer Test Mode
-            </button>
-          )}
-        </div>
       </div>
 
       {/* ── PRIMARY STICKY BOTTOM ACTION ── */}

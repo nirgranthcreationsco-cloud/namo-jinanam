@@ -8,7 +8,7 @@ import { useLanguageStore } from "@/store/languageStore";
 import { ArrowRight, ChevronLeft, CheckCircle2, User as UserIcon, MapPin, Activity, ShieldCheck, Globe } from "lucide-react";
 import { signupAction } from "@/app/actions/auth";
 import { SignupFormData, AgeGroup } from "@/types";
-import { isCampaignAccessible, isTestModeEnabled, CAMPAIGN_START_DISPLAY_EN, CAMPAIGN_START_DISPLAY_HI } from "@/config/campaign";
+import { isCampaignAccessible, CAMPAIGN_START_DISPLAY_EN, CAMPAIGN_START_DISPLAY_HI } from "@/config/campaign";
 
 function calculateAge(dobString: string): number {
   if (!dobString) return 0;
@@ -36,7 +36,6 @@ export default function SignupPage() {
   const { language, setLanguage } = useLanguageStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [testMode, setTestMode] = useState(false);
   const [step, setStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState("");
   const [formData, setFormData] = useState({
@@ -52,7 +51,6 @@ export default function SignupPage() {
 
   useEffect(() => {
     setMounted(true);
-    setTestMode(isTestModeEnabled());
 
     // If explicitly registering another person, clear any previous session
     if (typeof window !== "undefined" && window.location.search.includes("new=1")) {
@@ -73,18 +71,6 @@ export default function SignupPage() {
       // Note: during pre-launch, skip the onboarding check — signup IS the entry point
     }
   }, [user, hasSeenOnboarding, _hasHydrated, router]);
-
-  const enableTestMode = () => {
-    localStorage.setItem("campaign_test_mode", "true");
-    setTestMode(true);
-    router.replace(user?.id ? "/dashboard" : "/login");
-  };
-
-  const disableTestMode = () => {
-    localStorage.removeItem("campaign_test_mode");
-    setTestMode(false);
-    window.location.reload();
-  };
 
   if (!mounted || !_hasHydrated || user?.id) return null;
 
@@ -651,44 +637,6 @@ export default function SignupPage() {
               {errorMsg}
             </div>
           )}
-
-          {/* ── Developer Footer ── */}
-          <div style={{ textAlign: "center", marginTop: "16px" }}>
-            {testMode ? (
-              <button
-                onClick={disableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#DC2626",
-                  fontSize: "0.6875rem",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                Exit Test Mode
-              </button>
-            ) : (
-              <button
-                onClick={enableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--text-muted)",
-                  fontSize: "0.625rem",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  fontWeight: 500,
-                  padding: 0,
-                  opacity: 0.5,
-                }}
-              >
-                Developer Test Mode
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>

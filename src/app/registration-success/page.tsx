@@ -10,7 +10,6 @@ import {
   CAMPAIGN_START,
   CAMPAIGN_END,
   isCampaignAccessible,
-  isTestModeEnabled,
   CAMPAIGN_START_DISPLAY_HI,
   CAMPAIGN_START_DISPLAY_EN,
   CAMPAIGN_END_DISPLAY_HI,
@@ -218,11 +217,9 @@ export default function RegistrationSuccessPage() {
   const router = useRouter();
   const countdown = useCountdown(CAMPAIGN_START);
   const [mounted, setMounted] = useState(false);
-  const [testMode, setTestMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setTestMode(isTestModeEnabled());
   }, []);
 
   // Guard: if not logged in, send to appropriate auth page
@@ -239,18 +236,6 @@ export default function RegistrationSuccessPage() {
       router.replace("/dashboard");
     }
   }, [mounted, _hasHydrated, user, router]);
-
-  const enableTestMode = useCallback(() => {
-    localStorage.setItem("campaign_test_mode", "true");
-    setTestMode(true);
-    router.replace(user?.id ? "/dashboard" : "/login");
-  }, [user, router]);
-
-  const disableTestMode = useCallback(() => {
-    localStorage.removeItem("campaign_test_mode");
-    setTestMode(false);
-    window.location.reload();
-  }, []);
 
   const handleRegisterAnother = useCallback(() => {
     logout();
@@ -749,58 +734,14 @@ export default function RegistrationSuccessPage() {
           </motion.button>
         </div>
 
-        {/* ─── Developer Footer ─── */}
+        {/* ─── Footer ─── */}
         <div style={{ textAlign: "center", paddingBottom: "24px" }}>
           <div
             className="font-devanagari"
-            style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "8px" }}
+            style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}
           >
             {isHi ? "Nirgranth Creations द्वारा निर्मित" : "Created by Nirgranth Creations"}
           </div>
-          <AnimatePresence mode="wait">
-            {testMode ? (
-              <motion.button
-                key="exit"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={disableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#DC2626",
-                  fontSize: "0.6875rem",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                Exit Test Mode
-              </motion.button>
-            ) : (
-              <motion.button
-                key="enable"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={enableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--text-muted)",
-                  fontSize: "0.625rem",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  fontWeight: 500,
-                  padding: 0,
-                  opacity: 0.45,
-                }}
-              >
-                Developer Test Mode
-              </motion.button>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </div>

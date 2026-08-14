@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { ArrowRight, Globe } from "lucide-react";
 import { loginAction } from "@/app/actions/auth";
-import { isCampaignAccessible, isTestModeEnabled } from "@/config/campaign";
+import { isCampaignAccessible } from "@/config/campaign";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,11 +21,9 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [testMode, setTestMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setTestMode(isTestModeEnabled());
     if (_hasHydrated) {
       if (!isCampaignAccessible()) {
         // Pre-launch: only signup and registration-success are accessible
@@ -37,18 +35,6 @@ export default function LoginPage() {
       }
     }
   }, [_hasHydrated, user, router]);
-
-  const enableTestMode = () => {
-    localStorage.setItem("campaign_test_mode", "true");
-    setTestMode(true);
-    router.replace(user?.id ? "/dashboard" : "/login");
-  };
-
-  const disableTestMode = () => {
-    localStorage.removeItem("campaign_test_mode");
-    setTestMode(false);
-    window.location.reload();
-  };
 
   if (!mounted || !_hasHydrated || user?.id || !isCampaignAccessible()) return null;
 
@@ -258,44 +244,6 @@ export default function LoginPage() {
             <Link href="/signup" className="font-devanagari" style={{ fontSize: "0.875rem", color: "var(--brand)", fontWeight: 700, textDecoration: "none" }}>
               {language === "hi" ? "रजिस्टर करें (Register Now)" : "Register Now"}
             </Link>
-          </div>
-
-          {/* ── Developer Footer ── */}
-          <div style={{ textAlign: "center", marginTop: "16px" }}>
-            {testMode ? (
-              <button
-                onClick={disableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#DC2626",
-                  fontSize: "0.6875rem",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                Exit Test Mode
-              </button>
-            ) : (
-              <button
-                onClick={enableTestMode}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--text-muted)",
-                  fontSize: "0.625rem",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  fontWeight: 500,
-                  padding: 0,
-                  opacity: 0.5,
-                }}
-              >
-                Developer Test Mode
-              </button>
-            )}
           </div>
         </motion.div>
       </div>
