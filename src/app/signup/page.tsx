@@ -32,7 +32,7 @@ function getAgeGroupFromAge(age: number): AgeGroup | "" {
 
 export default function SignupPage() {
   const router = useRouter();
-  const { hasSeenOnboarding, user, setUser, setProfile, setStats, _hasHydrated } = useAuthStore();
+  const { hasSeenOnboarding, user, setUser, setProfile, setStats, logout, _hasHydrated } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -49,12 +49,13 @@ export default function SignupPage() {
     guardianPhone: "",
   });
 
+  const isRegisteringNew = typeof window !== "undefined" && window.location.search.includes("new=1");
+
   useEffect(() => {
     setMounted(true);
 
-    // If explicitly registering another person, clear any previous session
-    if (typeof window !== "undefined" && window.location.search.includes("new=1")) {
-      useAuthStore.getState().logout();
+    if (isRegisteringNew) {
+      logout();
       try {
         localStorage.removeItem("namo-jinanam-auth");
       } catch (e) {
@@ -63,16 +64,13 @@ export default function SignupPage() {
       return;
     }
 
-    if (_hasHydrated) {
-      if (user?.id) {
-        // Logged-in user: go to appropriate destination
-        router.replace(isCampaignAccessible() ? "/dashboard" : "/registration-success");
-      }
-      // Note: during pre-launch, skip the onboarding check — signup IS the entry point
+    if (_hasHydrated && user?.id && !isRegisteringNew) {
+      router.replace(isCampaignAccessible(user.id) ? "/dashboard" : "/registration-success");
     }
-  }, [user, hasSeenOnboarding, _hasHydrated, router]);
+  }, [user, hasSeenOnboarding, _hasHydrated, isRegisteringNew, logout, router]);
 
-  if (!mounted || !_hasHydrated || user?.id) return null;
+  if (!mounted || !_hasHydrated) return null;
+  if (user?.id && !isRegisteringNew) return null;
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 5));
   const handlePrev = () => setStep((s) => Math.max(s - 1, 1));

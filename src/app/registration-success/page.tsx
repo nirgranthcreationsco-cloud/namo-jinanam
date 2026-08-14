@@ -245,9 +245,9 @@ export default function RegistrationSuccessPage() {
       } catch (e) {
         console.error(e);
       }
+      window.location.href = "/signup?new=1";
     }
-    router.push("/signup?new=1");
-  }, [logout, router]);
+  }, [logout]);
 
   const handleShare = async () => {
     const text = isHi

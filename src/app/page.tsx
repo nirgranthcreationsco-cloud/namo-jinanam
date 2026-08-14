@@ -848,9 +848,9 @@ export default function LandingPage() {
             </div>
             <div
               className="font-devanagari"
-              style={{ fontSize: "0.84375rem", fontWeight: 800, color: "var(--brand)", marginBottom: "12px" }}
+              style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--brand)", marginBottom: "12px" }}
             >
-              इंद्रपुरी चातुर्मास उत्सव 2026
+              अक्षय निधि साधु सेवा संघ इंदौर
             </div>
 
             <div
