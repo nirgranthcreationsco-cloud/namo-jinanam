@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguageStore } from "@/store/languageStore";
 import { useAuthStore } from "@/store/authStore";
-import { triggerInstallPrompt } from "@/components/InstallPrompt";
 import {
   CAMPAIGN_START,
   isCampaignAccessible,
@@ -178,13 +177,13 @@ export default function LandingPage() {
             onClick={() => router.push("/login")}
             className="font-devanagari"
             style={{
-              padding: "6px 14px",
+              padding: "7px 16px",
               borderRadius: "var(--r-pill)",
               background: "linear-gradient(135deg, #5C1A10 0%, #7C2D12 100%)",
               border: "none",
               color: "#FFFFFF",
               fontWeight: 800,
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -196,30 +195,9 @@ export default function LandingPage() {
           </button>
 
           <button
-            onClick={triggerInstallPrompt}
-            style={{
-              padding: "6px 10px",
-              borderRadius: "var(--r-pill)",
-              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-              border: "none",
-              color: "#FFFFFF",
-              fontWeight: 800,
-              fontSize: "0.71875rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
-            }}
-            className="font-devanagari"
-          >
-            📲 {isHi ? "ऐप इंस्टॉल" : "Install"}
-          </button>
-
-          <button
             onClick={() => setLanguage(isHi ? "en" : "hi")}
             style={{
-              padding: "6px 10px",
+              padding: "7px 12px",
               borderRadius: "var(--r-pill)",
               background: "var(--surface-overlay)",
               border: "1px solid var(--surface-border)",
@@ -232,7 +210,7 @@ export default function LandingPage() {
               gap: "4px",
             }}
           >
-            <Globe size={13} /> {isHi ? "EN" : "हिन्दी"}
+            <Globe size={13} /> {isHi ? "English" : "हिन्दी"}
           </button>
         </div>
       </nav>
