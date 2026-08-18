@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useHabitStore } from "@/store/habitStore";
@@ -12,7 +13,7 @@ import { getISTDateString } from "@/lib/date";
 
 import { 
   Moon, Sunrise, Sun, Sunset, 
-  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine, Clock, Target, Info, Leaf, Salad, Smartphone, Brain, HeartHandshake, Gem
+  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine, Clock, Target, Info, Leaf, Salad, Smartphone, Brain, HeartHandshake, Gem, LogOut
 } from "lucide-react";
 
 function CountdownTimer() {
@@ -120,7 +121,8 @@ function MiniCalendar({ language }: { language: "hi" | "en" }) {
 }
 
 export default function DashboardPage() {
-  const { profile, stats } = useAuthStore();
+  const router = useRouter();
+  const { profile, stats, logout } = useAuthStore();
   const { getDayCompletionPct, entries } = useHabitStore();
   const { language } = useLanguageStore();
   
@@ -155,7 +157,7 @@ export default function DashboardPage() {
   return (
     <div className="page" style={{ padding: "20px 16px 100px", display: "flex", flexDirection: "column", gap: "20px" }}>
       
-      {/* ── Greeting Header ── */}
+      {/* ── Greeting Header with Logout Button ── */}
       <motion.div 
         initial={{ opacity: 0, y: 12 }} 
         animate={{ opacity: 1, y: 0 }} 
@@ -177,19 +179,31 @@ export default function DashboardPage() {
           </p>
         </div>
         
-        <Link href="/profile" style={{ textDecoration: "none" }}>
-          <div style={{
-            background: "linear-gradient(135deg, var(--gold-dim), rgba(160,98,42,0.15))",
-            border: "1px solid rgba(160,98,42,0.25)",
-            borderRadius: "14px", padding: "8px 12px",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: "1px",
-            boxShadow: "0 2px 8px rgba(160,98,42,0.1)"
-          }}>
-            <span className="font-devanagari" style={{ fontSize: "0.875rem", fontWeight: 700, color: "#7A4A15" }}>
-              {language === "hi" ? "प्रोफ़ाइल" : "Profile"}
-            </span>
-          </div>
-        </Link>
+        {/* Logout Button */}
+        <button
+          onClick={() => {
+            logout();
+            router.push("/login");
+          }}
+          style={{
+            background: "rgba(239, 68, 68, 0.08)",
+            border: "1px solid rgba(239, 68, 68, 0.2)",
+            borderRadius: "14px",
+            padding: "8px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            color: "#DC2626",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(239, 68, 68, 0.08)",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <LogOut size={15} />
+          <span className="font-devanagari" style={{ fontSize: "0.8125rem", fontWeight: 700 }}>
+            {language === "hi" ? "लॉगआउट" : "Logout"}
+          </span>
+        </button>
       </motion.div>
 
       {/* ── Today's Inspiration Hero (Clean & Simple) ── */}

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 // ⚠️  BUMP THIS ON EVERY DEPLOYMENT — must match CACHE_NAME in /public/sw.js
-const CURRENT_DEPLOYMENT_VERSION = "v2.0.5";
+const CURRENT_DEPLOYMENT_VERSION = "v2.0.6";
 
 export function PWAUpdater() {
   useEffect(() => {
