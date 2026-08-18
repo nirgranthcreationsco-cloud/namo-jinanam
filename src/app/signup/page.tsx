@@ -635,6 +635,31 @@ export default function SignupPage() {
               {errorMsg}
             </div>
           )}
+
+          {step < 5 && (
+            <div style={{ marginTop: "20px", textAlign: "center" }}>
+              <span className="font-devanagari" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+                {language === "hi" ? "पहले से पंजीकृत हैं? " : "Already registered? "}
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push("/login")}
+                className="font-devanagari"
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  fontSize: "0.8125rem",
+                  color: "var(--brand)",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                {language === "hi" ? "यहाँ लॉगिन करें (Login)" : "Login here"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

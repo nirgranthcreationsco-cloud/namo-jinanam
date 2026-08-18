@@ -175,6 +175,27 @@ export default function LandingPage() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button
+            onClick={() => router.push("/login")}
+            className="font-devanagari"
+            style={{
+              padding: "6px 14px",
+              borderRadius: "var(--r-pill)",
+              background: "linear-gradient(135deg, #5C1A10 0%, #7C2D12 100%)",
+              border: "none",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              fontSize: "0.75rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              boxShadow: "0 2px 8px rgba(92,26,16,0.25)",
+            }}
+          >
+            🔐 {isHi ? "लॉगिन करें" : "Login"}
+          </button>
+
+          <button
             onClick={triggerInstallPrompt}
             style={{
               padding: "6px 10px",
@@ -192,13 +213,13 @@ export default function LandingPage() {
             }}
             className="font-devanagari"
           >
-            📲 {isHi ? "ऐप इंस्टॉल करें" : "Install App"}
+            📲 {isHi ? "ऐप इंस्टॉल" : "Install"}
           </button>
 
           <button
             onClick={() => setLanguage(isHi ? "en" : "hi")}
             style={{
-              padding: "6px 12px",
+              padding: "6px 10px",
               borderRadius: "var(--r-pill)",
               background: "var(--surface-overlay)",
               border: "1px solid var(--surface-border)",
@@ -211,7 +232,7 @@ export default function LandingPage() {
               gap: "4px",
             }}
           >
-            <Globe size={13} /> {isHi ? "English" : "हिन्दी"}
+            <Globe size={13} /> {isHi ? "EN" : "हिन्दी"}
           </button>
         </div>
       </nav>
@@ -329,34 +350,94 @@ export default function LandingPage() {
             📅 {isHi ? `${CAMPAIGN_START_DISPLAY_HI} – ${CAMPAIGN_END_DISPLAY_HI}` : `${CAMPAIGN_START_DISPLAY_EN} – ${CAMPAIGN_END_DISPLAY_EN}`}
           </div>
 
-          {/* Countdown */}
+          {/* Countdown / Campaign Live State */}
           <div style={{ marginBottom: "24px" }}>
-            <div
-              className="font-devanagari"
-              style={{
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                color: "rgba(255, 220, 130, 0.85)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "12px",
-              }}
-            >
-              {isHi ? "अभियान शुरू होने में अवशेष" : "Campaign Begins In"}
-            </div>
             {countdown.done ? (
               <div
-                className="font-devanagari"
-                style={{ fontSize: "1.2rem", color: "#86efac", fontWeight: 800 }}
+                style={{
+                  background: "rgba(255, 255, 255, 0.16)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  borderRadius: "20px",
+                  padding: "18px 16px",
+                  backdropFilter: "blur(12px)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                }}
               >
-                {isHi ? "🎉 अभियान प्रारंभ हो चुका है!" : "🎉 The Campaign Has Begun!"}
+                <div
+                  className="font-devanagari"
+                  style={{ fontSize: "1.25rem", color: "#86efac", fontWeight: 800, marginBottom: "4px" }}
+                >
+                  🎉 {isHi ? "अभियान प्रारंभ हो चुका है!" : "The Campaign Has Begun!"}
+                </div>
+                <div
+                  className="font-devanagari"
+                  style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.9)", marginBottom: "16px" }}
+                >
+                  {isHi ? "आज के नियम भरने के लिए अपने खाते में लॉगिन करें" : "Login to your account to fill today's daily niyams"}
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => router.push("/login")}
+                    className="font-devanagari"
+                    style={{
+                      padding: "12px 24px",
+                      borderRadius: "14px",
+                      background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                      color: "#FFFFFF",
+                      fontSize: "0.9375rem",
+                      fontWeight: 800,
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      boxShadow: "0 4px 16px rgba(16,185,129,0.35)",
+                    }}
+                  >
+                    <span>🔐 {isHi ? "खाते में लॉगिन करें" : "Login to Account"}</span>
+                    <ArrowRight size={16} />
+                  </button>
+
+                  <button
+                    onClick={() => router.push("/signup")}
+                    className="font-devanagari"
+                    style={{
+                      padding: "12px 20px",
+                      borderRadius: "14px",
+                      background: "rgba(255,255,255,0.2)",
+                      border: "1px solid rgba(255,255,255,0.4)",
+                      color: "#FFFFFF",
+                      fontSize: "0.875rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✨ {isHi ? "नया रजिस्ट्रेशन" : "New Registration"}
+                  </button>
+                </div>
               </div>
             ) : (
-              <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-                <CountdownBlock value={countdown.days} label={countdown_labels[0]} />
-                <CountdownBlock value={countdown.hours} label={countdown_labels[1]} />
-                <CountdownBlock value={countdown.minutes} label={countdown_labels[2]} />
-                <CountdownBlock value={countdown.seconds} label={countdown_labels[3]} />
+              <div>
+                <div
+                  className="font-devanagari"
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    color: "rgba(255, 220, 130, 0.85)",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    marginBottom: "12px",
+                  }}
+                >
+                  {isHi ? "अभियान शुरू होने में अवशेष" : "Campaign Begins In"}
+                </div>
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                  <CountdownBlock value={countdown.days} label={countdown_labels[0]} />
+                  <CountdownBlock value={countdown.hours} label={countdown_labels[1]} />
+                  <CountdownBlock value={countdown.minutes} label={countdown_labels[2]} />
+                  <CountdownBlock value={countdown.seconds} label={countdown_labels[3]} />
+                </div>
               </div>
             )}
           </div>
@@ -897,38 +978,58 @@ export default function LandingPage() {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: "14px 20px",
-          background: "rgba(250, 246, 240, 0.94)",
+          padding: "12px 16px",
+          background: "rgba(250, 246, 240, 0.96)",
           backdropFilter: "blur(16px)",
           borderTop: "1px solid var(--surface-border)",
           zIndex: 100,
           boxShadow: "0 -8px 24px rgba(92,26,16,0.1)",
         }}
       >
-        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "480px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <button
+            onClick={() => router.push("/login")}
+            className="font-devanagari"
+            style={{
+              padding: "14px 12px",
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+              color: "#FFFFFF",
+              fontSize: "0.9375rem",
+              fontWeight: 800,
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(16,185,129,0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+            }}
+          >
+            <span>🔐 {isHi ? "लॉगिन करें" : "Login"}</span>
+          </button>
+
           <button
             onClick={() => router.push("/signup")}
             className="font-devanagari"
             style={{
-              width: "100%",
-              padding: "16px",
-              borderRadius: "16px",
+              padding: "14px 12px",
+              borderRadius: "14px",
               background: "linear-gradient(135deg, #5C1A10 0%, #7C2D12 50%, #B45309 100%)",
               color: "#FFFFFF",
-              fontSize: "1.0625rem",
+              fontSize: "0.9375rem",
               fontWeight: 800,
               border: "none",
               cursor: "pointer",
-              boxShadow: "0 8px 24px rgba(92,26,16,0.25)",
+              boxShadow: "0 4px 14px rgba(92,26,16,0.25)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "8px",
-              letterSpacing: "0.01em",
+              gap: "6px",
             }}
           >
-            <span>🌸 {isHi ? "पंजीकरण शुरू करें" : "Begin Registration"}</span>
-            <ArrowRight size={20} />
+            <span>🌸 {isHi ? "रजिस्टर करें" : "Register"}</span>
+            <ArrowRight size={16} />
           </button>
         </div>
       </div>

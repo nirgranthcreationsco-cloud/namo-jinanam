@@ -1,6 +1,6 @@
 // PWA Service Worker for Namo Jinanam / Sanmati Sunil Sanskar Abhiyan
 // ⚠️  BUMP THIS VERSION ON EVERY DEPLOYMENT to force cache invalidation
-const CACHE_NAME = 'namo-jinanam-v2.0.4';
+const CACHE_NAME = 'namo-jinanam-v2.0.5';
 
 // 1. Install Event: Skip waiting immediately so new code activates without delay
 self.addEventListener('install', (event) => {
