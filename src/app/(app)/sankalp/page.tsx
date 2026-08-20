@@ -195,10 +195,15 @@ export default function SankalpPage() {
     toggleHabit(target.id, "lifetime_sankalp");
 
     // Show confirmation success message
+    const isChaturmasTarget = target.category_id === "bonus" || target.type === "bonus" || activeTab === "chaturmas";
     setAcceptedToast(
       language === "hi"
-        ? "🌸 आपका संकल्प स्वीकार हो गया है। ईश्वर आपको आपकी यात्रा में स्थिर रहने का बल दें।"
-        : "🌸 Your Sankalp has been accepted. May you remain steadfast throughout your journey."
+        ? (isChaturmasTarget
+            ? "🏆 आपका चातुर्मास महा-संकल्प स्वीकार हो गया है। भगवान आपको इसे पूर्ण निष्ठा से निभाने का बल दें।"
+            : "🪷 आपका आजीवन संकल्प स्वीकार हो गया है। ईश्वर आपको आपकी यात्रा में स्थिर रहने का बल दें।")
+        : (isChaturmasTarget
+            ? "🏆 Your Chaturmas Mahasankalp has been accepted. May you follow it with utmost devotion."
+            : "🪷 Your Lifetime Sankalp has been accepted. May you remain steadfast throughout your journey.")
     );
     setTimeout(() => setAcceptedToast(null), 6000);
 
@@ -274,47 +279,72 @@ export default function SankalpPage() {
                 boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
               }}
             >
-              <div style={{ textAlign: "center", marginBottom: "16px" }}>
-                <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                  <Flower2 size={28} color="var(--gold)" />
-                </div>
-                <h3 className="font-devanagari" style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                  {language === "hi" ? "🪷 आजीवन संकल्प प्रतिज्ञा" : "🪷 Take Lifetime Sankalp"}
-                </h3>
-              </div>
+              {(() => {
+                const isChaturmas = sankalpToConfirm.category_id === "bonus" || sankalpToConfirm.type === "bonus" || activeTab === "chaturmas";
+                return (
+                  <>
+                    <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                      <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: isChaturmas ? "rgba(220, 38, 38, 0.1)" : "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                        {isChaturmas ? <Crown size={28} color="#DC2626" /> : <Flower2 size={28} color="var(--gold)" />}
+                      </div>
+                      <h3 className="font-devanagari" style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)" }}>
+                        {isChaturmas
+                          ? (language === "hi" ? "🏆 चातुर्मास महा-संकल्प प्रतिज्ञा" : "🏆 Chaturmas Mahasankalp Pledge")
+                          : (language === "hi" ? "🪷 आजीवन संकल्प प्रतिज्ञा" : "🪷 Lifetime Sankalp Pledge")}
+                      </h3>
+                    </div>
 
-              <div className="font-devanagari" style={{ background: "rgba(217, 119, 6, 0.08)", padding: "16px", borderRadius: "14px", borderLeft: "4px solid var(--gold)", marginBottom: "20px" }}>
-                <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)" }}>
-                  {language === "hi" ? sankalpToConfirm.title_hi : sankalpToConfirm.title_en}
-                </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-                  {language === "hi" ? sankalpToConfirm.description_hi : sankalpToConfirm.description_en}
-                </p>
-              </div>
+                    <div className="font-devanagari" style={{ background: isChaturmas ? "rgba(220, 38, 38, 0.06)" : "rgba(217, 119, 6, 0.08)", padding: "16px", borderRadius: "14px", borderLeft: `4px solid ${isChaturmas ? "#DC2626" : "var(--gold)"}`, marginBottom: "20px" }}>
+                      <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)" }}>
+                        {language === "hi" ? sankalpToConfirm.title_hi : sankalpToConfirm.title_en}
+                      </p>
+                      <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "4px" }}>
+                        {language === "hi" ? sankalpToConfirm.description_hi : sankalpToConfirm.description_en}
+                      </p>
+                    </div>
 
-              <p className="font-devanagari" style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "24px", lineHeight: 1.6, textAlign: "center" }}>
-                {language === "hi" 
-                  ? "आप एक व्यक्तिगत और अटूट प्रतिज्ञा ले रहे हैं। इस संकल्प को तभी स्वीकार करें जब आप इसे जीवनभर निभाने के प्रति पूर्णतः निष्ठावान हों। एक बार स्वीकार करने के बाद इसे बदला या हटाया नहीं जा सकता।"
-                  : "You are making a personal commitment. This promise should only be accepted if you sincerely intend to follow it. Once accepted, this Sankalp cannot be modified."
-                }
-              </p>
+                    <p className="font-devanagari" style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "24px", lineHeight: 1.6, textAlign: "center" }}>
+                      {isChaturmas
+                        ? (language === "hi"
+                            ? "आप पूरे चातुर्मास काल (60 दिन) के लिए एक पवित्र महा-संकल्प ले रहे हैं। इसे तभी स्वीकार करें जब आप इसे चातुर्मास में पूर्ण निष्ठा से निभाने के प्रति दृढ़ हों।"
+                            : "You are making a sacred pledge for the entire Chaturmas period (60 days). Accept only if you sincerely intend to uphold this commitment throughout Chaturmas.")
+                        : (language === "hi"
+                            ? "आप एक व्यक्तिगत और अटूट प्रतिज्ञा ले रहे हैं। इस संकल्प को तभी स्वीकार करें जब आप इसे जीवनभर निभाने के प्रति पूर्णतः निष्ठावान हों। एक बार स्वीकार करने के बाद इसे बदला या हटाया नहीं जा सकता।"
+                            : "You are making a personal lifetime commitment. Accept only if you sincerely intend to follow it for life. Once accepted, this Sankalp cannot be modified.")}
+                    </p>
 
-              <div style={{ display: "flex", gap: "12px" }}>
-                <button 
-                  className="btn font-devanagari" 
-                  style={{ flex: 1, padding: "12px", background: "var(--surface-raised)", border: "1px solid var(--surface-border)", color: "var(--text-primary)", borderRadius: "12px", fontWeight: 600 }} 
-                  onClick={() => setSankalpToConfirm(null)}
-                >
-                  {language === "hi" ? "रद्द करें" : "Cancel"}
-                </button>
-                <button 
-                  className="btn font-devanagari" 
-                  style={{ flex: 1.4, padding: "12px", background: "linear-gradient(135deg, var(--brand) 0%, #8A2B1A 100%)", color: "white", border: "none", borderRadius: "12px", fontWeight: 700, boxShadow: "0 4px 14px rgba(138,43,26,0.3)" }} 
-                  onClick={handleConfirmAccept}
-                >
-                  {language === "hi" ? "संकल्प स्वीकार करें" : "I Accept This Sankalp"}
-                </button>
-              </div>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <button 
+                        className="btn font-devanagari" 
+                        style={{ flex: 1, padding: "12px", background: "var(--surface-raised)", border: "1px solid var(--surface-border)", color: "var(--text-primary)", borderRadius: "12px", fontWeight: 600 }} 
+                        onClick={() => setSankalpToConfirm(null)}
+                      >
+                        {language === "hi" ? "रद्द करें" : "Cancel"}
+                      </button>
+                      <button 
+                        className="btn font-devanagari" 
+                        style={{ 
+                          flex: 1.4, 
+                          padding: "12px", 
+                          background: isChaturmas 
+                            ? "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)" 
+                            : "linear-gradient(135deg, var(--brand) 0%, #8A2B1A 100%)", 
+                          color: "white", 
+                          border: "none", 
+                          borderRadius: "12px", 
+                          fontWeight: 700, 
+                          boxShadow: isChaturmas ? "0 4px 14px rgba(220,38,38,0.3)" : "0 4px 14px rgba(138,43,26,0.3)" 
+                        }} 
+                        onClick={handleConfirmAccept}
+                      >
+                        {isChaturmas
+                          ? (language === "hi" ? "महा-संकल्प स्वीकार करें" : "Accept Mahasankalp")
+                          : (language === "hi" ? "आजीवन संकल्प स्वीकार करें" : "Accept Lifetime Sankalp")}
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
           </div>
         )}
