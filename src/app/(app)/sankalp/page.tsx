@@ -10,9 +10,12 @@ import type { Question } from "@/types";
 import { IconResolver } from "@/components/IconResolver";
 import { fetchAcceptedSankalps, acceptSankalpAction } from "@/app/actions/sankalp";
 import { getISTDateString } from "@/lib/date";
+import { isCampaignEnded } from "@/config/campaign";
+import { getLeaderboard, LeaderboardUser } from "@/app/actions/leaderboard";
 import { 
   Sparkles, Lock, CheckCircle2, Search, ChevronDown, ChevronUp, 
-  ShieldCheck, Heart, Landmark, Flower2, Award, Sun, Sunrise, Crown
+  ShieldCheck, Heart, Landmark, Flower2, Award, Sun, Sunrise, Crown,
+  Trophy, Medal, Star, Flame, MapPin, User as UserIcon, ChevronRight
 } from "lucide-react";
 
 // Categorize sankalps logically into meaningful spiritual categories
@@ -84,7 +87,7 @@ const CHATURMAS_CATEGORIES: { id: string; name_hi: string; name_en: string; ids:
 
 export default function SankalpPage() {
   const { language } = useLanguageStore();
-  const { user, stats, setStats } = useAuthStore();
+  const { user, profile, stats, setStats } = useAuthStore();
   const { toggleHabit, getEntryForDate } = useHabitStore();
 
   const [acceptedMap, setAcceptedMap] = useState<Record<string, string>>({}); // rule_id -> accepted_at
@@ -136,6 +139,32 @@ export default function SankalpPage() {
   }, []);
 
   const [activeTab, setActiveTab] = useState<"lifetime" | "chaturmas">("lifetime");
+  const campaignEnded = isCampaignEnded();
+
+  // Leaderboard data for campaign-concluded state (strictly filtered by user's age group)
+  const userAgeGroup = profile?.age_group || "24-40";
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [currentUserRank, setCurrentUserRank] = useState<LeaderboardUser | null>(null);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+
+  useEffect(() => {
+    if (!campaignEnded) return;
+    const fetchLeaderboardData = async () => {
+      setLeaderboardLoading(true);
+      try {
+        const res = await getLeaderboard(userAgeGroup);
+        if (res.success) {
+          setLeaderboard(res.leaderboard);
+          setCurrentUserRank(res.currentUserRank);
+        }
+      } catch (err) {
+        console.error("Error fetching leaderboard:", err);
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    };
+    fetchLeaderboardData();
+  }, [campaignEnded, userAgeGroup]);
 
   // Fetch accepted sankalps on mount from Supabase
   useEffect(() => {
@@ -350,6 +379,296 @@ export default function SankalpPage() {
         )}
       </AnimatePresence>
 
+      {/* ── CAMPAIGN ENDED: LEADERBOARD VIEW ── */}
+      {campaignEnded ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          
+          {/* 🏆 Hero Announcement Banner 🏆 */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              background: "linear-gradient(145deg, #2D1500 0%, #4D230B 50%, #1F0D02 100%)",
+              borderRadius: "28px",
+              padding: "32px 24px",
+              color: "white",
+              boxShadow: "0 20px 48px rgba(45, 21, 0, 0.35)",
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              position: "relative",
+              overflow: "hidden",
+              textAlign: "center"
+            }}
+          >
+            <div style={{ position: "absolute", top: -30, right: -30, opacity: 0.08, pointerEvents: "none" }}>
+              <Trophy size={200} color="white" />
+            </div>
+
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 16px",
+              borderRadius: "30px",
+              background: "rgba(245, 158, 11, 0.2)",
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              color: "#FDE68A",
+              fontSize: "0.8125rem",
+              fontWeight: 700,
+              marginBottom: "16px"
+            }}>
+              <Trophy size={16} color="var(--gold)" />
+              <span>{language === "hi" ? "अभियान पूर्ण • अंतिम परिणाम" : "Campaign Concluded • Final Results"}</span>
+            </div>
+
+            <h1 className="font-devanagari" style={{ fontSize: "1.75rem", fontWeight: 800, margin: "0 0 10px", lineHeight: 1.25, color: "#FFFFFF" }}>
+              {language === "hi" ? "🏆 चातुर्मास महा-लीडरबोर्ड" : "🏆 Chaturmas Grand Leaderboard"}
+            </h1>
+
+            <p className="font-devanagari" style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.85)", lineHeight: 1.6, maxWidth: "420px", margin: "0 auto 20px" }}>
+              {language === "hi"
+                ? "६० दिनों की पवित्र साधना यात्रा सफलतापूर्वक संपन्न हुई। सभी साधकों को हार्दिक बधाई एवं अनुमोदना!"
+                : "The sacred 60-day spiritual journey has concluded with grace. Heartiest congratulations to all Sadhaks!"}
+            </p>
+
+            {/* Quick Link to Download Certificate */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <a
+                href="/profile"
+                className="font-devanagari"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  background: "linear-gradient(135deg, var(--gold) 0%, #D97706 100%)",
+                  color: "#1F0D02",
+                  fontWeight: 800,
+                  fontSize: "0.875rem",
+                  padding: "10px 20px",
+                  borderRadius: "14px",
+                  textDecoration: "none",
+                  boxShadow: "0 4px 14px rgba(217, 119, 6, 0.4)"
+                }}
+              >
+                <Award size={16} />
+                <span>{language === "hi" ? "अपना प्रमाण-पत्र डाउनलोड करें" : "Download Your Certificate"}</span>
+                <ChevronRight size={16} />
+              </a>
+            </div>
+          </motion.div>
+
+          {/* 🌟 Current User's Personal Ranking Card 🌟 */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            style={{
+              background: "linear-gradient(135deg, rgba(162, 98, 42, 0.1) 0%, rgba(255, 255, 255, 0.95) 100%)",
+              borderRadius: "22px",
+              padding: "20px",
+              border: "1.5px solid var(--gold)",
+              boxShadow: "0 8px 24px rgba(162, 98, 42, 0.12)"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Medal size={18} color="var(--gold)" />
+                </div>
+                <h3 className="font-devanagari" style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
+                  {language === "hi" ? "आपकी अंतिम रैंकिंग" : "Your Final Ranking"}
+                </h3>
+              </div>
+              <span className="font-devanagari" style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--emerald)", background: "rgba(16,185,129,0.12)", padding: "4px 10px", borderRadius: "20px" }}>
+                {language === "hi" ? "सत्यापित स्कोर" : "Verified Score"}
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: "10px", textAlign: "center" }}>
+              <div style={{ background: "rgba(255,255,255,0.9)", padding: "12px 8px", borderRadius: "14px", border: "1px solid var(--surface-border)" }}>
+                <div className="font-devanagari" style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                  {language === "hi" ? "रैंक" : "Rank"}
+                </div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--brand)", marginTop: "2px" }}>
+                  #{currentUserRank?.rank || (stats ? "Active" : "-")}
+                </div>
+              </div>
+
+              <div style={{ background: "rgba(255,255,255,0.9)", padding: "12px 8px", borderRadius: "14px", border: "1px solid var(--surface-border)" }}>
+                <div className="font-devanagari" style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                  {language === "hi" ? "कुल पुण्य अंक" : "Total XP"}
+                </div>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--gold)", marginTop: "4px" }}>
+                  {(currentUserRank?.totalXp ?? stats?.total_xp ?? 0).toLocaleString(language === "hi" ? "hi-IN" : "en-US")}
+                </div>
+              </div>
+
+              <div style={{ background: "rgba(255,255,255,0.9)", padding: "12px 8px", borderRadius: "14px", border: "1px solid var(--surface-border)" }}>
+                <div className="font-devanagari" style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                  {language === "hi" ? "कुल सक्रिय दिन" : "Active Days"}
+                </div>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--emerald)", marginTop: "4px" }}>
+                  {currentUserRank?.daysCompleted ?? stats?.days_completed ?? 0}/60
+                </div>
+              </div>
+            </div>
+
+            {/* User identity footer */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid rgba(0,0,0,0.06)", fontSize: "0.8125rem" }}>
+              <span className="font-devanagari" style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                👤 {currentUserRank?.fullName || profile?.full_name || "साधक"}
+              </span>
+              <span className="font-devanagari" style={{ color: "var(--text-muted)" }}>
+                📍 {currentUserRank?.city || profile?.city || "भारत"}
+              </span>
+            </div>
+          </motion.div>
+
+          {/* 👑 Top 5 Champions Showcase (Filtered to User's Age Group) 👑 */}
+          <div style={{ marginTop: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", padding: "0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Crown size={22} color="var(--gold)" />
+                <h2 className="font-devanagari" style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
+                  {language === "hi" 
+                    ? `शीर्ष ५ महा-साधक (${userAgeGroup === "6-12" ? "६-१२ वर्ष" : userAgeGroup === "13-23" ? "१३-२३ वर्ष" : "२४-४० वर्ष"})` 
+                    : `Top 5 Champions (${userAgeGroup} yrs)`}
+                </h2>
+              </div>
+              <span className="font-devanagari" style={{
+                fontSize: "0.75rem",
+                color: "var(--brand)",
+                background: "var(--brand-dim)",
+                fontWeight: 800,
+                padding: "4px 10px",
+                borderRadius: "12px"
+              }}>
+                {language === "hi" ? "आपका आयु वर्ग" : "Your Age Group"}
+              </span>
+            </div>
+
+            {leaderboardLoading ? (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div className="spinner" style={{ width: "32px", height: "32px", border: "3px solid var(--surface-border)", borderTopColor: "var(--brand)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 12px" }} />
+                <p className="font-devanagari" style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
+                  {language === "hi" ? "लीडरबोर्ड लोड हो रहा है..." : "Loading Leaderboard..."}
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {leaderboard.slice(0, 5).map((userItem, idx) => {
+                  const isTop1 = idx === 0;
+                  const isTop2 = idx === 1;
+                  const isTop3 = idx === 2;
+                  const isCurrentUser = currentUserRank?.userId === userItem.userId || profile?.id === userItem.userId;
+
+                  const badgeColor = isTop1 ? "#F59E0B" : isTop2 ? "#94A3B8" : isTop3 ? "#CD7F32" : "var(--brand)";
+                  const badgeIcon = isTop1 ? "🥇" : isTop2 ? "🥈" : isTop3 ? "🥉" : `#${idx + 1}`;
+
+                  return (
+                    <motion.div
+                      key={userItem.userId || idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.08 }}
+                      style={{
+                        background: isCurrentUser 
+                          ? "linear-gradient(135deg, rgba(162,98,42,0.12) 0%, rgba(255,255,255,0.95) 100%)"
+                          : isTop1 
+                          ? "linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0.95) 100%)"
+                          : "rgba(255, 255, 255, 0.9)",
+                        border: isCurrentUser 
+                          ? "2px solid var(--brand)"
+                          : isTop1 
+                          ? "1.5px solid rgba(245,158,11,0.5)" 
+                          : "1px solid var(--surface-border)",
+                        borderRadius: "18px",
+                        padding: "16px",
+                        boxShadow: isTop1 
+                          ? "0 6px 20px rgba(245,158,11,0.15)"
+                          : "0 2px 10px rgba(0,0,0,0.03)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "14px"
+                      }}
+                    >
+                      {/* Rank Badge */}
+                      <div style={{
+                        width: "44px",
+                        height: "44px",
+                        borderRadius: "14px",
+                        background: isTop1 ? "rgba(245,158,11,0.15)" : isTop2 ? "rgba(148,163,184,0.15)" : isTop3 ? "rgba(205,127,50,0.15)" : "var(--surface-raised)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: isTop1 || isTop2 || isTop3 ? "1.4rem" : "1.05rem",
+                        fontWeight: 800,
+                        color: badgeColor,
+                        flexShrink: 0
+                      }}>
+                        {badgeIcon}
+                      </div>
+
+                      {/* User Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span className="font-devanagari text-primary" style={{ fontWeight: 800, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {userItem.fullName}
+                          </span>
+                          {isCurrentUser && (
+                            <span className="font-devanagari" style={{ fontSize: "0.65rem", fontWeight: 800, background: "var(--brand)", color: "white", padding: "1px 6px", borderRadius: "10px", flexShrink: 0 }}>
+                              {language === "hi" ? "आप" : "YOU"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }}>
+                          <MapPin size={12} color="var(--text-muted)" />
+                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userItem.city || "भारत"}</span>
+                          <span>•</span>
+                          <span>{userItem.daysCompleted} {language === "hi" ? "दिन" : "days"}</span>
+                        </div>
+                      </div>
+
+                      {/* Points Display */}
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--gold)", fontFamily: "var(--font-sans)", lineHeight: 1.1 }}>
+                          {userItem.totalXp.toLocaleString(language === "hi" ? "hi-IN" : "en-US")}
+                        </div>
+                        <div className="font-devanagari" style={{ fontSize: "0.6875rem", color: "var(--text-muted)", fontWeight: 700, marginTop: "2px" }}>
+                          {language === "hi" ? "पुण्य अंक" : "pts"}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 🪷 Collapsible Lifetime Sankalp Archive (Reference Only) 🪷 */}
+          <div style={{ marginTop: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "20px", border: "1px solid var(--surface-border)", padding: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Flower2 size={20} color="var(--brand)" />
+                <div>
+                  <h4 className="font-devanagari" style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                    {language === "hi" ? "स्वीकृत आजीवन संकल्प संदर्भ" : "Your Accepted Lifetime Vows"}
+                  </h4>
+                  <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "2px 0 0" }}>
+                    {language === "hi" ? `${acceptedCount} संकल्प जीवनभर के लिए स्वीकार किए गए हैं` : `${acceptedCount} lifetime commitments recorded`}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", fontWeight: 700, color: "var(--brand)", background: "var(--brand-dim)", padding: "4px 10px", borderRadius: "14px" }}>
+                <Lock size={12} />
+                <span>{language === "hi" ? "अपरिवर्तनीय" : "Permanent"}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      ) : (
+        <>
       {/* ── Sacred Introduction Hero Card (Apple Glassmorphism Style) ── */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }} 
@@ -834,6 +1153,8 @@ export default function SankalpPage() {
             );
           })}
         </div>
+      )}
+      </>
       )}
     </div>
   );

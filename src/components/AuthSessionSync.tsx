@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/authStore";
+import { useEffect } from "react";
 
 export function AuthSessionSync() {
   const { user, _hasHydrated, logout, setProfile, setStats } = useAuthStore();

@@ -23,6 +23,13 @@ export function isCampaignLive(): boolean {
   return new Date() >= CAMPAIGN_START;
 }
 
+/**
+ * Returns true if the campaign has ended (on or after CAMPAIGN_END).
+ */
+export function isCampaignEnded(): boolean {
+  return new Date() >= CAMPAIGN_END;
+}
+
 /** Test account ID — bypasses the pre-launch date lock for internal testing only. */
 export const TEST_USER_ID = "34c577d8-86d1-4d40-ac97-fb2825274e86";
 

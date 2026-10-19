@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { getISTDateString } from "@/lib/date";
+import { isCampaignEnded } from "@/config/campaign";
 
 function getTodayStr() {
   return getISTDateString();
@@ -190,12 +191,31 @@ export function HabitCard({
   const entry = getEntryForDate(question.id, date);
   const isCompleted = entry?.completed ?? false;
   const [celebrating, setCelebrating] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  const campaignEnded = isCampaignEnded();
+  const isLocked = isSubmitted || campaignEnded;
 
   const handleToggle = () => {
-    if (isSubmitted) return;
-    if (!isCompleted) setCelebrating(true);
+    if (isLocked) return;
+    if (!isCompleted) {
+      // Show disclaimer before marking complete
+      setShowDisclaimer(true);
+    } else {
+      // Unchecking doesn't need disclaimer
+      onToggle(question);
+    }
+  };
+
+  const handleConfirmDisclaimer = () => {
+    setShowDisclaimer(false);
+    setCelebrating(true);
     onToggle(question);
     setTimeout(() => setCelebrating(false), 600);
+  };
+
+  const handleCancelDisclaimer = () => {
+    setShowDisclaimer(false);
   };
 
   const isBonus = question.category_id === "bonus";
@@ -220,11 +240,127 @@ export function HabitCard({
     : "var(--surface-raised)";
 
   return (
-    <motion.div
+    <>
+      {/* 🛡️ Niyam Disclaimer Modal */}
+      <AnimatePresence>
+        {showDisclaimer && (
+          <div
+            style={{
+              position: "fixed", inset: 0,
+              background: "rgba(15, 12, 10, 0.75)",
+              backdropFilter: "blur(12px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              zIndex: 10000, padding: "20px"
+            }}
+            onClick={handleCancelDisclaimer}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: "380px", width: "100%",
+                background: "#FAF7F2",
+                padding: "28px 24px",
+                border: "2px solid var(--gold)",
+                borderRadius: "24px",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.25)"
+              }}
+            >
+              {/* Icon */}
+              <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "var(--gold-dim)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+                  <CheckCircle2 size={30} color="var(--gold)" />
+                </div>
+                <h3 className="font-devanagari" style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px" }}>
+                  {language === "hi" ? "✅ नियम सत्यापन" : "✅ Niyam Verification"}
+                </h3>
+                <p className="font-devanagari" style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
+                  {language === "hi" ? "कृपया पुष्टि करें" : "Please confirm"}
+                </p>
+              </div>
+
+              {/* Niyam Title */}
+              <div className="font-devanagari" style={{
+                background: "rgba(217, 119, 6, 0.08)",
+                padding: "14px",
+                borderRadius: "14px",
+                borderLeft: "4px solid var(--gold)",
+                marginBottom: "18px"
+              }}>
+                <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", margin: "0 0 4px" }}>
+                  {language === "hi" ? question.title_hi : question.title_en}
+                </p>
+                <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>
+                  {language === "hi" ? question.description_hi : question.description_en}
+                </p>
+              </div>
+
+              {/* Disclaimer Text */}
+              <div className="font-devanagari" style={{
+                background: "rgba(245, 158, 11, 0.06)",
+                border: "1px solid rgba(245, 158, 11, 0.25)",
+                borderRadius: "12px",
+                padding: "12px 14px",
+                marginBottom: "20px",
+                fontSize: "0.8125rem",
+                color: "#92400E",
+                lineHeight: 1.6
+              }}>
+                <span style={{ fontWeight: 700 }}>⚠️ </span>
+                {language === "hi"
+                  ? "क्या आपने आज वास्तव में यह नियम निभाया है? झूठी पुष्टि से आपके साधना-फल में कमी आती है। सत्यनिष्ठा से ही आत्म-उत्थान संभव है।"
+                  : "Did you genuinely follow this niyam today? A false confirmation diminishes your spiritual merit. Only honest practice leads to true self-upliftment."}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  className="btn font-devanagari"
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    background: "var(--surface-raised)",
+                    border: "1px solid var(--surface-border)",
+                    color: "var(--text-primary)",
+                    borderRadius: "12px",
+                    fontWeight: 600,
+                    fontSize: "0.875rem"
+                  }}
+                  onClick={handleCancelDisclaimer}
+                >
+                  {language === "hi" ? "नहीं" : "No"}
+                </button>
+                <button
+                  className="btn font-devanagari"
+                  style={{
+                    flex: 1.5,
+                    padding: "12px",
+                    background: "linear-gradient(135deg, var(--emerald) 0%, #059669 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "12px",
+                    fontWeight: 700,
+                    fontSize: "0.875rem",
+                    boxShadow: "0 4px 14px rgba(16,185,129,0.3)"
+                  }}
+                  onClick={handleConfirmDisclaimer}
+                >
+                  {language === "hi" ? "हाँ, निभाया ✓" : "Yes, I Did ✓"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      whileHover={isLocked ? {} : { y: -2 }}
       className={`habit-card ${isCompleted ? "is-done" : ""}`}
       style={{
         border: cardBorder,
@@ -233,8 +369,8 @@ export function HabitCard({
         borderRadius: "var(--r-lg)",
         boxShadow: isSankalp && !isCompleted ? "0 4px 14px rgba(232, 93, 4, 0.1)" : "var(--shadow-sm)",
         position: "relative",
-        cursor: isSubmitted ? "default" : "pointer",
-        opacity: isSubmitted && !isCompleted ? 0.7 : 1
+        cursor: isLocked ? "default" : "pointer",
+        opacity: isLocked && !isCompleted ? 0.7 : 1
       }}
       onClick={handleToggle}
     >
@@ -334,6 +470,7 @@ export function HabitCard({
         </div>
       </div>
     </motion.div>
+    </>
   );
 }
 
@@ -434,9 +571,11 @@ function HabitsContent() {
     checkStatus();
   }, [today, stats?.last_submission_date, isSubmittedForDate, setSubmittedDate]);
 
+  const campaignEnded = isCampaignEnded();
+
   const handleToggle = useCallback(
     (question: Question) => {
-      if (isSubmittedToday) return;
+      if (isSubmittedToday || campaignEnded) return;
       const result = toggleHabit(question.id, today);
       if (result.completed) {
         updatePoints(question.points);
@@ -444,7 +583,7 @@ function HabitsContent() {
         updatePoints(-question.points);
       }
     },
-    [toggleHabit, today, updatePoints, isSubmittedToday]
+    [toggleHabit, today, updatePoints, isSubmittedToday, campaignEnded]
   );
 
   const getCompletedCount = (catId: string) => {
@@ -573,7 +712,26 @@ function HabitsContent() {
               </div>
             </div>
 
-            {isSubmittedToday ? (
+            {campaignEnded ? (
+              <div
+                className="font-devanagari"
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "0.8125rem",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(160, 98, 42, 0.12)",
+                  color: "var(--gold)",
+                  border: "1px solid rgba(160, 98, 42, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontWeight: 700
+                }}
+              >
+                <Lock size={14} />
+                <span>{language === "hi" ? "अभियान संपन्न" : "Campaign Concluded"}</span>
+              </div>
+            ) : isSubmittedToday ? (
               <div
                 className="font-devanagari"
                 style={{

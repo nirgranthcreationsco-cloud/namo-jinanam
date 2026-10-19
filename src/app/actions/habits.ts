@@ -146,7 +146,7 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
       }
       console.warn('RPC submit_daily_niyam failed, using direct queries fallback:', transactionError.message);
 
-      // Direct Table Fallback
+      // Direct Table Fallback: First insert the daily history record
       const { error: histErr } = await supabase
         .from('daily_history')
         .insert({
@@ -160,19 +160,61 @@ export async function submitDailyNiyam(payload: SubmitNiyamPayload) {
         return { success: false, error: 'You have already submitted your Niyam for this date.' };
       }
 
+      // Fetch authoritative history to prevent drift or desync
+      const { data: histRows } = await supabase
+        .from('daily_history')
+        .select('xp_earned, submission_date')
+        .eq('user_id', userId)
+        .order('submission_date', { ascending: true });
+
+      const allHist = histRows || [];
+      const historyDailyTotal = allHist.reduce((acc: number, r: any) => acc + (r.xp_earned || 0), 0);
+      const computedTotalXp = historyDailyTotal + (stats.bonus_xp || 0);
+      const computedDays = allHist.length;
+      const computedTreeStage = Math.floor(computedDays / 3);
+
+      // Compute streak accurately from sorted daily history
+      let calcStreak = 0;
+      let calcBestStreak = 0;
+      let prevD: Date | null = null;
+      allHist.forEach((h: any) => {
+        const curD = new Date(h.submission_date);
+        if (!prevD) {
+          calcStreak = 1;
+        } else {
+          const diffDays = Math.round((curD.getTime() - prevD.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays === 1) calcStreak++;
+          else calcStreak = 1;
+        }
+        if (calcStreak > calcBestStreak) calcBestStreak = calcStreak;
+        prevD = curD;
+      });
+
+      const finalBestStreak = Math.max(stats.best_streak || 0, calcBestStreak, newBestStreak);
+
       await supabase
         .from('user_stats')
         .upsert({
           user_id: userId,
-          total_xp: newTotalXp,
-          current_streak: newCurrentStreak,
-          best_streak: newBestStreak,
-          days_completed: newDaysCompleted,
-          tree_stage: newTreeStage,
+          total_xp: computedTotalXp,
+          bonus_xp: stats.bonus_xp || 0,
+          current_streak: calcStreak || newCurrentStreak,
+          best_streak: finalBestStreak,
+          days_completed: computedDays,
+          tree_stage: computedTreeStage,
           last_submission_date: date,
           last_submission_xp: finalXP,
           updated_at: new Date().toISOString()
         });
+
+      // Keep leaderboard cache synced
+      await supabase
+        .from('leaderboard_cache')
+        .update({
+          total_points: computedTotalXp,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
     }
 
     // Return full breakdown to the frontend for the beautiful reveal animation!

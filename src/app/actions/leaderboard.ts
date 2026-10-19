@@ -8,30 +8,37 @@ export interface LeaderboardUser {
   userId: string;
   fullName: string;
   city: string;
+  ageGroup?: string;
   totalXp: number;
   currentStreak: number;
   daysCompleted: number;
 }
 
-export async function getLeaderboard() {
+export async function getLeaderboard(ageGroup?: string) {
   try {
     const currentUserId = await getSession();
 
-    // Query top 50 users from user_stats ordered by total_xp
-    const { data: statsData, error } = await supabase
+    // Query users from user_stats ordered by total_xp, optionally filtered by age_group
+    let query = supabase
       .from('user_stats')
       .select(`
         user_id,
         total_xp,
         current_streak,
         days_completed,
-        users (
+        users!inner (
           full_name,
-          city
+          city,
+          age_group
         )
       `)
-      .order('total_xp', { ascending: false })
-      .limit(50);
+      .order('total_xp', { ascending: false });
+
+    if (ageGroup && ageGroup !== 'all') {
+      query = query.eq('users.age_group', ageGroup);
+    }
+
+    const { data: statsData, error } = await query.limit(50);
 
     if (error || !statsData) {
       console.error('Error fetching leaderboard:', error);
@@ -45,6 +52,7 @@ export async function getLeaderboard() {
         userId: item.user_id,
         fullName: userObj?.full_name || 'साधक',
         city: userObj?.city || 'भारत',
+        ageGroup: userObj?.age_group,
         totalXp: item.total_xp || 0,
         currentStreak: item.current_streak || 0,
         daysCompleted: item.days_completed || 0,
@@ -68,7 +76,8 @@ export async function getLeaderboard() {
             days_completed,
             users (
               full_name,
-              city
+              city,
+              age_group
             )
           `)
           .eq('user_id', currentUserId)
@@ -77,17 +86,24 @@ export async function getLeaderboard() {
         if (myStats) {
           const userObj = Array.isArray(myStats.users) ? myStats.users[0] : myStats.users;
           
-          // Count users with more total_xp
-          const { count } = await supabase
+          // Count users with more total_xp (optionally in same age group)
+          let countQuery = supabase
             .from('user_stats')
-            .select('*', { count: 'exact', head: true })
+            .select('user_id, users!inner(age_group)', { count: 'exact', head: true })
             .gt('total_xp', myStats.total_xp || 0);
+
+          if (ageGroup && ageGroup !== 'all') {
+            countQuery = countQuery.eq('users.age_group', ageGroup);
+          }
+
+          const { count } = await countQuery;
 
           currentUserRank = {
             rank: (count || 0) + 1,
             userId: myStats.user_id,
             fullName: userObj?.full_name || 'साधक',
             city: userObj?.city || 'भारत',
+            ageGroup: userObj?.age_group,
             totalXp: myStats.total_xp || 0,
             currentStreak: myStats.current_streak || 0,
             daysCompleted: myStats.days_completed || 0,

@@ -7,7 +7,7 @@ export default function LeaderboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/dashboard");
+    router.replace("/sankalp");
   }, [router]);
 
   return null;

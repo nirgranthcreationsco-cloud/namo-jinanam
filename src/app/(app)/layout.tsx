@@ -6,24 +6,30 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguageStore } from "@/store/languageStore";
-import { isCampaignAccessible } from "@/config/campaign";
+import { isCampaignAccessible, isCampaignEnded } from "@/config/campaign";
 import { Home, CheckSquare, Trophy, User, Flame, Star, Share2, Crown, TreePine, Target, Sparkles } from "lucide-react";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
-  { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
-  { href: "/sankalp", icon: Sparkles, label: "Sankalp", labelHi: "संकल्प" },
-  { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
-];
+function getNavItems(campaignEnded: boolean) {
+  return [
+    { href: "/dashboard", icon: Home, label: "Home", labelHi: "होम" },
+    { href: "/habits", icon: CheckSquare, label: "Niyam", labelHi: "नियम" },
+    campaignEnded
+      ? { href: "/sankalp", icon: Trophy, label: "Leaderboard", labelHi: "लीडरबोर्ड" }
+      : { href: "/sankalp", icon: Sparkles, label: "Sankalp", labelHi: "संकल्प" },
+    { href: "/profile", icon: User, label: "Profile", labelHi: "प्रोफाइल" },
+  ];
+}
 
 function BottomNav() {
   const pathname = usePathname();
   const { language } = useLanguageStore();
+  const campaignEnded = isCampaignEnded();
+  const navItems = getNavItems(campaignEnded);
 
   return (
     <nav className="bottom-nav">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "12px 8px 10px" }}>
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
           return (
@@ -111,11 +117,13 @@ function TopBar() {
   const { profile, stats } = useAuthStore();
   const pathname = usePathname();
   const { language, setLanguage } = useLanguageStore();
+  const campaignEnded = isCampaignEnded();
 
   const pageTitleHi: Record<string, string> = {
     "/dashboard": "मुख्य पृष्ठ",
     "/habits": "नियम",
-    "/sankalp": "आजीवन संकल्प",
+    "/sankalp": campaignEnded ? "🏆 अंतिम लीडरबोर्ड" : "आजीवन संकल्प",
+    "/leaderboard": "🏆 अंतिम लीडरबोर्ड",
     "/profile": "प्रोफ़ाइल",
     "/calendar": "कैलेंडर",
   };
@@ -123,7 +131,8 @@ function TopBar() {
   const pageTitleEn: Record<string, string> = {
     "/dashboard": "Dashboard",
     "/habits": "Niyam",
-    "/sankalp": "My Lifetime Sankalp",
+    "/sankalp": campaignEnded ? "🏆 Final Leaderboard" : "My Lifetime Sankalp",
+    "/leaderboard": "🏆 Final Leaderboard",
     "/profile": "Profile",
     "/calendar": "Calendar",
   };
