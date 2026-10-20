@@ -12,6 +12,7 @@ import { fetchAcceptedSankalps, acceptSankalpAction } from "@/app/actions/sankal
 import { getISTDateString } from "@/lib/date";
 import { isCampaignEnded } from "@/config/campaign";
 import { getLeaderboard, LeaderboardUser } from "@/app/actions/leaderboard";
+import { WINNERS_13_23 } from "@/data/winners";
 import { 
   Sparkles, Lock, CheckCircle2, Search, ChevronDown, ChevronUp, 
   ShieldCheck, Heart, Landmark, Flower2, Award, Sun, Sunrise, Crown,
@@ -521,6 +522,78 @@ export default function SankalpPage() {
               <span className="font-devanagari" style={{ color: "var(--text-muted)" }}>
                 📍 {currentUserRank?.city || profile?.city || "भारत"}
               </span>
+            </div>
+          </motion.div>
+
+          {/* 🏆 Official Declared Winners (आयु वर्ग: 13–23 वर्ष) 🏆 */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            style={{
+              background: "linear-gradient(145deg, #2D1500 0%, #3D1C08 100%)",
+              borderRadius: "22px",
+              padding: "20px 18px",
+              border: "1.5px solid rgba(245, 158, 11, 0.4)",
+              boxShadow: "0 10px 28px rgba(45, 21, 0, 0.25)",
+              color: "white"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", borderBottom: "1px solid rgba(245, 158, 11, 0.25)", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(245, 158, 11, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Crown size={20} color="var(--gold)" />
+                </div>
+                <div>
+                  <h3 className="font-devanagari" style={{ fontSize: "1.05rem", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+                    आयु वर्ग: 13–23 वर्ष — आधिकारिक विजेता
+                  </h3>
+                  <p className="font-devanagari" style={{ fontSize: "0.75rem", color: "#FDE68A", margin: "2px 0 0", fontWeight: 700 }}>
+                    🏅 लगभग 100 प्रतिभागियों में टॉप 8
+                  </p>
+                </div>
+              </div>
+              <span className="font-devanagari" style={{
+                fontSize: "0.7rem",
+                color: "#1F0D02",
+                background: "var(--gold)",
+                fontWeight: 800,
+                padding: "4px 8px",
+                borderRadius: "10px"
+              }}>
+                {language === "hi" ? "घोषित परिणाम" : "Official"}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {WINNERS_13_23.map((winner) => {
+                const isTop3 = winner.rank <= 3;
+                return (
+                  <div
+                    key={winner.rank}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
+                      borderRadius: "14px",
+                      background: isTop3 ? "rgba(245, 158, 11, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                      border: isTop3 ? "1px solid rgba(245, 158, 11, 0.4)" : "1px solid rgba(255, 255, 255, 0.08)"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                      <span style={{ fontSize: "1.3rem", flexShrink: 0 }}>{winner.badge}</span>
+                      <span className="font-devanagari" style={{ fontWeight: 800, fontSize: "0.9375rem", color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {winner.name}
+                      </span>
+                    </div>
+                    <div className="font-devanagari" style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8125rem", color: "#FDE68A", fontWeight: 700, flexShrink: 0 }}>
+                      <MapPin size={13} color="#FDE68A" />
+                      <span>{winner.city}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 

@@ -10,10 +10,12 @@ import { useLanguageStore } from "@/store/languageStore";
 import { getTodayInspiration } from "@/data/challenges";
 import { CATEGORIES, QUESTIONS } from "@/data/content";
 import { getISTDateString } from "@/lib/date";
+import { isCampaignEnded } from "@/config/campaign";
+import { WINNERS_13_23 } from "@/data/winners";
 
 import { 
   Moon, Sunrise, Sun, Sunset, 
-  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine, Clock, Target, Info, Leaf, Salad, Smartphone, Brain, HeartHandshake, Gem, LogOut
+  Star, Crown, ChevronRight, CheckCircle2, Flame, Award, CalendarDays, PartyPopper, ThumbsUp, Sparkles, TreePine, Clock, Target, Info, Leaf, Salad, Smartphone, Brain, HeartHandshake, Gem, LogOut, Trophy, Medal, MapPin
 } from "lucide-react";
 
 function CountdownTimer() {
@@ -205,6 +207,158 @@ export default function DashboardPage() {
           </span>
         </button>
       </motion.div>
+
+      {/* ── 🏆 COMPETITION CLOSED & OFFICIAL WINNERS ANNOUNCEMENT 🏆 ── */}
+      {isCampaignEnded() && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{
+            background: "linear-gradient(145deg, #2D1500 0%, #4D230B 55%, #1F0D02 100%)",
+            borderRadius: "24px",
+            padding: "24px 20px",
+            color: "white",
+            boxShadow: "0 16px 40px rgba(45, 21, 0, 0.35)",
+            border: "1.5px solid rgba(245, 158, 11, 0.45)",
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          {/* Background Ambient Glow */}
+          <div style={{ position: "absolute", top: -20, right: -20, opacity: 0.08, pointerEvents: "none" }}>
+            <Trophy size={180} color="white" />
+          </div>
+
+          {/* Status Badge */}
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "6px 14px",
+            borderRadius: "30px",
+            background: "rgba(245, 158, 11, 0.2)",
+            border: "1px solid rgba(245, 158, 11, 0.45)",
+            color: "#FDE68A",
+            fontSize: "0.8125rem",
+            fontWeight: 800,
+            marginBottom: "14px"
+          }}>
+            <Trophy size={16} color="var(--gold)" />
+            <span className="font-devanagari">
+              {language === "hi" ? "प्रतियोगिता संपन्न • परिणाम घोषित" : "Competition Closed • Results Declared"}
+            </span>
+          </div>
+
+          <h2 className="font-devanagari" style={{ fontSize: "1.35rem", fontWeight: 800, margin: "0 0 6px", lineHeight: 1.3, color: "#FFFFFF" }}>
+            {language === "hi" ? "🏆 चातुर्मास प्रतियोगिता समाप्त" : "🏆 Chaturmas Competition Concluded"}
+          </h2>
+
+          <p className="font-devanagari" style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.85)", lineHeight: 1.5, margin: "0 0 16px" }}>
+            {language === "hi"
+              ? "यह प्रतियोगिता अब पूर्ण हो चुकी है एवं परिणाम घोषित कर दिए गए हैं। सभी प्रतिभागियों को हार्दिक बधाई एवं साधुवाद!"
+              : "This competition has officially concluded and results are declared. Hearty congratulations to all participants!"}
+          </p>
+
+          {/* 🌟 Official Winners Box: Age Group 13–23 Years 🌟 */}
+          <div style={{
+            background: "rgba(0, 0, 0, 0.3)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "18px",
+            padding: "16px",
+            border: "1px solid rgba(245, 158, 11, 0.3)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", borderBottom: "1px solid rgba(245, 158, 11, 0.2)", paddingBottom: "8px" }}>
+              <div>
+                <div className="font-devanagari" style={{ fontSize: "0.95rem", fontWeight: 800, color: "#FDE68A" }}>
+                  आयु वर्ग: 13–23 वर्ष
+                </div>
+                <div className="font-devanagari" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "2px" }}>
+                  🏅 लगभग 100 प्रतिभागियों में टॉप 8 विजेता
+                </div>
+              </div>
+              <Crown size={22} color="var(--gold)" />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {WINNERS_13_23.map((winner) => {
+                const isTop3 = winner.rank <= 3;
+                return (
+                  <div
+                    key={winner.rank}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 12px",
+                      borderRadius: "12px",
+                      background: isTop3 ? "rgba(245, 158, 11, 0.12)" : "rgba(255, 255, 255, 0.05)",
+                      border: isTop3 ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid rgba(255, 255, 255, 0.08)"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                      <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>{winner.badge}</span>
+                      <span className="font-devanagari" style={{ fontWeight: 800, fontSize: "0.9rem", color: isTop3 ? "#FFF" : "rgba(255,255,255,0.9)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {winner.name}
+                      </span>
+                    </div>
+                    <div className="font-devanagari" style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8rem", color: "#FDE68A", fontWeight: 700, flexShrink: 0 }}>
+                      <MapPin size={12} color="#FDE68A" />
+                      <span>{winner.city}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick link to Certificate / Leaderboard */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+            <Link
+              href="/sankalp"
+              style={{
+                flex: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                background: "rgba(245, 158, 11, 0.15)",
+                border: "1px solid rgba(245, 158, 11, 0.4)",
+                color: "#FDE68A",
+                fontWeight: 700,
+                fontSize: "0.8125rem",
+                padding: "10px",
+                borderRadius: "12px",
+                textDecoration: "none"
+              }}
+            >
+              <Trophy size={15} />
+              <span className="font-devanagari">{language === "hi" ? "पूरा लीडरबोर्ड" : "Full Leaderboard"}</span>
+            </Link>
+            <Link
+              href="/profile"
+              style={{
+                flex: 1.2,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                background: "linear-gradient(135deg, var(--gold) 0%, #D97706 100%)",
+                color: "#1F0D02",
+                fontWeight: 800,
+                fontSize: "0.8125rem",
+                padding: "10px",
+                borderRadius: "12px",
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(217, 119, 6, 0.35)"
+              }}
+            >
+              <Award size={15} />
+              <span className="font-devanagari">{language === "hi" ? "प्रमाण-पत्र डाउनलोड" : "Certificate"}</span>
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Today's Inspiration Hero (Clean & Simple) ── */}
       <motion.div 
