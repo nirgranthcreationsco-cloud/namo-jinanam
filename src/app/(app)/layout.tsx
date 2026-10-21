@@ -289,62 +289,14 @@ function TopBar() {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const { user, _hasHydrated } = useAuthStore();
+  const { _hasHydrated } = useAuthStore();
 
+  // Competition is over — redirect everyone to the results page
   useEffect(() => {
-    if (!_hasHydrated) return;
-
-    // Require login first always
-    if (!user) {
-      // Pre-launch: primary action is registration
-      router.replace(isCampaignAccessible() ? "/login" : "/signup");
-      return;
+    if (_hasHydrated) {
+      router.replace("/");
     }
+  }, [_hasHydrated, router]);
 
-    // Logged-in user, but campaign hasn't started yet → pre-launch holding page
-    if (!isCampaignAccessible()) {
-      router.replace("/registration-success");
-    }
-  }, [user, _hasHydrated, router]);
-
-  if (!_hasHydrated) return null;
-  if (!user) return null;
-  if (!isCampaignAccessible()) return null;
-
-  return (
-    <div style={{ paddingBottom: "84px", overflowX: "hidden" }}>
-      <TopBar />
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{
-            duration: 0.22,
-            ease: [0.16, 1, 0.3, 1]
-          }}
-          style={{ minHeight: "calc(100dvh - 144px)" }}
-        >
-          {children}
-          <div style={{
-            textAlign: "center",
-            padding: "24px 16px 8px",
-            fontSize: "0.6875rem",
-            color: "var(--text-muted)",
-            letterSpacing: "0.03em",
-            borderTop: "1px dashed var(--surface-border)",
-            marginTop: "40px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px"
-          }}>
-            <div>Created by <strong>Nirgranth Creations</strong></div>
-          </div>
-        </motion.main>
-      </AnimatePresence>
-      <BottomNav />
-    </div>
-  );
+  return null;
 }
